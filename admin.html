@@ -26,6 +26,9 @@ header h1 span{color:var(--gold)}
 header .user{display:flex;align-items:center;gap:1rem;font-size:.9rem;color:#bbb}
 header button{background:transparent;border:1px solid var(--gold);color:var(--gold);padding:.4rem .9rem;border-radius:6px;cursor:pointer;font-size:.8rem;letter-spacing:1px;text-transform:uppercase}
 header button:hover{background:var(--gold);color:#fff}
+.lang-switch{display:flex;gap:.3rem;border:1px solid rgba(198,165,92,.3);border-radius:6px;padding:.2rem}
+.lang-switch button{border:none;background:transparent;color:#bbb;padding:.25rem .55rem;font-size:.75rem;border-radius:4px;cursor:pointer;letter-spacing:.5px}
+.lang-switch button.active{background:var(--gold);color:#fff}
 
 .tabs{background:#fff;border-bottom:1px solid #e5e1d8;display:flex;padding:0 2rem}
 .tab{padding:1rem 1.4rem;cursor:pointer;color:var(--muted);font-size:.85rem;letter-spacing:1px;text-transform:uppercase;border-bottom:2px solid transparent;transition:all .2s}
@@ -100,12 +103,18 @@ tr:hover td{background:#fcfbf7}
 <div class="login-wrap" id="loginWrap">
   <div class="login-box">
     <h1>Masal<span>.</span> Admin</h1>
-    <p>Voer uw wachtwoord in om door te gaan</p>
+    <p data-i18n="login_subtitle">Voer uw wachtwoord in om door te gaan</p>
     <form onsubmit="login(event)">
-      <input type="password" id="pw" placeholder="Wachtwoord" autocomplete="current-password" required>
-      <button type="submit">Inloggen</button>
+      <input type="password" id="pw" data-i18n-ph="password" placeholder="Wachtwoord" autocomplete="current-password" required>
+      <button type="submit" data-i18n="login_btn">Inloggen</button>
       <div class="login-error" id="loginErr"></div>
     </form>
+    <div style="margin-top:1rem;display:flex;justify-content:center;gap:.3rem">
+      <div class="lang-switch" style="border-color:#ddd">
+        <button id="langNL2" class="active" onclick="setLang('nl')" style="color:#888">NL</button>
+        <button id="langTR2" onclick="setLang('tr')" style="color:#888">TR</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -114,29 +123,33 @@ tr:hover td{background:#fcfbf7}
   <header>
     <h1>Masal<span>.</span> Admin</h1>
     <div class="user">
+      <div class="lang-switch">
+        <button id="langNL" class="active" onclick="setLang('nl')">NL</button>
+        <button id="langTR" onclick="setLang('tr')">TR</button>
+      </div>
       <span id="userName"></span>
-      <button onclick="logout()">Uitloggen</button>
+      <button onclick="logout()" data-i18n="logout">Uitloggen</button>
     </div>
   </header>
   <div class="tabs">
-    <div class="tab active" data-tab="reservations" onclick="switchTab('reservations')">Reserveringen</div>
-    <div class="tab" data-tab="party" onclick="switchTab('party')">Feest aanvragen</div>
-    <div class="tab" data-tab="shifts" onclick="switchTab('shifts')">Shifts</div>
+    <div class="tab active" data-tab="reservations" data-i18n="tab_reservations" onclick="switchTab('reservations')">Reserveringen</div>
+    <div class="tab" data-tab="party" data-i18n="tab_party" onclick="switchTab('party')">Feest aanvragen</div>
+    <div class="tab" data-tab="shifts" data-i18n="tab_shifts" onclick="switchTab('shifts')">Shifts</div>
   </div>
   <main>
 
     <!-- RESERVATIONS -->
     <section class="section active" id="sec-reservations">
       <div class="toolbar">
-        <h2>Reserveringen</h2>
+        <h2 data-i18n="tab_reservations">Reserveringen</h2>
         <div class="actions">
           <select class="select" id="resFilter" onchange="loadReservations()">
-            <option value="all">Alle</option>
-            <option value="new">Nieuw</option>
-            <option value="confirmed">Bevestigd</option>
-            <option value="cancelled">Geannuleerd</option>
+            <option value="all" data-i18n="filter_all">Alle</option>
+            <option value="new" data-i18n="status_new">Nieuw</option>
+            <option value="confirmed" data-i18n="status_confirmed">Bevestigd</option>
+            <option value="cancelled" data-i18n="status_cancelled">Geannuleerd</option>
           </select>
-          <button class="btn ghost" onclick="loadReservations()">Vernieuwen</button>
+          <button class="btn ghost" onclick="loadReservations()" data-i18n="refresh">Vernieuwen</button>
         </div>
       </div>
       <div id="resContainer"></div>
@@ -145,9 +158,9 @@ tr:hover td{background:#fcfbf7}
     <!-- PARTY REQUESTS -->
     <section class="section" id="sec-party">
       <div class="toolbar">
-        <h2>Feest aanvragen</h2>
+        <h2 data-i18n="tab_party">Feest aanvragen</h2>
         <div class="actions">
-          <button class="btn ghost" onclick="loadParty()">Vernieuwen</button>
+          <button class="btn ghost" onclick="loadParty()" data-i18n="refresh">Vernieuwen</button>
         </div>
       </div>
       <div id="partyContainer"></div>
@@ -156,12 +169,12 @@ tr:hover td{background:#fcfbf7}
     <!-- SHIFTS -->
     <section class="section" id="sec-shifts">
       <div class="toolbar">
-        <h2>Shifts</h2>
+        <h2 data-i18n="tab_shifts">Shifts</h2>
         <div class="actions">
-          <button class="btn ghost" onclick="prevWeek()">← Vorige</button>
+          <button class="btn ghost" onclick="prevWeek()" data-i18n="prev">← Vorige</button>
           <input type="date" id="weekPicker" class="input" onchange="onWeekChange()">
-          <button class="btn ghost" onclick="nextWeek()">Volgende →</button>
-          <button class="btn ghost" onclick="loadShifts()">Vernieuwen</button>
+          <button class="btn ghost" onclick="nextWeek()" data-i18n="next">Volgende →</button>
+          <button class="btn ghost" onclick="loadShifts()" data-i18n="refresh">Vernieuwen</button>
         </div>
       </div>
       <div id="weekGrid" class="week-grid"></div>
@@ -173,21 +186,21 @@ tr:hover td{background:#fcfbf7}
 <!-- SHIFT MODAL -->
 <div class="modal-bg" id="shiftModal">
   <div class="modal">
-    <h3 id="shiftModalTitle">Nieuwe shift</h3>
+    <h3 id="shiftModalTitle" data-i18n="new_shift">Nieuwe shift</h3>
     <input type="hidden" id="shiftId">
     <input type="hidden" id="shiftDayIndex">
-    <label>Datum</label>
+    <label data-i18n="date">Datum</label>
     <input type="text" id="shiftDate" disabled>
-    <label>Begintijd</label>
+    <label data-i18n="start_time">Begintijd</label>
     <input type="time" id="shiftStart" required>
-    <label>Eindtijd</label>
+    <label data-i18n="end_time">Eindtijd</label>
     <input type="time" id="shiftEnd" required>
-    <label>Personeel toewijzen</label>
+    <label data-i18n="assign_staff">Personeel toewijzen</label>
     <div class="staff-list" id="staffList"></div>
     <div class="modal-actions">
-      <button class="btn danger small" id="deleteBtn" onclick="deleteShift()" style="margin-right:auto;display:none">Verwijderen</button>
-      <button class="btn ghost" onclick="closeShiftModal()">Annuleren</button>
-      <button class="btn" onclick="saveShift()">Opslaan</button>
+      <button class="btn danger small" id="deleteBtn" onclick="deleteShift()" style="margin-right:auto;display:none" data-i18n="delete">Verwijderen</button>
+      <button class="btn ghost" onclick="closeShiftModal()" data-i18n="cancel">Annuleren</button>
+      <button class="btn" onclick="saveShift()" data-i18n="save">Opslaan</button>
     </div>
   </div>
 </div>
@@ -198,7 +211,70 @@ const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
 
 const ADMIN_PASSWORD='blabla';
-const DAY_NAMES=['Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag','Zondag'];
+const DAY_NAMES_NL=['Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag','Zondag'];
+const DAY_NAMES_TR=['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
+
+const I18N={
+  nl:{
+    login_subtitle:'Voer uw wachtwoord in om door te gaan',password:'Wachtwoord',login_btn:'Inloggen',login_error:'Ongeldig wachtwoord',
+    logout:'Uitloggen',
+    tab_reservations:'Reserveringen',tab_party:'Feest aanvragen',tab_shifts:'Shifts',
+    filter_all:'Alle',status_new:'Nieuw',status_confirmed:'Bevestigd',status_cancelled:'Geannuleerd',
+    refresh:'Vernieuwen',prev:'← Vorige',next:'Volgende →',
+    new_shift:'Nieuwe shift',edit_shift:'Shift bewerken',
+    date:'Datum',start_time:'Begintijd',end_time:'Eindtijd',assign_staff:'Personeel toewijzen',
+    delete:'Verwijderen',cancel:'Annuleren',save:'Opslaan',
+    no_reservations:'Geen reserveringen gevonden',no_party:'Geen aanvragen gevonden',
+    col_date:'Datum',col_time:'Tijd',col_name:'Naam',col_phone:'Telefoon',col_email:'E-mail',col_persons:'Personen',col_notes:'Notities',col_status:'Status',col_actions:'Acties',
+    col_type:'Type',col_guests:'Gasten',col_decor:'Aankleding',col_cake:'Taart',col_wishes:'Wensen',
+    nobody:'Niemand',add_shift:'+ Shift toevoegen',
+    confirm_delete_res:'Reservering verwijderen?',confirm_delete_party:'Aanvraag verwijderen?',confirm_delete_shift:'Shift verwijderen?',
+    err:'Fout: ',time_required:'Tijd vereist'
+  },
+  tr:{
+    login_subtitle:'Devam etmek için şifrenizi giriniz',password:'Şifre',login_btn:'Giriş Yap',login_error:'Geçersiz şifre',
+    logout:'Çıkış',
+    tab_reservations:'Rezervasyonlar',tab_party:'Etkinlik Talepleri',tab_shifts:'Vardiyalar',
+    filter_all:'Tümü',status_new:'Yeni',status_confirmed:'Onaylandı',status_cancelled:'İptal',
+    refresh:'Yenile',prev:'← Önceki',next:'Sonraki →',
+    new_shift:'Yeni vardiya',edit_shift:'Vardiyayı düzenle',
+    date:'Tarih',start_time:'Başlangıç',end_time:'Bitiş',assign_staff:'Personel ata',
+    delete:'Sil',cancel:'İptal',save:'Kaydet',
+    no_reservations:'Rezervasyon bulunamadı',no_party:'Talep bulunamadı',
+    col_date:'Tarih',col_time:'Saat',col_name:'Ad',col_phone:'Telefon',col_email:'E-posta',col_persons:'Kişi',col_notes:'Notlar',col_status:'Durum',col_actions:'İşlem',
+    col_type:'Tür',col_guests:'Misafir',col_decor:'Dekor',col_cake:'Pasta',col_wishes:'İstekler',
+    nobody:'Kimse',add_shift:'+ Vardiya ekle',
+    confirm_delete_res:'Rezervasyon silinsin mi?',confirm_delete_party:'Talep silinsin mi?',confirm_delete_shift:'Vardiya silinsin mi?',
+    err:'Hata: ',time_required:'Saat gerekli'
+  }
+};
+
+let currentLang=localStorage.getItem('masalAdminLang')||'nl';
+function t(k){return (I18N[currentLang]&&I18N[currentLang][k])||k}
+function DAY_NAMES(){return currentLang==='tr'?DAY_NAMES_TR:DAY_NAMES_NL}
+
+function setLang(lang){
+  currentLang=lang;
+  localStorage.setItem('masalAdminLang',lang);
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const k=el.getAttribute('data-i18n');
+    if(I18N[lang]&&I18N[lang][k])el.textContent=I18N[lang][k];
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{
+    const k=el.getAttribute('data-i18n-ph');
+    if(I18N[lang]&&I18N[lang][k])el.placeholder=I18N[lang][k];
+  });
+  ['langNL','langTR','langNL2','langTR2'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.classList.toggle('active',id.toLowerCase().includes(lang));
+  });
+  document.documentElement.lang=lang;
+  // Reload current view to refresh dynamic content
+  if(document.getElementById('app').style.display!=='none'){
+    const active=document.querySelector('.tab.active');
+    if(active)switchTab(active.dataset.tab);
+  }
+}
 
 let currentWeek=null;
 let profiles=[];
