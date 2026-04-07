@@ -288,7 +288,7 @@ function login(e){
     sessionStorage.setItem('masalAdmin','1');
     showApp();
   }else{
-    document.getElementById('loginErr').textContent='Ongeldig wachtwoord';
+    document.getElementById('loginErr').textContent=t('login_error');
   }
 }
 
@@ -331,10 +331,10 @@ async function loadReservations(){
   if(filter!=='all')q=q.eq('status',filter);
   const {data,error}=await q;
   const c=document.getElementById('resContainer');
-  if(error){c.innerHTML='<div class="empty">Fout: '+error.message+'</div>';return}
-  if(!data||!data.length){c.innerHTML='<div class="empty">Geen reserveringen gevonden</div>';return}
+  if(error){c.innerHTML=`<div class="empty">${t('err')}${error.message}</div>`;return}
+  if(!data||!data.length){c.innerHTML=`<div class="empty">${t('no_reservations')}</div>`;return}
   c.innerHTML=`<table>
-    <thead><tr><th>Datum</th><th>Tijd</th><th>Naam</th><th>Telefoon</th><th>E-mail</th><th>Personen</th><th>Notities</th><th>Status</th><th>Acties</th></tr></thead>
+    <thead><tr><th>${t('col_date')}</th><th>${t('col_time')}</th><th>${t('col_name')}</th><th>${t('col_phone')}</th><th>${t('col_email')}</th><th>${t('col_persons')}</th><th>${t('col_notes')}</th><th>${t('col_status')}</th><th>${t('col_actions')}</th></tr></thead>
     <tbody>${data.map(r=>`
       <tr>
         <td>${r.date||''}</td>
@@ -344,13 +344,13 @@ async function loadReservations(){
         <td><a href="mailto:${esc(r.email||'')}">${esc(r.email||'')}</a></td>
         <td>${esc(String(r.persons||''))}</td>
         <td>${esc(r.notes||'')}</td>
-        <td><span class="badge ${r.status||'new'}">${r.status||'new'}</span></td>
+        <td><span class="badge ${r.status||'new'}">${t('status_'+(r.status||'new'))}</span></td>
         <td>
           <select class="select" onchange="updateRes('${r.id}',this.value)">
             <option value="">—</option>
-            <option value="new">Nieuw</option>
-            <option value="confirmed">Bevestigd</option>
-            <option value="cancelled">Geannuleerd</option>
+            <option value="new">${t('status_new')}</option>
+            <option value="confirmed">${t('status_confirmed')}</option>
+            <option value="cancelled">${t('status_cancelled')}</option>
           </select>
           <button class="btn small danger" onclick="deleteRes('${r.id}')">×</button>
         </td>
@@ -362,7 +362,7 @@ async function updateRes(id,status){
   loadReservations();
 }
 async function deleteRes(id){
-  if(!confirm('Reservering verwijderen?'))return;
+  if(!confirm(t('confirm_delete_res')))return;
   await sb.from('reservations').delete().eq('id',id);
   loadReservations();
 }
@@ -371,10 +371,10 @@ async function deleteRes(id){
 async function loadParty(){
   const {data,error}=await sb.from('party_requests').select('*').order('created_at',{ascending:false});
   const c=document.getElementById('partyContainer');
-  if(error){c.innerHTML='<div class="empty">Fout: '+error.message+'</div>';return}
-  if(!data||!data.length){c.innerHTML='<div class="empty">Geen aanvragen gevonden</div>';return}
+  if(error){c.innerHTML=`<div class="empty">${t('err')}${error.message}</div>`;return}
+  if(!data||!data.length){c.innerHTML=`<div class="empty">${t('no_party')}</div>`;return}
   c.innerHTML=`<table>
-    <thead><tr><th>Datum</th><th>Type</th><th>Naam</th><th>Tel</th><th>Email</th><th>Gasten</th><th>Aankleding</th><th>Taart</th><th>Wensen</th><th>Acties</th></tr></thead>
+    <thead><tr><th>${t('col_date')}</th><th>${t('col_type')}</th><th>${t('col_name')}</th><th>${t('col_phone')}</th><th>${t('col_email')}</th><th>${t('col_guests')}</th><th>${t('col_decor')}</th><th>${t('col_cake')}</th><th>${t('col_wishes')}</th><th>${t('col_actions')}</th></tr></thead>
     <tbody>${data.map(r=>`
       <tr>
         <td>${r.event_date||''}</td>
@@ -390,7 +390,7 @@ async function loadParty(){
       </tr>`).join('')}</tbody></table>`;
 }
 async function deleteParty(id){
-  if(!confirm('Aanvraag verwijderen?'))return;
+  if(!confirm(t('confirm_delete_party')))return;
   await sb.from('party_requests').delete().eq('id',id);
   loadParty();
 }
@@ -443,10 +443,10 @@ async function loadShifts(){
         }).join('');
         return `<div class="shift-card" onclick='openShiftModal(${JSON.stringify(s)},${JSON.stringify(sa.map(x=>x.staff_id))})'>
           <div class="shift-time">${s.start_time} – ${s.end_time}</div>
-          <div class="shift-staff">${staff||'<em>Niemand</em>'}</div>
+          <div class="shift-staff">${staff||`<em>${t('nobody')}</em>`}</div>
         </div>`;
       }).join('')+
-      `<button class="add-shift-btn" onclick="openShiftModal(null,[],${i})">+ Shift toevoegen</button>`;
+      `<button class="add-shift-btn" onclick="openShiftModal(null,[],${i})">${t('add_shift')}</button>`;
     grid.appendChild(col);
   }
 }
@@ -454,7 +454,7 @@ async function loadShifts(){
 function openShiftModal(shift,staffIds,dayIndex){
   selectedStaff=new Set(staffIds||[]);
   const isNew=!shift;
-  document.getElementById('shiftModalTitle').textContent=isNew?'Nieuwe shift':'Shift bewerken';
+  document.getElementById('shiftModalTitle').textContent=isNew?t('new_shift'):t('edit_shift');
   document.getElementById('shiftId').value=isNew?'':shift.id;
   const di=isNew?dayIndex:shift.day_index;
   document.getElementById('shiftDayIndex').value=di;
@@ -480,15 +480,15 @@ async function saveShift(){
   const day_index=parseInt(document.getElementById('shiftDayIndex').value,10);
   const start_time=document.getElementById('shiftStart').value;
   const end_time=document.getElementById('shiftEnd').value;
-  if(!start_time||!end_time){alert('Tijd vereist');return}
+  if(!start_time||!end_time){alert(t('time_required'));return}
   let shiftId=id;
   if(id){
     const {error}=await sb.from('shifts').update({start_time,end_time,day_index}).eq('id',id);
-    if(error){alert('Fout: '+error.message);return}
+    if(error){alert(t('err')+error.message);return}
     await sb.from('shift_assignments').delete().eq('shift_id',id);
   }else{
     const {data,error}=await sb.from('shifts').insert({week_start:fmtDate(currentWeek),day_index,start_time,end_time}).select().single();
-    if(error){alert('Fout: '+error.message);return}
+    if(error){alert(t('err')+error.message);return}
     shiftId=data.id;
   }
   if(selectedStaff.size){
@@ -500,7 +500,7 @@ async function saveShift(){
 }
 async function deleteShift(){
   const id=document.getElementById('shiftId').value;
-  if(!id||!confirm('Shift verwijderen?'))return;
+  if(!id||!confirm(t('confirm_delete_shift')))return;
   await sb.from('shift_assignments').delete().eq('shift_id',id);
   await sb.from('shifts').delete().eq('id',id);
   closeShiftModal();
