@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Masal Admin</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--gold:#c6a55c;--gold-dark:#9c7e3e;--dark:#1a1a1a;--bg:#f7f5f0;--muted:#888}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,system-ui,sans-serif;background:var(--bg);color:#222;min-height:100vh}
+.login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:2rem}
+.login-box{background:#fff;padding:2.5rem;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.1);max-width:380px;width:100%;text-align:center}
+.login-box h1{font-family:Georgia,serif;font-size:1.8rem;margin-bottom:.3rem}
+.login-box h1 span{color:var(--gold)}
+.login-box p{color:var(--muted);font-size:.9rem;margin-bottom:1.5rem}
+.login-box input{width:100%;padding:.85rem 1rem;border:1px solid #ddd;border-radius:8px;font-size:.95rem;margin-bottom:1rem;outline:none}
+.login-box input:focus{border-color:var(--gold)}
+.login-box button{width:100%;padding:.85rem;background:var(--gold);color:#fff;border:none;border-radius:8px;font-size:.95rem;font-weight:500;cursor:pointer;letter-spacing:1px;text-transform:uppercase}
+.login-box button:hover{background:var(--gold-dark)}
+.login-error{color:#c0392b;font-size:.85rem;margin-top:.5rem;min-height:1.2em}
+
+header{background:var(--dark);color:#fff;padding:1.2rem 2rem;display:flex;align-items:center;justify-content:space-between}
+header h1{font-family:Georgia,serif;font-size:1.4rem}
+header h1 span{color:var(--gold)}
+header .user{display:flex;align-items:center;gap:1rem;font-size:.9rem;color:#bbb}
+header button{background:transparent;border:1px solid var(--gold);color:var(--gold);padding:.4rem .9rem;border-radius:6px;cursor:pointer;font-size:.8rem;letter-spacing:1px;text-transform:uppercase}
+header button:hover{background:var(--gold);color:#fff}
+
+.tabs{background:#fff;border-bottom:1px solid #e5e1d8;display:flex;padding:0 2rem}
+.tab{padding:1rem 1.4rem;cursor:pointer;color:var(--muted);font-size:.85rem;letter-spacing:1px;text-transform:uppercase;border-bottom:2px solid transparent;transition:all .2s}
+.tab:hover{color:#222}
+.tab.active{color:var(--gold-dark);border-bottom-color:var(--gold)}
+
+main{padding:2rem}
+.section{display:none}
+.section.active{display:block}
+.toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;gap:1rem;flex-wrap:wrap}
+.toolbar h2{font-family:Georgia,serif;font-size:1.4rem}
+.toolbar .actions{display:flex;gap:.6rem;align-items:center}
+.btn{background:var(--gold);color:#fff;border:none;padding:.6rem 1.2rem;border-radius:6px;cursor:pointer;font-size:.85rem;letter-spacing:.5px}
+.btn:hover{background:var(--gold-dark)}
+.btn.ghost{background:transparent;color:var(--gold-dark);border:1px solid var(--gold)}
+.btn.ghost:hover{background:var(--gold);color:#fff}
+.btn.danger{background:#c0392b}
+.btn.danger:hover{background:#922b21}
+.btn.small{padding:.35rem .7rem;font-size:.75rem}
+
+table{width:100%;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.04);border-collapse:collapse}
+th{background:#fafafa;text-align:left;padding:.9rem 1rem;font-size:.72rem;letter-spacing:1px;text-transform:uppercase;color:var(--muted);font-weight:500;border-bottom:1px solid #eee}
+td{padding:.9rem 1rem;font-size:.88rem;border-bottom:1px solid #f3f3f3;vertical-align:top}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fcfbf7}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:20px;font-size:.7rem;letter-spacing:.5px;text-transform:uppercase}
+.badge.new{background:#fff4d6;color:#9c7e3e}
+.badge.confirmed{background:#d4edda;color:#155724}
+.badge.cancelled{background:#f8d7da;color:#721c24}
+.empty{text-align:center;padding:3rem;color:var(--muted);background:#fff;border-radius:10px}
+
+.input,.select{padding:.55rem .8rem;border:1px solid #ddd;border-radius:6px;font-size:.85rem;outline:none;background:#fff}
+.input:focus,.select:focus{border-color:var(--gold)}
+
+/* Shifts */
+.shift-toolbar{background:#fff;padding:1rem 1.2rem;border-radius:10px;margin-bottom:1.2rem;display:flex;gap:1rem;align-items:center;flex-wrap:wrap;box-shadow:0 4px 20px rgba(0,0,0,.04)}
+.week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:.8rem}
+.day-col{background:#fff;border-radius:10px;padding:1rem;box-shadow:0 4px 20px rgba(0,0,0,.04);min-height:180px}
+.day-col h4{font-size:.78rem;letter-spacing:1px;text-transform:uppercase;color:var(--gold-dark);margin-bottom:.2rem}
+.day-col .date{font-size:.7rem;color:var(--muted);margin-bottom:.8rem}
+.shift-card{background:#fafafa;border-left:3px solid var(--gold);padding:.55rem .7rem;border-radius:5px;margin-bottom:.5rem;font-size:.78rem;cursor:pointer;transition:background .15s}
+.shift-card:hover{background:#f4f0e2}
+.shift-time{font-weight:600;color:#222;margin-bottom:.2rem}
+.shift-staff{font-size:.7rem;color:var(--muted);display:flex;flex-wrap:wrap;gap:.2rem;margin-top:.3rem}
+.staff-pill{display:inline-flex;align-items:center;gap:.25rem;background:#fff;border:1px solid #e5e1d8;padding:.1rem .45rem;border-radius:20px;font-size:.7rem}
+.staff-dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+.add-shift-btn{width:100%;background:transparent;border:1px dashed #ccc;color:var(--muted);padding:.5rem;border-radius:5px;cursor:pointer;font-size:.75rem;margin-top:.3rem}
+.add-shift-btn:hover{border-color:var(--gold);color:var(--gold-dark)}
+
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:100;padding:1rem}
+.modal-bg.open{display:flex}
+.modal{background:#fff;padding:2rem;border-radius:12px;max-width:480px;width:100%;max-height:90vh;overflow-y:auto}
+.modal h3{font-family:Georgia,serif;font-size:1.3rem;margin-bottom:1rem}
+.modal label{display:block;font-size:.75rem;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin:.8rem 0 .3rem}
+.modal input,.modal select{width:100%;padding:.6rem .8rem;border:1px solid #ddd;border-radius:6px;font-size:.9rem;outline:none}
+.modal-actions{display:flex;gap:.6rem;justify-content:flex-end;margin-top:1.5rem}
+.staff-list{display:flex;flex-direction:column;gap:.4rem;max-height:240px;overflow-y:auto;border:1px solid #eee;border-radius:6px;padding:.5rem}
+.staff-row{display:flex;align-items:center;gap:.6rem;padding:.4rem;border-radius:5px;cursor:pointer}
+.staff-row:hover{background:#fafafa}
+.staff-row input{width:auto}
+
+@media(max-width:900px){
+  .week-grid{grid-template-columns:1fr;gap:.6rem}
+  table{font-size:.8rem}
+  th,td{padding:.6rem .5rem}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="loginWrap">
+  <div class="login-box">
+    <h1>Masal<span>.</span> Admin</h1>
+    <p>Voer uw wachtwoord in om door te gaan</p>
+    <form onsubmit="login(event)">
+      <input type="password" id="pw" placeholder="Wachtwoord" autocomplete="current-password" required>
+      <button type="submit">Inloggen</button>
+      <div class="login-error" id="loginErr"></div>
+    </form>
+  </div>
+</div>
+
+<!-- ADMIN APP -->
+<div id="app" style="display:none">
+  <header>
+    <h1>Masal<span>.</span> Admin</h1>
+    <div class="user">
+      <span id="userName"></span>
+      <button onclick="logout()">Uitloggen</button>
+    </div>
+  </header>
+  <div class="tabs">
+    <div class="tab active" data-tab="reservations" onclick="switchTab('reservations')">Reserveringen</div>
+    <div class="tab" data-tab="party" onclick="switchTab('party')">Feest aanvragen</div>
+    <div class="tab" data-tab="shifts" onclick="switchTab('shifts')">Shifts</div>
+  </div>
+  <main>
+
+    <!-- RESERVATIONS -->
+    <section class="section active" id="sec-reservations">
+      <div class="toolbar">
+        <h2>Reserveringen</h2>
+        <div class="actions">
+          <select class="select" id="resFilter" onchange="loadReservations()">
+            <option value="all">Alle</option>
+            <option value="new">Nieuw</option>
+            <option value="confirmed">Bevestigd</option>
+            <option value="cancelled">Geannuleerd</option>
+          </select>
+          <button class="btn ghost" onclick="loadReservations()">Vernieuwen</button>
+        </div>
+      </div>
+      <div id="resContainer"></div>
+    </section>
+
+    <!-- PARTY REQUESTS -->
+    <section class="section" id="sec-party">
+      <div class="toolbar">
+        <h2>Feest aanvragen</h2>
+        <div class="actions">
+          <button class="btn ghost" onclick="loadParty()">Vernieuwen</button>
+        </div>
+      </div>
+      <div id="partyContainer"></div>
+    </section>
+
+    <!-- SHIFTS -->
+    <section class="section" id="sec-shifts">
+      <div class="toolbar">
+        <h2>Shifts</h2>
+        <div class="actions">
+          <button class="btn ghost" onclick="prevWeek()">← Vorige</button>
+          <input type="date" id="weekPicker" class="input" onchange="onWeekChange()">
+          <button class="btn ghost" onclick="nextWeek()">Volgende →</button>
+          <button class="btn ghost" onclick="loadShifts()">Vernieuwen</button>
+        </div>
+      </div>
+      <div id="weekGrid" class="week-grid"></div>
+    </section>
+
+  </main>
+</div>
+
+<!-- SHIFT MODAL -->
+<div class="modal-bg" id="shiftModal">
+  <div class="modal">
+    <h3 id="shiftModalTitle">Nieuwe shift</h3>
+    <input type="hidden" id="shiftId">
+    <input type="hidden" id="shiftDayIndex">
+    <label>Datum</label>
+    <input type="text" id="shiftDate" disabled>
+    <label>Begintijd</label>
+    <input type="time" id="shiftStart" required>
+    <label>Eindtijd</label>
+    <input type="time" id="shiftEnd" required>
+    <label>Personeel toewijzen</label>
+    <div class="staff-list" id="staffList"></div>
+    <div class="modal-actions">
+      <button class="btn danger small" id="deleteBtn" onclick="deleteShift()" style="margin-right:auto;display:none">Verwijderen</button>
+      <button class="btn ghost" onclick="closeShiftModal()">Annuleren</button>
+      <button class="btn" onclick="saveShift()">Opslaan</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL='https://mytqxxdzfrropqcrhipv.supabase.co';
+const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15dHF4eGR6ZnJyb3BxY3JoaXB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MjgwMTUsImV4cCI6MjA5MTAwNDAxNX0.eKAts80PGm6TTYSllnYq79UaG0_ERJi7FBLnh2GgG4I';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
+
+const ADMIN_PASSWORD='blabla';
+const DAY_NAMES=['Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag','Zondag'];
+
+let currentWeek=null;
+let profiles=[];
+let selectedStaff=new Set();
+
+// === AUTH ===
+function login(e){
+  e.preventDefault();
+  const pw=document.getElementById('pw').value;
+  if(pw===ADMIN_PASSWORD){
+    sessionStorage.setItem('masalAdmin','1');
+    showApp();
+  }else{
+    document.getElementById('loginErr').textContent='Ongeldig wachtwoord';
+  }
+}
+
+function logout(){
+  sessionStorage.removeItem('masalAdmin');
+  location.reload();
+}
+
+async function showApp(){
+  document.getElementById('loginWrap').style.display='none';
+  document.getElementById('app').style.display='block';
+  // Load admin profile name
+  const {data}=await sb.from('profiles').select('name').eq('role','admin').limit(1);
+  if(data&&data[0])document.getElementById('userName').textContent=data[0].name;
+  // Load all profiles for staff assignment
+  const {data:p}=await sb.from('profiles').select('*').order('name');
+  profiles=p||[];
+  // Default tab
+  loadReservations();
+  // Init shifts week to current Monday
+  currentWeek=mondayOf(new Date());
+  document.getElementById('weekPicker').value=fmtDate(currentWeek);
+}
+
+if(sessionStorage.getItem('masalAdmin')==='1'){showApp()}
+
+// === TABS ===
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===name));
+  document.querySelectorAll('.section').forEach(s=>s.classList.toggle('active',s.id==='sec-'+name));
+  if(name==='reservations')loadReservations();
+  if(name==='party')loadParty();
+  if(name==='shifts')loadShifts();
+}
+
+// === RESERVATIONS ===
+async function loadReservations(){
+  const filter=document.getElementById('resFilter').value;
+  let q=sb.from('reservations').select('*').order('date',{ascending:false}).order('time',{ascending:false});
+  if(filter!=='all')q=q.eq('status',filter);
+  const {data,error}=await q;
+  const c=document.getElementById('resContainer');
+  if(error){c.innerHTML='<div class="empty">Fout: '+error.message+'</div>';return}
+  if(!data||!data.length){c.innerHTML='<div class="empty">Geen reserveringen gevonden</div>';return}
+  c.innerHTML=`<table>
+    <thead><tr><th>Datum</th><th>Tijd</th><th>Naam</th><th>Telefoon</th><th>E-mail</th><th>Personen</th><th>Notities</th><th>Status</th><th>Acties</th></tr></thead>
+    <tbody>${data.map(r=>`
+      <tr>
+        <td>${r.date||''}</td>
+        <td>${r.time||''}</td>
+        <td>${esc(r.name)}</td>
+        <td><a href="tel:${esc(r.phone)}">${esc(r.phone)}</a></td>
+        <td><a href="mailto:${esc(r.email||'')}">${esc(r.email||'')}</a></td>
+        <td>${esc(String(r.persons||''))}</td>
+        <td>${esc(r.notes||'')}</td>
+        <td><span class="badge ${r.status||'new'}">${r.status||'new'}</span></td>
+        <td>
+          <select class="select" onchange="updateRes('${r.id}',this.value)">
+            <option value="">—</option>
+            <option value="new">Nieuw</option>
+            <option value="confirmed">Bevestigd</option>
+            <option value="cancelled">Geannuleerd</option>
+          </select>
+          <button class="btn small danger" onclick="deleteRes('${r.id}')">×</button>
+        </td>
+      </tr>`).join('')}</tbody></table>`;
+}
+async function updateRes(id,status){
+  if(!status)return;
+  await sb.from('reservations').update({status}).eq('id',id);
+  loadReservations();
+}
+async function deleteRes(id){
+  if(!confirm('Reservering verwijderen?'))return;
+  await sb.from('reservations').delete().eq('id',id);
+  loadReservations();
+}
+
+// === PARTY REQUESTS ===
+async function loadParty(){
+  const {data,error}=await sb.from('party_requests').select('*').order('created_at',{ascending:false});
+  const c=document.getElementById('partyContainer');
+  if(error){c.innerHTML='<div class="empty">Fout: '+error.message+'</div>';return}
+  if(!data||!data.length){c.innerHTML='<div class="empty">Geen aanvragen gevonden</div>';return}
+  c.innerHTML=`<table>
+    <thead><tr><th>Datum</th><th>Type</th><th>Naam</th><th>Tel</th><th>Email</th><th>Gasten</th><th>Aankleding</th><th>Taart</th><th>Wensen</th><th>Acties</th></tr></thead>
+    <tbody>${data.map(r=>`
+      <tr>
+        <td>${r.event_date||''}</td>
+        <td>${esc(r.event_type||'')}</td>
+        <td>${esc(r.name)}</td>
+        <td><a href="tel:${esc(r.phone)}">${esc(r.phone)}</a></td>
+        <td><a href="mailto:${esc(r.email||'')}">${esc(r.email||'')}</a></td>
+        <td>${esc(String(r.guests||''))}</td>
+        <td>${esc(r.decoration||'')}</td>
+        <td>${esc(r.cake||'')}</td>
+        <td>${esc(r.wishes||'')}</td>
+        <td><button class="btn small danger" onclick="deleteParty('${r.id}')">×</button></td>
+      </tr>`).join('')}</tbody></table>`;
+}
+async function deleteParty(id){
+  if(!confirm('Aanvraag verwijderen?'))return;
+  await sb.from('party_requests').delete().eq('id',id);
+  loadParty();
+}
+
+// === SHIFTS ===
+function mondayOf(d){
+  const x=new Date(d);
+  const day=(x.getDay()+6)%7; // Mon=0
+  x.setDate(x.getDate()-day);
+  x.setHours(0,0,0,0);
+  return x;
+}
+function fmtDate(d){return d.toISOString().slice(0,10)}
+function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x}
+
+function onWeekChange(){
+  const v=document.getElementById('weekPicker').value;
+  if(!v)return;
+  currentWeek=mondayOf(new Date(v));
+  document.getElementById('weekPicker').value=fmtDate(currentWeek);
+  loadShifts();
+}
+function prevWeek(){currentWeek=addDays(currentWeek,-7);document.getElementById('weekPicker').value=fmtDate(currentWeek);loadShifts()}
+function nextWeek(){currentWeek=addDays(currentWeek,7);document.getElementById('weekPicker').value=fmtDate(currentWeek);loadShifts()}
+
+async function loadShifts(){
+  if(!currentWeek)currentWeek=mondayOf(new Date());
+  const ws=fmtDate(currentWeek);
+  const {data:shifts}=await sb.from('shifts').select('*').eq('week_start',ws).order('start_time');
+  const ids=(shifts||[]).map(s=>s.id);
+  let assigns=[];
+  if(ids.length){
+    const {data}=await sb.from('shift_assignments').select('*').in('shift_id',ids);
+    assigns=data||[];
+  }
+  const grid=document.getElementById('weekGrid');
+  grid.innerHTML='';
+  for(let i=0;i<7;i++){
+    const dayDate=addDays(currentWeek,i);
+    const dayShifts=(shifts||[]).filter(s=>s.day_index===i);
+    const col=document.createElement('div');
+    col.className='day-col';
+    col.innerHTML=`<h4>${DAY_NAMES[i]}</h4><div class="date">${fmtDate(dayDate)}</div>`+
+      dayShifts.map(s=>{
+        const sa=assigns.filter(a=>a.shift_id===s.id);
+        const staff=sa.map(a=>{
+          const p=profiles.find(pr=>pr.id===a.staff_id);
+          if(!p)return '';
+          return `<span class="staff-pill"><span class="staff-dot" style="background:${p.color||'#999'}"></span>${esc(p.initials||p.name)}</span>`;
+        }).join('');
+        return `<div class="shift-card" onclick='openShiftModal(${JSON.stringify(s)},${JSON.stringify(sa.map(x=>x.staff_id))})'>
+          <div class="shift-time">${s.start_time} – ${s.end_time}</div>
+          <div class="shift-staff">${staff||'<em>Niemand</em>'}</div>
+        </div>`;
+      }).join('')+
+      `<button class="add-shift-btn" onclick="openShiftModal(null,[],${i})">+ Shift toevoegen</button>`;
+    grid.appendChild(col);
+  }
+}
+
+function openShiftModal(shift,staffIds,dayIndex){
+  selectedStaff=new Set(staffIds||[]);
+  const isNew=!shift;
+  document.getElementById('shiftModalTitle').textContent=isNew?'Nieuwe shift':'Shift bewerken';
+  document.getElementById('shiftId').value=isNew?'':shift.id;
+  const di=isNew?dayIndex:shift.day_index;
+  document.getElementById('shiftDayIndex').value=di;
+  document.getElementById('shiftDate').value=DAY_NAMES[di]+' '+fmtDate(addDays(currentWeek,di));
+  document.getElementById('shiftStart').value=isNew?'09:00':shift.start_time;
+  document.getElementById('shiftEnd').value=isNew?'17:00':shift.end_time;
+  document.getElementById('deleteBtn').style.display=isNew?'none':'inline-block';
+  // Render staff list
+  const sl=document.getElementById('staffList');
+  sl.innerHTML=profiles.map(p=>`
+    <label class="staff-row">
+      <input type="checkbox" value="${p.id}" ${selectedStaff.has(p.id)?'checked':''} onchange="toggleStaff('${p.id}',this.checked)">
+      <span class="staff-dot" style="background:${p.color||'#999'}"></span>
+      <span>${esc(p.name)} <span style="color:#999">(${esc(p.role||'')})</span></span>
+    </label>`).join('');
+  document.getElementById('shiftModal').classList.add('open');
+}
+function toggleStaff(id,on){if(on)selectedStaff.add(id);else selectedStaff.delete(id)}
+function closeShiftModal(){document.getElementById('shiftModal').classList.remove('open')}
+
+async function saveShift(){
+  const id=document.getElementById('shiftId').value;
+  const day_index=parseInt(document.getElementById('shiftDayIndex').value,10);
+  const start_time=document.getElementById('shiftStart').value;
+  const end_time=document.getElementById('shiftEnd').value;
+  if(!start_time||!end_time){alert('Tijd vereist');return}
+  let shiftId=id;
+  if(id){
+    const {error}=await sb.from('shifts').update({start_time,end_time,day_index}).eq('id',id);
+    if(error){alert('Fout: '+error.message);return}
+    await sb.from('shift_assignments').delete().eq('shift_id',id);
+  }else{
+    const {data,error}=await sb.from('shifts').insert({week_start:fmtDate(currentWeek),day_index,start_time,end_time}).select().single();
+    if(error){alert('Fout: '+error.message);return}
+    shiftId=data.id;
+  }
+  if(selectedStaff.size){
+    const rows=[...selectedStaff].map(staff_id=>({shift_id:shiftId,staff_id}));
+    await sb.from('shift_assignments').insert(rows);
+  }
+  closeShiftModal();
+  loadShifts();
+}
+async function deleteShift(){
+  const id=document.getElementById('shiftId').value;
+  if(!id||!confirm('Shift verwijderen?'))return;
+  await sb.from('shift_assignments').delete().eq('shift_id',id);
+  await sb.from('shifts').delete().eq('id',id);
+  closeShiftModal();
+  loadShifts();
+}
+
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+</script>
+</body>
+</html>
