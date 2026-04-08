@@ -7,20 +7,19 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Jost:wght@300;400;500&display=swap');
-:root{--gold:#c6a55c;--gold-light:#d4b87a;--dark:#1a1a1a;--bg:#111;--card:#1e1e1e;--border:rgba(198,165,92,.15);--muted:rgba(255,255,255,.45)}
+:root{--gold:#c6a55c;--gold-light:#d4b87a;--bg:#111;--card:#1e1e1e;--border:rgba(198,165,92,.15);--muted:rgba(255,255,255,.45)}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:#fff;font-family:'Jost',sans-serif;min-height:100vh;display:flex;flex-direction:column}
 
-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 2.5rem;border-bottom:1px solid var(--border);background:rgba(0,0,0,.4)}
-.logo{height:56px;width:auto;object-fit:contain}
-.header-center{display:flex;align-items:center;gap:1.5rem}
+header{display:flex;align-items:center;justify-content:space-between;padding:1rem 2.5rem;border-bottom:1px solid var(--border);background:rgba(0,0,0,.4);gap:1rem}
+.logo{height:52px;width:auto;object-fit:contain;flex-shrink:0}
 .lang-switcher{display:flex;gap:.3rem}
-.lang-btn{background:transparent;border:1px solid rgba(198,165,92,.3);color:var(--muted);padding:.3rem .6rem;border-radius:4px;cursor:pointer;font-size:.72rem;letter-spacing:1px;font-family:'Jost',sans-serif;transition:all .2s}
+.lang-btn{background:transparent;border:1px solid rgba(198,165,92,.3);color:var(--muted);padding:.3rem .65rem;border-radius:4px;cursor:pointer;font-size:.72rem;letter-spacing:1px;font-family:'Jost',sans-serif;transition:all .2s}
 .lang-btn:hover{border-color:var(--gold);color:var(--gold)}
-.lang-btn.active{background:var(--gold);border-color:var(--gold);color:#111;font-weight:500}
-.header-right{display:flex;align-items:center;gap:2rem}
-.clock{font-size:2rem;font-weight:300;letter-spacing:2px;color:var(--gold-light);font-variant-numeric:tabular-nums}
-.header-date{font-size:.78rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;text-align:right;line-height:1.9}
+.lang-btn.active{background:var(--gold);border-color:var(--gold);color:#111;font-weight:600}
+.header-right{display:flex;align-items:center;gap:1.8rem;flex-shrink:0}
+.clock{font-size:2.2rem;font-weight:300;letter-spacing:3px;color:var(--gold-light);font-variant-numeric:tabular-nums}
+.header-date{font-size:.78rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;text-align:right;line-height:2}
 
 .tabs{display:flex;border-bottom:1px solid var(--border);background:rgba(0,0,0,.2)}
 .tab{padding:1rem 2.5rem;cursor:pointer;color:var(--muted);font-size:.78rem;letter-spacing:2px;text-transform:uppercase;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap}
@@ -29,50 +28,50 @@ header{display:flex;align-items:center;justify-content:space-between;padding:1re
 
 main{flex:1;padding:2rem 2.5rem;overflow:auto}
 
-/* UPCOMING FILTER */
-.filter-bar{display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap}
-.filter-bar label{font-size:.72rem;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
-.filter-bar input[type=date]{background:var(--card);border:1px solid var(--border);color:#fff;padding:.45rem .8rem;border-radius:6px;font-size:.85rem;font-family:'Jost',sans-serif;outline:none;cursor:pointer}
-.filter-bar input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.6)}
-.filter-bar input[type=date]:focus{border-color:var(--gold)}
-.btn-filter{background:var(--gold);color:#111;border:none;padding:.45rem 1.1rem;border-radius:6px;font-size:.78rem;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-family:'Jost',sans-serif;font-weight:500}
-.btn-filter:hover{background:var(--gold-light)}
-
 .summary{display:flex;gap:1.2rem;margin-bottom:2rem}
 .stat{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1.2rem 2rem;flex:1;text-align:center}
 .stat-num{font-family:'Playfair Display',serif;font-size:2.5rem;color:var(--gold);line-height:1}
-.stat-label{font-size:.7rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-top:.4rem}
+.stat-label{font-size:.68rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-top:.4rem}
 
 .res-table{width:100%;border-collapse:collapse}
-.res-table th{text-align:left;padding:.8rem 1.2rem;font-size:.68rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);font-weight:400}
-.res-table td{padding:1rem 1.2rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.92rem;vertical-align:middle}
+.res-table th{text-align:left;padding:.75rem 1rem;font-size:.65rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);font-weight:400;white-space:nowrap}
+.res-table td{padding:.9rem 1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.9rem;vertical-align:middle}
 .res-table tr:hover td{background:rgba(198,165,92,.04)}
-.time-badge{display:inline-block;background:rgba(198,165,92,.15);color:var(--gold);padding:.3rem .8rem;border-radius:20px;font-size:.8rem;font-weight:500;letter-spacing:.5px;min-width:60px;text-align:center}
+
+/* time badge */
+.time-badge{display:inline-block;background:rgba(198,165,92,.15);color:var(--gold);padding:.28rem .75rem;border-radius:20px;font-size:.78rem;font-weight:500;letter-spacing:.5px;min-width:58px;text-align:center;white-space:nowrap}
 .time-badge.past{background:rgba(255,255,255,.06);color:var(--muted)}
 .time-badge.soon{background:var(--gold);color:#111;animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(198,165,92,.4)}50%{box-shadow:0 0 0 8px rgba(198,165,92,0)}}
-.persons-badge{display:inline-flex;align-items:center;gap:.35rem;font-size:.85rem;color:var(--muted)}
-.status-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:.4rem;flex-shrink:0}
-.status-dot.new{background:var(--gold)}.status-dot.confirmed{background:#4CAF50}.status-dot.cancelled{background:#c0392b}
-.name-cell{font-weight:500;font-size:.98rem}
-.notes-cell{font-size:.8rem;color:var(--muted);max-width:250px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* type badge (parti) */
+.type-badge{display:inline-block;padding:.18rem .55rem;border-radius:4px;font-size:.65rem;letter-spacing:1px;text-transform:uppercase;font-weight:500;white-space:nowrap}
+.type-badge.party{background:rgba(180,100,255,.2);color:#c87eff;border:1px solid rgba(180,100,255,.3)}
+.type-badge.res{background:rgba(198,165,92,.12);color:var(--gold);border:1px solid rgba(198,165,92,.25)}
+
+/* status cell — all inline */
+.status-cell{display:flex;align-items:center;gap:.4rem;white-space:nowrap}
+.status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.status-dot.new{background:var(--gold)}
+.status-dot.confirmed{background:#4CAF50}
+.status-dot.cancelled{background:#c0392b}
+
+.persons-badge{display:inline-flex;align-items:center;gap:.35rem;color:var(--muted);font-size:.85rem;white-space:nowrap}
+.name-cell{font-weight:500}
+.notes-cell{font-size:.78rem;color:var(--muted);max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* confirm button */
+.btn-confirm{background:transparent;border:1px solid rgba(76,175,80,.4);color:#4CAF50;padding:.3rem .75rem;border-radius:5px;font-size:.72rem;letter-spacing:.5px;cursor:pointer;font-family:'Jost',sans-serif;transition:all .2s;white-space:nowrap}
+.btn-confirm:hover{background:#4CAF50;color:#fff}
+.btn-confirm.done{background:rgba(76,175,80,.15);border-color:transparent;color:rgba(76,175,80,.5);cursor:default}
+
+.date-group{margin-bottom:2.5rem}
 .date-group-label{font-size:.72rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:.8rem;padding-bottom:.5rem;border-bottom:1px solid var(--border)}
-.date-group{margin-bottom:2rem}
 
-/* CARDS */
-.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1.2rem}
-.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;position:relative;overflow:hidden}
-.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--gold-light))}
-.card-type{font-size:.68rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:.4rem}
-.card-name{font-family:'Playfair Display',serif;font-size:1.25rem;margin-bottom:.8rem}
-.card-row{display:flex;align-items:center;gap:.5rem;font-size:.83rem;color:var(--muted);margin-bottom:.3rem}
-.card-guests{position:absolute;top:1.4rem;right:1.4rem;font-family:'Playfair Display',serif;font-size:2.2rem;color:var(--gold);line-height:1;text-align:right}
-.card-guests-label{font-size:.6rem;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:5rem 2rem;color:var(--muted);text-align:center;gap:.8rem}
+.empty p{font-size:.92rem;letter-spacing:1px}
 
-.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:5rem 2rem;color:var(--muted);text-align:center;gap:1rem}
-.empty p{font-size:.95rem;letter-spacing:1px}
-
-.refresh-bar{text-align:center;padding:.55rem;font-size:.68rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);border-top:1px solid var(--border);background:rgba(0,0,0,.2)}
+.refresh-bar{text-align:center;padding:.55rem;font-size:.66rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);border-top:1px solid var(--border);background:rgba(0,0,0,.2)}
 
 section{display:none}
 section.active{display:block}
@@ -81,13 +80,11 @@ section.active{display:block}
 <body>
 
 <header>
-  <img class="logo" src="https://i0.wp.com/masalrestaurant.nl/wp-content/uploads/2021/11/Masal_Logo_DEF.png?fit=600%2C304&ssl=1" alt="Masal Restaurant">
-  <div class="header-center">
-    <div class="lang-switcher">
-      <button class="lang-btn active" onclick="setLang('nl')">NL</button>
-      <button class="lang-btn" onclick="setLang('en')">EN</button>
-      <button class="lang-btn" onclick="setLang('tr')">TR</button>
-    </div>
+  <img class="logo" src="https://i0.wp.com/masalrestaurant.nl/wp-content/uploads/2021/11/Masal_Logo_DEF.png?fit=600%2C304&ssl=1" alt="Masal">
+  <div class="lang-switcher">
+    <button class="lang-btn" onclick="setLang('nl')">NL</button>
+    <button class="lang-btn" onclick="setLang('en')">EN</button>
+    <button class="lang-btn" onclick="setLang('tr')">TR</button>
   </div>
   <div class="header-right">
     <div class="header-date" id="headerDate"></div>
@@ -95,10 +92,9 @@ section.active{display:block}
   </div>
 </header>
 
-<div class="tabs" id="tabBar">
-  <div class="tab active" data-tab="today" onclick="switchTab('today')" data-i18n="tab_today">Vandaag</div>
-  <div class="tab" data-tab="upcoming" onclick="switchTab('upcoming')" data-i18n="tab_upcoming">Aankomend</div>
-  <div class="tab" data-tab="party" onclick="switchTab('party')" data-i18n="tab_party">Feesten & Partijen</div>
+<div class="tabs">
+  <div class="tab active" data-tab="today" onclick="switchTab('today')" data-i18n="tab_today">—</div>
+  <div class="tab" data-tab="upcoming" onclick="switchTab('upcoming')" data-i18n="tab_upcoming">—</div>
 </div>
 
 <main>
@@ -106,102 +102,85 @@ section.active{display:block}
     <div class="summary" id="todaySummary"></div>
     <div id="todayContent"></div>
   </section>
-
   <section id="sec-upcoming">
-    <div class="filter-bar">
-      <label data-i18n="from">Van</label>
-      <input type="date" id="fromDate">
-      <label data-i18n="to">Tot</label>
-      <input type="date" id="toDate">
-      <button class="btn-filter" onclick="loadUpcoming()" data-i18n="filter_btn">Toon</button>
-    </div>
     <div id="upcomingContent"></div>
-  </section>
-
-  <section id="sec-party">
-    <div class="filter-bar">
-      <label data-i18n="from">Van</label>
-      <input type="date" id="partyFromDate">
-      <label data-i18n="to">Tot</label>
-      <input type="date" id="partyToDate">
-      <button class="btn-filter" onclick="loadParty()" data-i18n="filter_btn">Toon</button>
-    </div>
-    <div id="partyContent"></div>
   </section>
 </main>
 
-<div class="refresh-bar"><span data-i18n="refresh_label">Automatisch vernieuwen over</span> <span id="countdown">60</span>s</div>
+<div class="refresh-bar"><span data-i18n="refresh_label">—</span> <span id="countdown">60</span>s</div>
 
 <script>
 const SUPABASE_URL='https://mytqxxdzfrropqcrhipv.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15dHF4eGR6ZnJyb3BxY3JoaXB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MjgwMTUsImV4cCI6MjA5MTAwNDAxNX0.eKAts80PGm6TTYSllnYq79UaG0_ERJi7FBLnh2GgG4I';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
 
-// === I18N ===
+// i18n
 const T={
   nl:{
-    tab_today:'Vandaag',tab_upcoming:'Aankomend',tab_party:'Feesten & Partijen',
-    from:'Van',to:'Tot',filter_btn:'Toon',
+    tab_today:'Vandaag',tab_upcoming:'Alle Reserveringen',
     stat_res:'Reserveringen',stat_persons:'Personen',stat_confirmed:'Bevestigd',
-    col_time:'Tijd',col_name:'Naam',col_persons:'Personen',col_phone:'Telefoon',col_status:'Status',col_notes:'Notities',
-    col_date:'Datum',col_type:'Type',col_guests:'Gasten',col_decor:'Aankleding',col_cake:'Taart',col_wishes:'Wensen',
-    empty_today:'Geen reserveringen voor vandaag',empty_upcoming:'Geen reserveringen gevonden',empty_party:'Geen aanvragen gevonden',
+    col_time:'Tijd',col_name:'Naam',col_type:'Type',col_persons:'Personen',col_phone:'Telefoon',col_status:'Status',col_notes:'Notities',col_action:'',
+    status_new:'Nieuw',status_confirmed:'Bevestigd',status_cancelled:'Geannuleerd',
+    type_res:'Reservering',type_party:'Feest/Parti',
+    btn_confirm:'Bevestigen',btn_confirmed:'✓ Bevestigd',
+    empty_today:'Geen reserveringen voor vandaag',empty_upcoming:'Geen reserveringen',
     refresh_label:'Automatisch vernieuwen over',
     days:['Zondag','Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag'],
-    months:['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'],
-    status_new:'Nieuw',status_confirmed:'Bevestigd',status_cancelled:'Geannuleerd',
-    guests_label:'gasten'
+    months:['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec']
   },
   en:{
-    tab_today:'Today',tab_upcoming:'Upcoming',tab_party:'Events & Parties',
-    from:'From',to:'To',filter_btn:'Show',
+    tab_today:'Today',tab_upcoming:'All Reservations',
     stat_res:'Reservations',stat_persons:'Guests',stat_confirmed:'Confirmed',
-    col_time:'Time',col_name:'Name',col_persons:'Persons',col_phone:'Phone',col_status:'Status',col_notes:'Notes',
-    col_date:'Date',col_type:'Type',col_guests:'Guests',col_decor:'Decoration',col_cake:'Cake',col_wishes:'Wishes',
-    empty_today:'No reservations for today',empty_upcoming:'No reservations found',empty_party:'No requests found',
+    col_time:'Time',col_name:'Name',col_type:'Type',col_persons:'Persons',col_phone:'Phone',col_status:'Status',col_notes:'Notes',col_action:'',
+    status_new:'New',status_confirmed:'Confirmed',status_cancelled:'Cancelled',
+    type_res:'Reservation',type_party:'Party',
+    btn_confirm:'Confirm',btn_confirmed:'✓ Confirmed',
+    empty_today:'No reservations for today',empty_upcoming:'No reservations found',
     refresh_label:'Auto refresh in',
     days:['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
-    months:['January','February','March','April','May','June','July','August','September','October','November','December'],
-    status_new:'New',status_confirmed:'Confirmed',status_cancelled:'Cancelled',
-    guests_label:'guests'
+    months:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
   },
   tr:{
-    tab_today:'Bugün',tab_upcoming:'Gelecek',tab_party:'Etkinlikler',
-    from:'Başlangıç',to:'Bitiş',filter_btn:'Göster',
+    tab_today:'Bugün',tab_upcoming:'Tüm Rezervasyonlar',
     stat_res:'Rezervasyon',stat_persons:'Kişi',stat_confirmed:'Onaylı',
-    col_time:'Saat',col_name:'Ad',col_persons:'Kişi',col_phone:'Telefon',col_status:'Durum',col_notes:'Not',
-    col_date:'Tarih',col_type:'Tür',col_guests:'Misafir',col_decor:'Dekor',col_cake:'Pasta',col_wishes:'İstekler',
-    empty_today:'Bugün için rezervasyon yok',empty_upcoming:'Rezervasyon bulunamadı',empty_party:'Talep bulunamadı',
+    col_time:'Saat',col_name:'Ad',col_type:'Tür',col_persons:'Kişi',col_phone:'Telefon',col_status:'Durum',col_notes:'Not',col_action:'',
+    status_new:'Yeni',status_confirmed:'Onaylandı',status_cancelled:'İptal',
+    type_res:'Rezervasyon',type_party:'Parti / Etkinlik',
+    btn_confirm:'Onayla',btn_confirmed:'✓ Onaylandı',
+    empty_today:'Bugün rezervasyon yok',empty_upcoming:'Rezervasyon bulunamadı',
     refresh_label:'Otomatik yenileme',
     days:['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'],
-    months:['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'],
-    status_new:'Yeni',status_confirmed:'Onaylandı',status_cancelled:'İptal',
-    guests_label:'kişi'
+    months:['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara']
   }
 };
 
 let lang=localStorage.getItem('masalDisplayLang')||'nl';
-function t(k){return T[lang][k]||k}
+const t=k=>T[lang][k]||k;
 
 function setLang(l){
   lang=l;
   localStorage.setItem('masalDisplayLang',l);
   document.documentElement.lang=l;
-  document.querySelectorAll('[data-i18n]').forEach(el=>{
-    const k=el.getAttribute('data-i18n');
-    if(T[l][k])el.textContent=T[l][k];
-  });
+  document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.dataset.i18n;if(T[l][k])el.textContent=T[l][k]});
   document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('active',b.textContent===l.toUpperCase()));
+  updateClock();
   loadAll();
 }
 
-// Clock
+// Local date (respects midnight boundary)
+function localDateStr(d){
+  const x=d||new Date();
+  return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');
+}
+function todayStr(){return localDateStr()}
+
+// Clock + date
 function updateClock(){
   const now=new Date();
   document.getElementById('clock').textContent=
     String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
   document.getElementById('headerDate').textContent=
-    T[lang].days[now.getDay()]+' '+now.getDate()+' '+T[lang].months[now.getMonth()];
+    T[lang].days[now.getDay()]+'\n'+now.getDate()+' '+T[lang].months[now.getMonth()];
 }
 updateClock();setInterval(updateClock,10000);
 
@@ -210,103 +189,119 @@ let secs=60;
 function tick(){secs--;document.getElementById('countdown').textContent=secs;if(secs<=0){secs=60;loadAll()}}
 setInterval(tick,1000);
 
-function toDateStr(d){return d.toISOString().slice(0,10)}
-function today(){return toDateStr(new Date())}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 
 function timeLabel(time){
   if(!time)return '';
   const now=new Date();
-  const[h,m]=time.split(':').map(Number);
-  const tx=new Date();tx.setHours(h,m,0,0);
+  const[h,m]=(time||'').split(':').map(Number);
+  const tx=new Date();tx.setHours(h,m||0,0,0);
   const diff=(tx-now)/60000;
-  let cls=diff<0?'past':diff<=30?'soon':'';
+  const cls=diff<0?'past':diff<=30?'soon':'';
   return `<span class="time-badge ${cls}">${time}</span>`;
 }
 
-function statusDot(s){return`<span class="status-dot ${s||'new'}"></span>`}
-function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function icon(type){
-  if(type==='person')return`<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
-  if(type==='phone')return`<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 1 2.81.7A2 2 0 0 1 22 16.92z"/></svg>`;
-  if(type==='cal')return`<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`;
-  return '';
+function statusCell(status){
+  return`<div class="status-cell"><span class="status-dot ${status||'new'}"></span><span>${t('status_'+(status||'new'))}</span></div>`;
+}
+
+async function confirmRow(id,type){
+  const table=type==='party'?'party_requests':'reservations';
+  const dateCol=type==='party'?'event_date':'date';
+  await sb.from(table).update({status:'confirmed'}).eq('id',id);
+  // Update button instantly
+  const btn=document.getElementById('cb-'+id);
+  if(btn){btn.textContent=t('btn_confirmed');btn.className='btn-confirm done';btn.disabled=true}
+  // Update dot
+  const dot=document.getElementById('dot-'+id);
+  if(dot){dot.className='status-dot confirmed'}
+  const lbl=document.getElementById('lbl-'+id);
+  if(lbl){lbl.textContent=t('status_confirmed')}
 }
 
 // === TODAY ===
 async function loadToday(){
-  const {data,error}=await sb.from('reservations').select('*').eq('date',today()).neq('status','cancelled').order('time');
+  const td=todayStr();
+  const [{data:res,error:e1},{data:party,error:e2}]=await Promise.all([
+    sb.from('reservations').select('*').eq('date',td).neq('status','cancelled').order('time'),
+    sb.from('party_requests').select('*').eq('event_date',td).neq('status','cancelled').order('created_at')
+  ]);
   const sum=document.getElementById('todaySummary');
   const c=document.getElementById('todayContent');
-  if(error){c.innerHTML=`<div class="empty"><p>${esc(error.message)}</p></div>`;return}
-  const rows=data||[];
-  const persons=rows.reduce((a,r)=>a+(parseInt(r.persons)||0),0);
-  const confirmed=rows.filter(r=>r.status==='confirmed').length;
+  if(e1){c.innerHTML=`<div class="empty"><p>${esc(e1.message)}</p></div>`;return}
+
+  // Merge: reservations + parties, sort by time
+  const allRows=[
+    ...(res||[]).map(r=>({...r,_type:'res',_sortTime:r.time||'99:99'})),
+    ...(party||[]).map(r=>({...r,_type:'party',_sortTime:'99:98'})) // party at bottom if no time
+  ].sort((a,b)=>a._sortTime.localeCompare(b._sortTime));
+
+  const persons=(res||[]).reduce((a,r)=>a+(parseInt(r.persons)||0),0);
+  const confirmed=allRows.filter(r=>r.status==='confirmed').length;
   sum.innerHTML=`
-    <div class="stat"><div class="stat-num">${rows.length}</div><div class="stat-label">${t('stat_res')}</div></div>
+    <div class="stat"><div class="stat-num">${allRows.length}</div><div class="stat-label">${t('stat_res')}</div></div>
     <div class="stat"><div class="stat-num">${persons}</div><div class="stat-label">${t('stat_persons')}</div></div>
     <div class="stat"><div class="stat-num">${confirmed}</div><div class="stat-label">${t('stat_confirmed')}</div></div>`;
-  if(!rows.length){c.innerHTML=`<div class="empty">${icon('cal')}<p>${t('empty_today')}</p></div>`;return}
-  c.innerHTML=`<table class="res-table">
-    <thead><tr><th>${t('col_time')}</th><th>${t('col_name')}</th><th>${t('col_persons')}</th><th>${t('col_phone')}</th><th>${t('col_status')}</th><th>${t('col_notes')}</th></tr></thead>
-    <tbody>${rows.map(r=>`<tr>
-      <td>${timeLabel(r.time)}</td>
-      <td><div class="name-cell">${esc(r.name)}</div></td>
-      <td><span class="persons-badge">${icon('person')} ${esc(String(r.persons||''))}</span></td>
-      <td>${icon('phone')} ${esc(r.phone)}</td>
-      <td style="display:flex;align-items:center">${statusDot(r.status)}${t('status_'+(r.status||'new'))}</td>
-      <td><div class="notes-cell">${esc(r.notes||'—')}</div></td>
-    </tr>`).join('')}</tbody></table>`;
+
+  if(!allRows.length){c.innerHTML=`<div class="empty"><p>${t('empty_today')}</p></div>`;return}
+  c.innerHTML=renderTable(allRows,true);
 }
 
-// === UPCOMING ===
+// === UPCOMING (all future, no limit) ===
 async function loadUpcoming(){
-  const from=document.getElementById('fromDate').value;
-  const to=document.getElementById('toDate').value;
+  const td=todayStr();
+  const [{data:res,error:e1},{data:party,error:e2}]=await Promise.all([
+    sb.from('reservations').select('*').gt('date',td).neq('status','cancelled').order('date').order('time'),
+    sb.from('party_requests').select('*').gt('event_date',td).neq('status','cancelled').order('event_date')
+  ]);
   const c=document.getElementById('upcomingContent');
-  let q=sb.from('reservations').select('*').neq('status','cancelled').order('date').order('time');
-  if(from)q=q.gte('date',from); else q=q.gt('date',today());
-  if(to)q=q.lte('date',to);
-  const {data,error}=await q;
-  if(error){c.innerHTML=`<div class="empty"><p>${esc(error.message)}</p></div>`;return}
-  if(!data||!data.length){c.innerHTML=`<div class="empty">${icon('cal')}<p>${t('empty_upcoming')}</p></div>`;return}
+  if(e1){c.innerHTML=`<div class="empty"><p>${esc(e1.message)}</p></div>`;return}
+
+  const allRows=[
+    ...(res||[]).map(r=>({...r,_type:'res',_date:r.date,_sortTime:r.time||'99:99'})),
+    ...(party||[]).map(r=>({...r,_type:'party',_date:r.event_date,_sortTime:'99:98'}))
+  ].sort((a,b)=>a._date.localeCompare(b._date)||a._sortTime.localeCompare(b._sortTime));
+
+  if(!allRows.length){c.innerHTML=`<div class="empty"><p>${t('empty_upcoming')}</p></div>`;return}
+
+  // Group by date
   const groups={};
-  data.forEach(r=>{if(!groups[r.date])groups[r.date]=[];groups[r.date].push(r)});
+  allRows.forEach(r=>{if(!groups[r._date])groups[r._date]=[];groups[r._date].push(r)});
   c.innerHTML=Object.entries(groups).map(([date,rows])=>`
     <div class="date-group">
       <div class="date-group-label">${date}</div>
-      <table class="res-table">
-        <thead><tr><th>${t('col_time')}</th><th>${t('col_name')}</th><th>${t('col_persons')}</th><th>${t('col_phone')}</th><th>${t('col_notes')}</th></tr></thead>
-        <tbody>${rows.map(r=>`<tr>
-          <td>${timeLabel(r.time)}</td>
-          <td><div class="name-cell">${esc(r.name)}</div></td>
-          <td><span class="persons-badge">${icon('person')} ${esc(String(r.persons||''))}</span></td>
-          <td>${esc(r.phone)}</td>
-          <td><div class="notes-cell">${esc(r.notes||'—')}</div></td>
-        </tr>`).join('')}</tbody>
-      </table>
+      ${renderTable(rows,false)}
     </div>`).join('');
 }
 
-// === PARTY ===
-async function loadParty(){
-  const from=document.getElementById('partyFromDate').value;
-  const to=document.getElementById('partyToDate').value;
-  const c=document.getElementById('partyContent');
-  let q=sb.from('party_requests').select('*').order('event_date');
-  if(from)q=q.gte('event_date',from); else q=q.gte('event_date',today());
-  if(to)q=q.lte('event_date',to);
-  const {data,error}=await q;
-  if(error){c.innerHTML=`<div class="empty"><p>${esc(error.message)}</p></div>`;return}
-  if(!data||!data.length){c.innerHTML=`<div class="empty">${icon('cal')}<p>${t('empty_party')}</p></div>`;return}
-  c.innerHTML=`<div class="cards">${data.map(r=>`
-    <div class="card">
-      <div class="card-guests">${esc(String(r.guests||''))}<div class="card-guests-label">${t('guests_label')}</div></div>
-      <div class="card-type">${esc(r.event_type||'')}</div>
-      <div class="card-name">${esc(r.name)}</div>
-      <div class="card-row">${icon('cal')} ${esc(r.event_date||'')}</div>
-      <div class="card-row">${icon('phone')} ${esc(r.phone)}</div>
-      ${r.wishes?`<div class="card-row" style="margin-top:.4rem;font-style:italic;font-size:.78rem;opacity:.5">"${esc(r.wishes)}"</div>`:''}
-    </div>`).join('')}</div>`;
+function renderTable(rows,showTime){
+  return`<table class="res-table">
+    <thead><tr>
+      ${showTime?`<th>${t('col_time')}</th>`:''}
+      <th>${t('col_name')}</th>
+      <th>${t('col_type')}</th>
+      <th>${t('col_persons')}</th>
+      <th>${t('col_phone')}</th>
+      <th>${t('col_status')}</th>
+      <th>${t('col_notes')}</th>
+      <th></th>
+    </tr></thead>
+    <tbody>${rows.map(r=>{
+      const isParty=r._type==='party';
+      const persons=isParty?(r.guests||''):(r.persons||'');
+      const notes=isParty?(r.wishes||''):(r.notes||'');
+      const isDone=r.status==='confirmed';
+      return`<tr>
+        ${showTime?`<td>${isParty?'<span class="time-badge" style="opacity:.4">—</span>':timeLabel(r.time)}</td>`:''}
+        <td><div class="name-cell">${esc(r.name)}</div></td>
+        <td><span class="type-badge ${isParty?'party':'res'}">${t(isParty?'type_party':'type_res')}</span></td>
+        <td>${persons}</td>
+        <td>${esc(r.phone||'')}</td>
+        <td><div class="status-cell"><span class="status-dot ${r.status||'new'}" id="dot-${r.id}"></span><span id="lbl-${r.id}">${t('status_'+(r.status||'new'))}</span></div></td>
+        <td><div class="notes-cell">${esc(notes||'—')}</div></td>
+        <td><button class="btn-confirm${isDone?' done':''}" id="cb-${r.id}" ${isDone?'disabled':''} onclick="confirmRow('${r.id}','${r._type}')">${isDone?t('btn_confirmed'):t('btn_confirm')}</button></td>
+      </tr>`;
+    }).join('')}</tbody></table>`;
 }
 
 let activeTab='today';
@@ -314,16 +309,9 @@ function switchTab(name){
   activeTab=name;
   document.querySelectorAll('.tab').forEach(el=>el.classList.toggle('active',el.dataset.tab===name));
   document.querySelectorAll('section').forEach(el=>el.classList.toggle('active',el.id==='sec-'+name));
-  if(name==='today')loadToday();
-  if(name==='upcoming')loadUpcoming();
-  if(name==='party')loadParty();
+  if(name==='today')loadToday();else loadUpcoming();
 }
-function loadAll(){
-  if(activeTab==='today')loadToday();
-  else if(activeTab==='upcoming')loadUpcoming();
-  else loadParty();
-  secs=60;
-}
+function loadAll(){if(activeTab==='today')loadToday();else loadUpcoming();secs=60}
 
 // Init
 setLang(lang);
