@@ -12,7 +12,7 @@
 body{background:var(--bg);color:#fff;font-family:'Jost',sans-serif;min-height:100vh;display:flex;flex-direction:column}
 
 header{display:flex;align-items:center;justify-content:space-between;padding:1rem 2.5rem;border-bottom:1px solid var(--border);background:rgba(0,0,0,.4);gap:1rem}
-.logo{height:52px;width:auto;object-fit:contain;flex-shrink:0}
+.logo{height:52px;width:auto;object-fit:contain;flex-shrink:0;filter:brightness(0) invert(1)}
 .lang-switcher{display:flex;gap:.3rem}
 .lang-btn{background:transparent;border:1px solid rgba(198,165,92,.3);color:var(--muted);padding:.3rem .65rem;border-radius:4px;cursor:pointer;font-size:.72rem;letter-spacing:1px;font-family:'Jost',sans-serif;transition:all .2s}
 .lang-btn:hover{border-color:var(--gold);color:var(--gold)}
@@ -95,6 +95,7 @@ section.active{display:block}
 <div class="tabs">
   <div class="tab active" data-tab="today" onclick="switchTab('today')" data-i18n="tab_today">—</div>
   <div class="tab" data-tab="upcoming" onclick="switchTab('upcoming')" data-i18n="tab_upcoming">—</div>
+  <div class="tab" data-tab="past" onclick="switchTab('past')" data-i18n="tab_past">—</div>
 </div>
 
 <main>
@@ -104,6 +105,9 @@ section.active{display:block}
   </section>
   <section id="sec-upcoming">
     <div id="upcomingContent"></div>
+  </section>
+  <section id="sec-past">
+    <div id="pastContent"></div>
   </section>
 </main>
 
@@ -117,7 +121,7 @@ const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
 // i18n
 const T={
   nl:{
-    tab_today:'Vandaag',tab_upcoming:'Alle Reserveringen',
+    tab_today:'Vandaag',tab_upcoming:'Alle Reserveringen',tab_past:'Verleden',
     stat_res:'Reserveringen',stat_persons:'Personen',stat_confirmed:'Bevestigd',
     col_time:'Tijd',col_name:'Naam',col_type:'Type',col_persons:'Personen',col_phone:'Telefoon',col_status:'Status',col_notes:'Notities',col_action:'',
     status_new:'Nieuw',status_confirmed:'Bevestigd',status_cancelled:'Geannuleerd',
@@ -129,7 +133,7 @@ const T={
     months:['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec']
   },
   en:{
-    tab_today:'Today',tab_upcoming:'All Reservations',
+    tab_today:'Today',tab_upcoming:'All Reservations',tab_past:'Past',
     stat_res:'Reservations',stat_persons:'Guests',stat_confirmed:'Confirmed',
     col_time:'Time',col_name:'Name',col_type:'Type',col_persons:'Persons',col_phone:'Phone',col_status:'Status',col_notes:'Notes',col_action:'',
     status_new:'New',status_confirmed:'Confirmed',status_cancelled:'Cancelled',
@@ -141,7 +145,7 @@ const T={
     months:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
   },
   tr:{
-    tab_today:'Bugün',tab_upcoming:'Tüm Rezervasyonlar',
+    tab_today:'Bugün',tab_upcoming:'Tüm Rezervasyonlar',tab_past:'Geçmiş',
     stat_res:'Rezervasyon',stat_persons:'Kişi',stat_confirmed:'Onaylı',
     col_time:'Saat',col_name:'Ad',col_type:'Tür',col_persons:'Kişi',col_phone:'Telefon',col_status:'Durum',col_notes:'Not',col_action:'',
     status_new:'Yeni',status_confirmed:'Onaylandı',status_cancelled:'İptal',
@@ -304,14 +308,44 @@ function renderTable(rows,showTime){
     }).join('')}</tbody></table>`;
 }
 
+// === PAST ===
+async function loadPast(){
+  const td=todayStr();
+  const [{data:res,error:e1},{data:party}]=await Promise.all([
+    sb.from('reservations').select('*').lt('date',td).order('date',{ascending:false}).order('time',{ascending:false}),
+    sb.from('party_requests').select('*').lt('event_date',td).order('event_date',{ascending:false})
+  ]);
+  const c=document.getElementById('pastContent');
+  if(e1){c.innerHTML=`<div class="empty"><p>${esc(e1.message)}</p></div>`;return}
+  const allRows=[
+    ...(res||[]).map(r=>({...r,_type:'res',_date:r.date,_sortTime:r.time||'99:99'})),
+    ...(party||[]).map(r=>({...r,_type:'party',_date:r.event_date,_sortTime:'99:98'}))
+  ].sort((a,b)=>b._date.localeCompare(a._date)||b._sortTime.localeCompare(a._sortTime));
+  if(!allRows.length){c.innerHTML=`<div class="empty"><p>${t('empty_upcoming')}</p></div>`;return}
+  const groups={};
+  allRows.forEach(r=>{if(!groups[r._date])groups[r._date]=[];groups[r._date].push(r)});
+  c.innerHTML=Object.entries(groups).map(([date,rows])=>`
+    <div class="date-group">
+      <div class="date-group-label">${date}</div>
+      ${renderTable(rows,false)}
+    </div>`).join('');
+}
+
 let activeTab='today';
 function switchTab(name){
   activeTab=name;
   document.querySelectorAll('.tab').forEach(el=>el.classList.toggle('active',el.dataset.tab===name));
   document.querySelectorAll('section').forEach(el=>el.classList.toggle('active',el.id==='sec-'+name));
-  if(name==='today')loadToday();else loadUpcoming();
+  if(name==='today')loadToday();
+  else if(name==='upcoming')loadUpcoming();
+  else loadPast();
 }
-function loadAll(){if(activeTab==='today')loadToday();else loadUpcoming();secs=60}
+function loadAll(){
+  if(activeTab==='today')loadToday();
+  else if(activeTab==='upcoming')loadUpcoming();
+  else loadPast();
+  secs=60;
+}
 
 // Init
 setLang(lang);
