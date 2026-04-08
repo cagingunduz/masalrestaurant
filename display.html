@@ -3,76 +3,76 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="refresh" content="60">
-<title>Masal — Reserveringen</title>
+<title>Masal — Display</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Jost:wght@300;400;500&display=swap');
-
-:root{
-  --gold:#c6a55c;--gold-light:#d4b87a;--dark:#1a1a1a;--bg:#111;
-  --card:#1e1e1e;--border:rgba(198,165,92,.15);--text:#fff;--muted:rgba(255,255,255,.45);
-}
+:root{--gold:#c6a55c;--gold-light:#d4b87a;--dark:#1a1a1a;--bg:#111;--card:#1e1e1e;--border:rgba(198,165,92,.15);--muted:rgba(255,255,255,.45)}
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:'Jost',sans-serif;min-height:100vh;display:flex;flex-direction:column}
+body{background:var(--bg);color:#fff;font-family:'Jost',sans-serif;min-height:100vh;display:flex;flex-direction:column}
 
-header{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:1.4rem 3rem;border-bottom:1px solid var(--border);
-  background:rgba(0,0,0,.3);
-}
-.brand{font-family:'Playfair Display',serif;font-size:1.8rem;color:#fff}
-.brand span{color:var(--gold);font-style:italic}
+header{display:flex;align-items:center;justify-content:space-between;padding:1rem 2.5rem;border-bottom:1px solid var(--border);background:rgba(0,0,0,.4)}
+.logo{height:56px;width:auto;object-fit:contain}
+.header-center{display:flex;align-items:center;gap:1.5rem}
+.lang-switcher{display:flex;gap:.3rem}
+.lang-btn{background:transparent;border:1px solid rgba(198,165,92,.3);color:var(--muted);padding:.3rem .6rem;border-radius:4px;cursor:pointer;font-size:.72rem;letter-spacing:1px;font-family:'Jost',sans-serif;transition:all .2s}
+.lang-btn:hover{border-color:var(--gold);color:var(--gold)}
+.lang-btn.active{background:var(--gold);border-color:var(--gold);color:#111;font-weight:500}
 .header-right{display:flex;align-items:center;gap:2rem}
 .clock{font-size:2rem;font-weight:300;letter-spacing:2px;color:var(--gold-light);font-variant-numeric:tabular-nums}
-.header-date{font-size:.85rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;text-align:right;line-height:1.8}
+.header-date{font-size:.78rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;text-align:right;line-height:1.9}
 
 .tabs{display:flex;border-bottom:1px solid var(--border);background:rgba(0,0,0,.2)}
-.tab{padding:1rem 2.5rem;cursor:pointer;color:var(--muted);font-size:.8rem;letter-spacing:2px;text-transform:uppercase;border-bottom:2px solid transparent;transition:all .2s}
+.tab{padding:1rem 2.5rem;cursor:pointer;color:var(--muted);font-size:.78rem;letter-spacing:2px;text-transform:uppercase;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap}
 .tab:hover{color:#fff}
 .tab.active{color:var(--gold);border-bottom-color:var(--gold)}
 
-main{flex:1;padding:2rem 3rem;overflow:auto}
+main{flex:1;padding:2rem 2.5rem;overflow:auto}
 
-.summary{display:flex;gap:1.5rem;margin-bottom:2rem}
+/* UPCOMING FILTER */
+.filter-bar{display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap}
+.filter-bar label{font-size:.72rem;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+.filter-bar input[type=date]{background:var(--card);border:1px solid var(--border);color:#fff;padding:.45rem .8rem;border-radius:6px;font-size:.85rem;font-family:'Jost',sans-serif;outline:none;cursor:pointer}
+.filter-bar input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.6)}
+.filter-bar input[type=date]:focus{border-color:var(--gold)}
+.btn-filter{background:var(--gold);color:#111;border:none;padding:.45rem 1.1rem;border-radius:6px;font-size:.78rem;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-family:'Jost',sans-serif;font-weight:500}
+.btn-filter:hover{background:var(--gold-light)}
+
+.summary{display:flex;gap:1.2rem;margin-bottom:2rem}
 .stat{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1.2rem 2rem;flex:1;text-align:center}
 .stat-num{font-family:'Playfair Display',serif;font-size:2.5rem;color:var(--gold);line-height:1}
-.stat-label{font-size:.72rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-top:.4rem}
+.stat-label{font-size:.7rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-top:.4rem}
 
-/* TABLE VIEW */
 .res-table{width:100%;border-collapse:collapse}
-.res-table th{text-align:left;padding:.8rem 1.2rem;font-size:.7rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);font-weight:400}
-.res-table td{padding:1.1rem 1.2rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.95rem;vertical-align:middle}
+.res-table th{text-align:left;padding:.8rem 1.2rem;font-size:.68rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);font-weight:400}
+.res-table td{padding:1rem 1.2rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.92rem;vertical-align:middle}
 .res-table tr:hover td{background:rgba(198,165,92,.04)}
-.time-badge{display:inline-block;background:var(--gold);color:var(--dark);padding:.3rem .8rem;border-radius:20px;font-size:.8rem;font-weight:500;letter-spacing:.5px;min-width:60px;text-align:center}
-.time-badge.past{background:rgba(255,255,255,.1);color:var(--muted)}
-.time-badge.upcoming{background:var(--gold);animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(198,165,92,.4)}50%{box-shadow:0 0 0 6px rgba(198,165,92,0)}}
+.time-badge{display:inline-block;background:rgba(198,165,92,.15);color:var(--gold);padding:.3rem .8rem;border-radius:20px;font-size:.8rem;font-weight:500;letter-spacing:.5px;min-width:60px;text-align:center}
+.time-badge.past{background:rgba(255,255,255,.06);color:var(--muted)}
+.time-badge.soon{background:var(--gold);color:#111;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(198,165,92,.4)}50%{box-shadow:0 0 0 8px rgba(198,165,92,0)}}
 .persons-badge{display:inline-flex;align-items:center;gap:.35rem;font-size:.85rem;color:var(--muted)}
-.persons-badge svg{color:var(--gold-light)}
-.status-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:.5rem}
-.status-dot.new{background:var(--gold)}
-.status-dot.confirmed{background:#4CAF50}
-.status-dot.cancelled{background:#c0392b}
-.name{font-weight:500;font-size:1rem}
-.notes{font-size:.8rem;color:var(--muted);max-width:280px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.status-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:.4rem;flex-shrink:0}
+.status-dot.new{background:var(--gold)}.status-dot.confirmed{background:#4CAF50}.status-dot.cancelled{background:#c0392b}
+.name-cell{font-weight:500;font-size:.98rem}
+.notes-cell{font-size:.8rem;color:var(--muted);max-width:250px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.date-group-label{font-size:.72rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:.8rem;padding-bottom:.5rem;border-bottom:1px solid var(--border)}
+.date-group{margin-bottom:2rem}
 
-/* CARD VIEW (party) */
-.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:1.2rem}
+/* CARDS */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1.2rem}
 .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;position:relative;overflow:hidden}
 .card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--gold-light))}
-.card-type{font-size:.7rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:.5rem}
-.card-name{font-family:'Playfair Display',serif;font-size:1.3rem;margin-bottom:.8rem}
-.card-row{display:flex;align-items:center;gap:.5rem;font-size:.85rem;color:var(--muted);margin-bottom:.35rem}
-.card-row svg{flex-shrink:0;color:var(--gold-light);opacity:.7}
-.card-guests{position:absolute;top:1.5rem;right:1.5rem;font-family:'Playfair Display',serif;font-size:2rem;color:var(--gold);line-height:1}
-.card-guests-label{font-size:.65rem;letter-spacing:1px;text-transform:uppercase;color:var(--muted);text-align:right}
+.card-type{font-size:.68rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:.4rem}
+.card-name{font-family:'Playfair Display',serif;font-size:1.25rem;margin-bottom:.8rem}
+.card-row{display:flex;align-items:center;gap:.5rem;font-size:.83rem;color:var(--muted);margin-bottom:.3rem}
+.card-guests{position:absolute;top:1.4rem;right:1.4rem;font-family:'Playfair Display',serif;font-size:2.2rem;color:var(--gold);line-height:1;text-align:right}
+.card-guests-label{font-size:.6rem;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
 
 .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:5rem 2rem;color:var(--muted);text-align:center;gap:1rem}
-.empty svg{opacity:.2}
-.empty p{font-size:1rem;letter-spacing:1px}
+.empty p{font-size:.95rem;letter-spacing:1px}
 
-.refresh-bar{text-align:center;padding:.6rem;font-size:.7rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);border-top:1px solid var(--border);background:rgba(0,0,0,.2)}
+.refresh-bar{text-align:center;padding:.55rem;font-size:.68rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);border-top:1px solid var(--border);background:rgba(0,0,0,.2)}
 
 section{display:none}
 section.active{display:block}
@@ -81,19 +81,24 @@ section.active{display:block}
 <body>
 
 <header>
-  <div class="brand">Masal<span>.</span></div>
-  <div class="header-right">
-    <div>
-      <div class="header-date" id="headerDate"></div>
+  <img class="logo" src="https://i0.wp.com/masalrestaurant.nl/wp-content/uploads/2021/11/Masal_Logo_DEF.png?fit=600%2C304&ssl=1" alt="Masal Restaurant">
+  <div class="header-center">
+    <div class="lang-switcher">
+      <button class="lang-btn active" onclick="setLang('nl')">NL</button>
+      <button class="lang-btn" onclick="setLang('en')">EN</button>
+      <button class="lang-btn" onclick="setLang('tr')">TR</button>
     </div>
+  </div>
+  <div class="header-right">
+    <div class="header-date" id="headerDate"></div>
     <div class="clock" id="clock"></div>
   </div>
 </header>
 
-<div class="tabs">
-  <div class="tab active" data-tab="today" onclick="switchTab('today')">Vandaag</div>
-  <div class="tab" data-tab="upcoming" onclick="switchTab('upcoming')">Aankomend</div>
-  <div class="tab" data-tab="party" onclick="switchTab('party')">Feesten & Partijen</div>
+<div class="tabs" id="tabBar">
+  <div class="tab active" data-tab="today" onclick="switchTab('today')" data-i18n="tab_today">Vandaag</div>
+  <div class="tab" data-tab="upcoming" onclick="switchTab('upcoming')" data-i18n="tab_upcoming">Aankomend</div>
+  <div class="tab" data-tab="party" onclick="switchTab('party')" data-i18n="tab_party">Feesten & Partijen</div>
 </div>
 
 <main>
@@ -101,23 +106,94 @@ section.active{display:block}
     <div class="summary" id="todaySummary"></div>
     <div id="todayContent"></div>
   </section>
+
   <section id="sec-upcoming">
+    <div class="filter-bar">
+      <label data-i18n="from">Van</label>
+      <input type="date" id="fromDate">
+      <label data-i18n="to">Tot</label>
+      <input type="date" id="toDate">
+      <button class="btn-filter" onclick="loadUpcoming()" data-i18n="filter_btn">Toon</button>
+    </div>
     <div id="upcomingContent"></div>
   </section>
+
   <section id="sec-party">
+    <div class="filter-bar">
+      <label data-i18n="from">Van</label>
+      <input type="date" id="partyFromDate">
+      <label data-i18n="to">Tot</label>
+      <input type="date" id="partyToDate">
+      <button class="btn-filter" onclick="loadParty()" data-i18n="filter_btn">Toon</button>
+    </div>
     <div id="partyContent"></div>
   </section>
 </main>
 
-<div class="refresh-bar" id="refreshBar">Automatisch vernieuwen over <span id="countdown">60</span>s</div>
+<div class="refresh-bar"><span data-i18n="refresh_label">Automatisch vernieuwen over</span> <span id="countdown">60</span>s</div>
 
 <script>
 const SUPABASE_URL='https://mytqxxdzfrropqcrhipv.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15dHF4eGR6ZnJyb3BxY3JoaXB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MjgwMTUsImV4cCI6MjA5MTAwNDAxNX0.eKAts80PGm6TTYSllnYq79UaG0_ERJi7FBLnh2GgG4I';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
 
-const DAYS=['Zondag','Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag'];
-const MONTHS=['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
+// === I18N ===
+const T={
+  nl:{
+    tab_today:'Vandaag',tab_upcoming:'Aankomend',tab_party:'Feesten & Partijen',
+    from:'Van',to:'Tot',filter_btn:'Toon',
+    stat_res:'Reserveringen',stat_persons:'Personen',stat_confirmed:'Bevestigd',
+    col_time:'Tijd',col_name:'Naam',col_persons:'Personen',col_phone:'Telefoon',col_status:'Status',col_notes:'Notities',
+    col_date:'Datum',col_type:'Type',col_guests:'Gasten',col_decor:'Aankleding',col_cake:'Taart',col_wishes:'Wensen',
+    empty_today:'Geen reserveringen voor vandaag',empty_upcoming:'Geen reserveringen gevonden',empty_party:'Geen aanvragen gevonden',
+    refresh_label:'Automatisch vernieuwen over',
+    days:['Zondag','Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag'],
+    months:['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'],
+    status_new:'Nieuw',status_confirmed:'Bevestigd',status_cancelled:'Geannuleerd',
+    guests_label:'gasten'
+  },
+  en:{
+    tab_today:'Today',tab_upcoming:'Upcoming',tab_party:'Events & Parties',
+    from:'From',to:'To',filter_btn:'Show',
+    stat_res:'Reservations',stat_persons:'Guests',stat_confirmed:'Confirmed',
+    col_time:'Time',col_name:'Name',col_persons:'Persons',col_phone:'Phone',col_status:'Status',col_notes:'Notes',
+    col_date:'Date',col_type:'Type',col_guests:'Guests',col_decor:'Decoration',col_cake:'Cake',col_wishes:'Wishes',
+    empty_today:'No reservations for today',empty_upcoming:'No reservations found',empty_party:'No requests found',
+    refresh_label:'Auto refresh in',
+    days:['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
+    months:['January','February','March','April','May','June','July','August','September','October','November','December'],
+    status_new:'New',status_confirmed:'Confirmed',status_cancelled:'Cancelled',
+    guests_label:'guests'
+  },
+  tr:{
+    tab_today:'Bugün',tab_upcoming:'Gelecek',tab_party:'Etkinlikler',
+    from:'Başlangıç',to:'Bitiş',filter_btn:'Göster',
+    stat_res:'Rezervasyon',stat_persons:'Kişi',stat_confirmed:'Onaylı',
+    col_time:'Saat',col_name:'Ad',col_persons:'Kişi',col_phone:'Telefon',col_status:'Durum',col_notes:'Not',
+    col_date:'Tarih',col_type:'Tür',col_guests:'Misafir',col_decor:'Dekor',col_cake:'Pasta',col_wishes:'İstekler',
+    empty_today:'Bugün için rezervasyon yok',empty_upcoming:'Rezervasyon bulunamadı',empty_party:'Talep bulunamadı',
+    refresh_label:'Otomatik yenileme',
+    days:['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'],
+    months:['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'],
+    status_new:'Yeni',status_confirmed:'Onaylandı',status_cancelled:'İptal',
+    guests_label:'kişi'
+  }
+};
+
+let lang=localStorage.getItem('masalDisplayLang')||'nl';
+function t(k){return T[lang][k]||k}
+
+function setLang(l){
+  lang=l;
+  localStorage.setItem('masalDisplayLang',l);
+  document.documentElement.lang=l;
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const k=el.getAttribute('data-i18n');
+    if(T[l][k])el.textContent=T[l][k];
+  });
+  document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('active',b.textContent===l.toUpperCase()));
+  loadAll();
+}
 
 // Clock
 function updateClock(){
@@ -125,16 +201,13 @@ function updateClock(){
   document.getElementById('clock').textContent=
     String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
   document.getElementById('headerDate').textContent=
-    DAYS[now.getDay()]+'\n'+now.getDate()+' '+MONTHS[now.getMonth()]+' '+now.getFullYear();
+    T[lang].days[now.getDay()]+' '+now.getDate()+' '+T[lang].months[now.getMonth()];
 }
 updateClock();setInterval(updateClock,10000);
 
 // Countdown
 let secs=60;
-function tick(){
-  secs--;document.getElementById('countdown').textContent=secs;
-  if(secs<=0){secs=60;loadAll()}
-}
+function tick(){secs--;document.getElementById('countdown').textContent=secs;if(secs<=0){secs=60;loadAll()}}
 setInterval(tick,1000);
 
 function toDateStr(d){return d.toISOString().slice(0,10)}
@@ -144,18 +217,14 @@ function timeLabel(time){
   if(!time)return '';
   const now=new Date();
   const[h,m]=time.split(':').map(Number);
-  const t=new Date();t.setHours(h,m,0,0);
-  const diff=(t-now)/60000;
-  let cls='';
-  if(diff<0)cls='past';
-  else if(diff<=30)cls='upcoming';
+  const tx=new Date();tx.setHours(h,m,0,0);
+  const diff=(tx-now)/60000;
+  let cls=diff<0?'past':diff<=30?'soon':'';
   return `<span class="time-badge ${cls}">${time}</span>`;
 }
 
-function statusDot(s){return `<span class="status-dot ${s||'new'}"></span>`}
-
+function statusDot(s){return`<span class="status-dot ${s||'new'}"></span>`}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-
 function icon(type){
   if(type==='person')return`<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
   if(type==='phone')return`<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 1 2.81.7A2 2 0 0 1 22 16.92z"/></svg>`;
@@ -165,83 +234,90 @@ function icon(type){
 
 // === TODAY ===
 async function loadToday(){
-  const td=today();
-  const {data,error}=await sb.from('reservations').select('*').eq('date',td).neq('status','cancelled').order('time');
+  const {data,error}=await sb.from('reservations').select('*').eq('date',today()).neq('status','cancelled').order('time');
   const sum=document.getElementById('todaySummary');
   const c=document.getElementById('todayContent');
-  if(error){c.innerHTML=`<div class="empty"><p>${error.message}</p></div>`;return}
-  const total=data||[];
-  const persons=total.reduce((a,r)=>{const n=parseInt(r.persons)||0;return a+n},0);
-  const confirmed=total.filter(r=>r.status==='confirmed').length;
+  if(error){c.innerHTML=`<div class="empty"><p>${esc(error.message)}</p></div>`;return}
+  const rows=data||[];
+  const persons=rows.reduce((a,r)=>a+(parseInt(r.persons)||0),0);
+  const confirmed=rows.filter(r=>r.status==='confirmed').length;
   sum.innerHTML=`
-    <div class="stat"><div class="stat-num">${total.length}</div><div class="stat-label">Reserveringen</div></div>
-    <div class="stat"><div class="stat-num">${persons}</div><div class="stat-label">Personen</div></div>
-    <div class="stat"><div class="stat-num">${confirmed}</div><div class="stat-label">Bevestigd</div></div>`;
-  if(!total.length){c.innerHTML=`<div class="empty">${icon('cal')}<p>Geen reserveringen voor vandaag</p></div>`;return}
+    <div class="stat"><div class="stat-num">${rows.length}</div><div class="stat-label">${t('stat_res')}</div></div>
+    <div class="stat"><div class="stat-num">${persons}</div><div class="stat-label">${t('stat_persons')}</div></div>
+    <div class="stat"><div class="stat-num">${confirmed}</div><div class="stat-label">${t('stat_confirmed')}</div></div>`;
+  if(!rows.length){c.innerHTML=`<div class="empty">${icon('cal')}<p>${t('empty_today')}</p></div>`;return}
   c.innerHTML=`<table class="res-table">
-    <thead><tr><th>Tijd</th><th>Naam</th><th>Personen</th><th>Telefoon</th><th>Status</th><th>Notities</th></tr></thead>
-    <tbody>${total.map(r=>`<tr>
+    <thead><tr><th>${t('col_time')}</th><th>${t('col_name')}</th><th>${t('col_persons')}</th><th>${t('col_phone')}</th><th>${t('col_status')}</th><th>${t('col_notes')}</th></tr></thead>
+    <tbody>${rows.map(r=>`<tr>
       <td>${timeLabel(r.time)}</td>
-      <td><div class="name">${esc(r.name)}</div></td>
+      <td><div class="name-cell">${esc(r.name)}</div></td>
       <td><span class="persons-badge">${icon('person')} ${esc(String(r.persons||''))}</span></td>
       <td>${icon('phone')} ${esc(r.phone)}</td>
-      <td>${statusDot(r.status)}${esc(r.status||'new')}</td>
-      <td><div class="notes">${esc(r.notes||'—')}</div></td>
+      <td style="display:flex;align-items:center">${statusDot(r.status)}${t('status_'+(r.status||'new'))}</td>
+      <td><div class="notes-cell">${esc(r.notes||'—')}</div></td>
     </tr>`).join('')}</tbody></table>`;
 }
 
 // === UPCOMING ===
 async function loadUpcoming(){
-  const td=today();
-  const {data,error}=await sb.from('reservations').select('*').gt('date',td).neq('status','cancelled').order('date').order('time').limit(50);
+  const from=document.getElementById('fromDate').value;
+  const to=document.getElementById('toDate').value;
   const c=document.getElementById('upcomingContent');
-  if(error){c.innerHTML=`<div class="empty"><p>${error.message}</p></div>`;return}
-  if(!data||!data.length){c.innerHTML=`<div class="empty">${icon('cal')}<p>Geen aankomende reserveringen</p></div>`;return}
-  // Group by date
+  let q=sb.from('reservations').select('*').neq('status','cancelled').order('date').order('time');
+  if(from)q=q.gte('date',from); else q=q.gt('date',today());
+  if(to)q=q.lte('date',to);
+  const {data,error}=await q;
+  if(error){c.innerHTML=`<div class="empty"><p>${esc(error.message)}</p></div>`;return}
+  if(!data||!data.length){c.innerHTML=`<div class="empty">${icon('cal')}<p>${t('empty_upcoming')}</p></div>`;return}
   const groups={};
   data.forEach(r=>{if(!groups[r.date])groups[r.date]=[];groups[r.date].push(r)});
   c.innerHTML=Object.entries(groups).map(([date,rows])=>`
-    <div style="margin-bottom:2rem">
-      <div style="font-size:.75rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:.8rem;padding-bottom:.5rem;border-bottom:1px solid var(--border)">${date}</div>
-      <table class="res-table"><thead><tr><th>Tijd</th><th>Naam</th><th>Personen</th><th>Telefoon</th><th>Notities</th></tr></thead>
-      <tbody>${rows.map(r=>`<tr>
-        <td>${timeLabel(r.time)}</td>
-        <td><div class="name">${esc(r.name)}</div></td>
-        <td><span class="persons-badge">${icon('person')} ${esc(String(r.persons||''))}</span></td>
-        <td>${esc(r.phone)}</td>
-        <td><div class="notes">${esc(r.notes||'—')}</div></td>
-      </tr>`).join('')}</tbody></table>
+    <div class="date-group">
+      <div class="date-group-label">${date}</div>
+      <table class="res-table">
+        <thead><tr><th>${t('col_time')}</th><th>${t('col_name')}</th><th>${t('col_persons')}</th><th>${t('col_phone')}</th><th>${t('col_notes')}</th></tr></thead>
+        <tbody>${rows.map(r=>`<tr>
+          <td>${timeLabel(r.time)}</td>
+          <td><div class="name-cell">${esc(r.name)}</div></td>
+          <td><span class="persons-badge">${icon('person')} ${esc(String(r.persons||''))}</span></td>
+          <td>${esc(r.phone)}</td>
+          <td><div class="notes-cell">${esc(r.notes||'—')}</div></td>
+        </tr>`).join('')}</tbody>
+      </table>
     </div>`).join('');
 }
 
 // === PARTY ===
 async function loadParty(){
-  const td=today();
-  const {data,error}=await sb.from('party_requests').select('*').gte('event_date',td).order('event_date').limit(30);
+  const from=document.getElementById('partyFromDate').value;
+  const to=document.getElementById('partyToDate').value;
   const c=document.getElementById('partyContent');
-  if(error){c.innerHTML=`<div class="empty"><p>${error.message}</p></div>`;return}
-  if(!data||!data.length){c.innerHTML=`<div class="empty">${icon('cal')}<p>Geen aanvragen</p></div>`;return}
+  let q=sb.from('party_requests').select('*').order('event_date');
+  if(from)q=q.gte('event_date',from); else q=q.gte('event_date',today());
+  if(to)q=q.lte('event_date',to);
+  const {data,error}=await q;
+  if(error){c.innerHTML=`<div class="empty"><p>${esc(error.message)}</p></div>`;return}
+  if(!data||!data.length){c.innerHTML=`<div class="empty">${icon('cal')}<p>${t('empty_party')}</p></div>`;return}
   c.innerHTML=`<div class="cards">${data.map(r=>`
     <div class="card">
-      <div class="card-guests">${esc(String(r.guests||''))}<div class="card-guests-label">kişi</div></div>
-      <div class="card-type">${esc(r.event_type||'Etkinlik')}</div>
+      <div class="card-guests">${esc(String(r.guests||''))}<div class="card-guests-label">${t('guests_label')}</div></div>
+      <div class="card-type">${esc(r.event_type||'')}</div>
       <div class="card-name">${esc(r.name)}</div>
       <div class="card-row">${icon('cal')} ${esc(r.event_date||'')}</div>
       <div class="card-row">${icon('phone')} ${esc(r.phone)}</div>
-      ${r.wishes?`<div class="card-row" style="margin-top:.5rem;font-style:italic;color:rgba(255,255,255,.3);font-size:.8rem">"${esc(r.wishes)}"</div>`:''}
+      ${r.wishes?`<div class="card-row" style="margin-top:.4rem;font-style:italic;font-size:.78rem;opacity:.5">"${esc(r.wishes)}"</div>`:''}
     </div>`).join('')}</div>`;
 }
 
 let activeTab='today';
 function switchTab(name){
   activeTab=name;
-  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===name));
-  document.querySelectorAll('section').forEach(s=>s.classList.toggle('active',s.id==='sec-'+name));
+  document.querySelectorAll('.tab').forEach(el=>el.classList.toggle('active',el.dataset.tab===name));
+  document.querySelectorAll('section').forEach(el=>el.classList.toggle('active',el.id==='sec-'+name));
   if(name==='today')loadToday();
   if(name==='upcoming')loadUpcoming();
   if(name==='party')loadParty();
 }
-
 function loadAll(){
   if(activeTab==='today')loadToday();
   else if(activeTab==='upcoming')loadUpcoming();
@@ -250,6 +326,7 @@ function loadAll(){
 }
 
 // Init
+setLang(lang);
 loadToday();
 </script>
 </body>
