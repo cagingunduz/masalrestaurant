@@ -19,8 +19,8 @@ img{max-width:100%;display:block}
 .navbar{position:fixed;top:0;left:0;width:100%;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1.1rem 3.5rem;background:rgba(13,13,13,0.85);backdrop-filter:blur(14px);border-bottom:1px solid rgba(198,165,92,0.15);transition:background .4s}
 .navbar.scrolled{background:rgba(13,13,13,0.96)}
 .nav-left{display:flex;align-items:center;gap:2rem}
-.nav-brand{font-family:'Playfair Display',serif;font-size:1.65rem;font-weight:600;color:#fff;letter-spacing:.5px;text-decoration:none}
-.nav-brand span{color:var(--gold);font-style:italic}
+.nav-brand{display:flex;align-items:center;text-decoration:none}
+.nav-brand img{height:38px;width:auto;filter:brightness(0) invert(1)}
 .nav-links{display:flex;gap:2rem;list-style:none;align-items:center}
 .nav-links a{color:rgba(255,255,255,.78);text-decoration:none;font-size:.85rem;font-weight:400;letter-spacing:1.5px;text-transform:uppercase;transition:color .3s;position:relative}
 .nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:1px;background:var(--gold);transition:width .35s ease}
@@ -169,8 +169,8 @@ section{padding:7rem 3.5rem}
 
 /* FOOTER */
 footer{background:var(--dark);padding:3rem 3.5rem 2rem;text-align:center;color:rgba(255,255,255,.4);font-size:.82rem}
-footer .footer-brand{font-family:'Playfair Display',serif;font-size:1.8rem;color:#fff;margin-bottom:.8rem}
-footer .footer-brand span{color:var(--gold);font-style:italic}
+footer .footer-brand{margin-bottom:.8rem}
+footer .footer-brand img{height:50px;width:auto;filter:brightness(0) invert(1)}
 footer p{line-height:1.7}
 .footer-line{width:60px;height:1px;background:var(--gold);margin:1.5rem auto;opacity:.4}
 .footer-socials{display:flex;justify-content:center;gap:1.5rem;margin-bottom:1.2rem}
@@ -208,7 +208,7 @@ footer p{line-height:1.7}
 <!-- NAVBAR -->
 <nav class="navbar" id="navbar">
   <div class="nav-left">
-    <a href="#" class="nav-brand">Masal<span>.</span></a>
+    <a href="#" class="nav-brand"><img src="https://i0.wp.com/masalrestaurant.nl/wp-content/uploads/2021/11/Masal_Logo_DEF.png?fit=600%2C304&ssl=1" alt="Masal Restaurant"></a>
   </div>
   <ul class="nav-links" id="navLinks">
     <li><a href="#menu" data-i18n="nav_menu">Menu</a></li>
@@ -474,7 +474,7 @@ footer p{line-height:1.7}
 
 <!-- FOOTER -->
 <footer>
-  <div class="footer-brand">Masal<span>.</span></div>
+  <div class="footer-brand"><img src="https://i0.wp.com/masalrestaurant.nl/wp-content/uploads/2021/11/Masal_Logo_DEF.png?fit=600%2C304&ssl=1" alt="Masal Restaurant"></div>
   <p data-i18n="footer_tagline">Een Turks Sprookje in het Hart van Tilburg</p>
   <div class="footer-line"></div>
   <div class="footer-socials">

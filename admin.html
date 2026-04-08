@@ -11,8 +11,7 @@
 body{font-family:-apple-system,system-ui,sans-serif;background:var(--bg);color:#222;min-height:100vh}
 .login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:2rem}
 .login-box{background:#fff;padding:2.5rem;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.1);max-width:380px;width:100%;text-align:center}
-.login-box h1{font-family:Georgia,serif;font-size:1.8rem;margin-bottom:.3rem}
-.login-box h1 span{color:var(--gold)}
+.login-box .login-logo{height:60px;width:auto;margin-bottom:.3rem;filter:invert(72%) sepia(40%) saturate(400%) hue-rotate(5deg) brightness(95%)}
 .login-box p{color:var(--muted);font-size:.9rem;margin-bottom:1.5rem}
 .login-box input{width:100%;padding:.85rem 1rem;border:1px solid #ddd;border-radius:8px;font-size:.95rem;margin-bottom:1rem;outline:none}
 .login-box input:focus{border-color:var(--gold)}
@@ -21,8 +20,7 @@ body{font-family:-apple-system,system-ui,sans-serif;background:var(--bg);color:#
 .login-error{color:#c0392b;font-size:.85rem;margin-top:.5rem;min-height:1.2em}
 
 header{background:var(--dark);color:#fff;padding:1.2rem 2rem;display:flex;align-items:center;justify-content:space-between}
-header h1{font-family:Georgia,serif;font-size:1.4rem}
-header h1 span{color:var(--gold)}
+header .logo{height:40px;width:auto;filter:brightness(0) invert(1)}
 header .user{display:flex;align-items:center;gap:1rem;font-size:.9rem;color:#bbb}
 header button{background:transparent;border:1px solid var(--gold);color:var(--gold);padding:.4rem .9rem;border-radius:6px;cursor:pointer;font-size:.8rem;letter-spacing:1px;text-transform:uppercase}
 header button:hover{background:var(--gold);color:#fff}
@@ -102,7 +100,7 @@ tr:hover td{background:#fcfbf7}
 <!-- LOGIN -->
 <div class="login-wrap" id="loginWrap">
   <div class="login-box">
-    <h1>Masal<span>.</span> Admin</h1>
+    <img class="login-logo" src="https://i0.wp.com/masalrestaurant.nl/wp-content/uploads/2021/11/Masal_Logo_DEF.png?fit=600%2C304&ssl=1" alt="Masal">
     <p data-i18n="login_subtitle">Voer uw wachtwoord in om door te gaan</p>
     <form onsubmit="login(event)">
       <input type="password" id="pw" data-i18n-ph="password" placeholder="Wachtwoord" autocomplete="current-password" required>
@@ -121,7 +119,7 @@ tr:hover td{background:#fcfbf7}
 <!-- ADMIN APP -->
 <div id="app" style="display:none">
   <header>
-    <h1>Masal<span>.</span> Admin</h1>
+    <img class="logo" src="https://i0.wp.com/masalrestaurant.nl/wp-content/uploads/2021/11/Masal_Logo_DEF.png?fit=600%2C304&ssl=1" alt="Masal">
     <div class="user">
       <div class="lang-switch">
         <button id="langNL" class="active" onclick="setLang('nl')">NL</button>
