@@ -229,6 +229,7 @@ const I18N={
     col_type:'Type',col_guests:'Gasten',col_decor:'Aankleding',col_cake:'Taart',col_wishes:'Wensen',
     nobody:'Niemand',add_shift:'+ Shift toevoegen',
     confirm_delete_res:'Reservering verwijderen?',confirm_delete_party:'Aanvraag verwijderen?',confirm_delete_shift:'Shift verwijderen?',
+    btn_cancel_res:'Annuleren',confirm_cancel_res:'Reservering annuleren?',confirm_cancel_party:'Aanvraag annuleren?',
     err:'Fout: ',time_required:'Tijd vereist'
   },
   tr:{
@@ -245,6 +246,7 @@ const I18N={
     col_type:'Tür',col_guests:'Misafir',col_decor:'Dekor',col_cake:'Pasta',col_wishes:'İstekler',
     nobody:'Kimse',add_shift:'+ Vardiya ekle',
     confirm_delete_res:'Rezervasyon silinsin mi?',confirm_delete_party:'Talep silinsin mi?',confirm_delete_shift:'Vardiya silinsin mi?',
+    btn_cancel_res:'İptal Et',confirm_cancel_res:'Rezervasyon iptal edilsin mi?',confirm_cancel_party:'Talep iptal edilsin mi?',
     err:'Hata: ',time_required:'Saat gerekli'
   }
 };
@@ -345,13 +347,14 @@ async function loadReservations(){
         <td>${esc(String(r.persons||''))}</td>
         <td>${esc(r.notes||'')}</td>
         <td><span class="badge ${r.status||'new'}">${t('status_'+(r.status||'new'))}</span></td>
-        <td>
+        <td style="display:flex;gap:.4rem;align-items:center;flex-wrap:wrap">
           <select class="select" onchange="updateRes('${r.id}',this.value)">
             <option value="">—</option>
             <option value="new">${t('status_new')}</option>
             <option value="confirmed">${t('status_confirmed')}</option>
             <option value="cancelled">${t('status_cancelled')}</option>
           </select>
+          ${r.status!=='cancelled'?`<button class="btn small" style="background:#e67e22;color:#fff" onclick="cancelRes('${r.id}')">${t('btn_cancel_res')}</button>`:''}
           <button class="btn small danger" onclick="deleteRes('${r.id}')">×</button>
         </td>
       </tr>`).join('')}</tbody></table>`;
@@ -359,6 +362,11 @@ async function loadReservations(){
 async function updateRes(id,status){
   if(!status)return;
   await sb.from('reservations').update({status}).eq('id',id);
+  loadReservations();
+}
+async function cancelRes(id){
+  if(!confirm(t('confirm_cancel_res')))return;
+  await sb.from('reservations').update({status:'cancelled'}).eq('id',id);
   loadReservations();
 }
 async function deleteRes(id){
@@ -386,8 +394,16 @@ async function loadParty(){
         <td>${esc(r.decoration||'')}</td>
         <td>${esc(r.cake||'')}</td>
         <td>${esc(r.wishes||'')}</td>
-        <td><button class="btn small danger" onclick="deleteParty('${r.id}')">×</button></td>
+        <td style="display:flex;gap:.4rem;align-items:center">
+          ${r.status!=='cancelled'?`<button class="btn small" style="background:#e67e22;color:#fff" onclick="cancelParty('${r.id}')">${t('btn_cancel_res')}</button>`:''}
+          <button class="btn small danger" onclick="deleteParty('${r.id}')">×</button>
+        </td>
       </tr>`).join('')}</tbody></table>`;
+}
+async function cancelParty(id){
+  if(!confirm(t('confirm_cancel_party')))return;
+  await sb.from('party_requests').update({status:'cancelled'}).eq('id',id);
+  loadParty();
 }
 async function deleteParty(id){
   if(!confirm(t('confirm_delete_party')))return;
