@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reserveren — Masal Restaurant</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Cormorant+Garamond:wght@300;400;500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#c6a55c;--gold-light:#d4b87a;--gold-dark:#9c7e3e;
+  --dark:#111;--card:#fff;--text:#1a1a1a;--muted:#888;
+  --cream:#f7f5f0;--border:#e8e2d6;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'Jost',sans-serif}
+
+/* LAYOUT */
+.page{display:grid;grid-template-columns:1fr 1fr;min-height:100vh}
+
+/* LEFT — IMAGE PANEL */
+.left{position:relative;overflow:hidden}
+.left-bg{
+  position:absolute;inset:0;
+  background:url('https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1400&q=80') center/cover no-repeat;
+}
+.left-overlay{position:absolute;inset:0;background:linear-gradient(160deg,rgba(10,10,10,.72) 0%,rgba(10,10,10,.45) 100%)}
+.left-content{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;justify-content:space-between;padding:2.5rem 3rem}
+.back-link{display:inline-flex;align-items:center;gap:.5rem;color:rgba(255,255,255,.6);text-decoration:none;font-size:.78rem;letter-spacing:2px;text-transform:uppercase;transition:color .2s}
+.back-link:hover{color:var(--gold)}
+.back-link svg{transition:transform .2s}
+.back-link:hover svg{transform:translateX(-3px)}
+.left-logo{height:48px;width:auto;filter:brightness(0) invert(1)}
+.left-body{flex:1;display:flex;flex-direction:column;justify-content:center;padding:2rem 0}
+.left-label{font-size:.72rem;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:1rem}
+.left-title{font-family:'Playfair Display',serif;font-size:clamp(2rem,3.5vw,3.2rem);color:#fff;line-height:1.2;margin-bottom:1.5rem}
+.left-title em{font-style:italic;color:var(--gold)}
+.left-desc{font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:rgba(255,255,255,.65);line-height:1.8;max-width:380px}
+.left-details{display:flex;flex-direction:column;gap:.7rem}
+.detail-row{display:flex;align-items:center;gap:.7rem;font-size:.82rem;color:rgba(255,255,255,.55)}
+.detail-row svg{color:var(--gold);flex-shrink:0}
+.detail-row a{color:inherit;text-decoration:none}
+.detail-row a:hover{color:var(--gold-light)}
+.divider{width:40px;height:1px;background:var(--gold);opacity:.4;margin:1.5rem 0}
+
+/* LANG SWITCHER on left */
+.lang-sw{display:flex;gap:.4rem}
+.lang-sw button{background:transparent;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.5);padding:.28rem .6rem;border-radius:3px;cursor:pointer;font-size:.68rem;letter-spacing:1px;font-family:'Jost',sans-serif;transition:all .2s}
+.lang-sw button:hover{border-color:var(--gold);color:var(--gold)}
+.lang-sw button.active{background:var(--gold);border-color:var(--gold);color:#111;font-weight:600}
+
+/* RIGHT — FORM PANEL */
+.right{background:var(--cream);display:flex;flex-direction:column;justify-content:center;padding:3rem 4rem;overflow-y:auto}
+.form-header{margin-bottom:2.5rem}
+.form-header .step-label{font-size:.7rem;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:.5rem}
+.form-header h2{font-family:'Playfair Display',serif;font-size:2rem;color:var(--text);font-weight:400}
+.form-header p{font-family:'Cormorant Garamond',serif;font-size:1rem;color:var(--muted);margin-top:.4rem;line-height:1.6}
+
+/* PERSON COUNT */
+.person-row{display:flex;align-items:center;gap:1.5rem;margin-bottom:2rem;background:#fff;border:1px solid var(--border);border-radius:10px;padding:1rem 1.5rem}
+.person-label{font-size:.75rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);flex:1}
+.counter{display:flex;align-items:center;gap:1rem}
+.counter button{width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:#fff;cursor:pointer;font-size:1.1rem;color:var(--text);display:flex;align-items:center;justify-content:center;transition:all .2s;line-height:1}
+.counter button:hover{border-color:var(--gold);color:var(--gold)}
+.counter span{font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--text);min-width:28px;text-align:center}
+
+/* FIELDS */
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-bottom:1.2rem}
+.field{display:flex;flex-direction:column;gap:.4rem}
+.field label{font-size:.7rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold-dark);font-weight:500}
+.field input,.field select,.field textarea{
+  background:#fff;border:1px solid var(--border);
+  padding:.85rem 1rem;font-family:'Jost',sans-serif;font-size:.92rem;
+  color:var(--text);border-radius:8px;outline:none;transition:border-color .25s;
+  -webkit-appearance:none;
+}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--gold)}
+.field input::placeholder,.field textarea::placeholder{color:#bbb}
+.field textarea{resize:vertical;min-height:80px;line-height:1.6}
+.field.full{grid-column:1/-1}
+.field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 1rem center;padding-right:2.5rem;cursor:pointer}
+
+/* DATE GRID */
+.date-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-bottom:1.2rem}
+
+/* TIME GRID */
+.time-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;margin-top:.4rem}
+.time-chip{background:#fff;border:1px solid var(--border);padding:.5rem .3rem;border-radius:6px;text-align:center;cursor:pointer;font-size:.82rem;color:var(--text);transition:all .2s;user-select:none}
+.time-chip:hover{border-color:var(--gold);color:var(--gold-dark)}
+.time-chip.selected{background:var(--gold);border-color:var(--gold);color:#fff;font-weight:500}
+
+/* SUBMIT */
+.submit-btn{
+  width:100%;padding:1.1rem;margin-top:1.5rem;
+  background:var(--gold);color:#fff;border:none;border-radius:8px;
+  font-family:'Jost',sans-serif;font-size:.88rem;letter-spacing:2.5px;text-transform:uppercase;
+  cursor:pointer;font-weight:500;transition:all .35s;
+  display:flex;align-items:center;justify-content:center;gap:.7rem;
+}
+.submit-btn:hover:not(:disabled){background:var(--gold-dark);transform:translateY(-1px);box-shadow:0 8px 24px rgba(198,165,92,.25)}
+.submit-btn:disabled{opacity:.6;cursor:not-allowed}
+
+/* SUCCESS */
+.success{display:none;text-align:center;padding:3rem 1rem}
+.success-icon{width:64px;height:64px;border-radius:50%;background:rgba(198,165,92,.12);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;font-size:1.8rem}
+.success h3{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--text);margin-bottom:.8rem}
+.success p{font-family:'Cormorant Garamond',serif;font-size:1.05rem;color:var(--muted);line-height:1.8}
+.success-detail{margin-top:1.5rem;background:#fff;border:1px solid var(--border);border-radius:10px;padding:1.2rem 1.5rem;text-align:left}
+.success-detail div{display:flex;gap:.5rem;align-items:center;font-size:.85rem;color:var(--muted);padding:.35rem 0;border-bottom:1px solid var(--border)}
+.success-detail div:last-child{border-bottom:none}
+.success-detail strong{color:var(--text);min-width:80px}
+.back-site{display:inline-block;margin-top:1.5rem;padding:.7rem 2rem;border:1px solid var(--gold);color:var(--gold-dark);text-decoration:none;border-radius:6px;font-size:.8rem;letter-spacing:1.5px;text-transform:uppercase;transition:all .2s}
+.back-site:hover{background:var(--gold);color:#fff}
+
+@media(max-width:768px){
+  .page{grid-template-columns:1fr}
+  .left{display:none}
+  .right{padding:2rem 1.5rem;min-height:100vh;justify-content:flex-start}
+  .mobile-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem}
+  .mobile-logo{height:38px;filter:invert(72%) sepia(40%) saturate(400%) hue-rotate(5deg) brightness(95%)}
+  .time-grid{grid-template-columns:repeat(3,1fr)}
+  .field-row{grid-template-columns:1fr}
+}
+@media(min-width:769px){.mobile-header{display:none}}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- LEFT -->
+  <div class="left">
+    <div class="left-bg"></div>
+    <div class="left-overlay"></div>
+    <div class="left-content">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <a class="back-link" href="index.html">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M19 12H5M5 12l7 7M5 12l7-7"/></svg>
+          <span data-i18n="back">Terug naar site</span>
+        </a>
+        <div class="lang-sw">
+          <button onclick="setLang('nl')">NL</button>
+          <button onclick="setLang('en')">EN</button>
+          <button onclick="setLang('tr')">TR</button>
+        </div>
+      </div>
+      <div class="left-body">
+        <div class="left-label" data-i18n="left_label">Reserveren</div>
+        <h2 class="left-title" data-i18n="left_title">Boek uw tafel bij<br><em>Restaurant Masal</em></h2>
+        <div class="divider"></div>
+        <p class="left-desc" data-i18n="left_desc">Elke dag vers bereid, 100% halal. Ontbijt, lunch en diner in het hart van Tilburg.</p>
+      </div>
+      <div class="left-details">
+        <div class="detail-row">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          Talent Square 333, 5038 LX Tilburg
+        </div>
+        <div class="detail-row">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 1 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <a href="tel:0132035399">013 203 53 99</a>
+        </div>
+        <div class="detail-row">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span data-i18n="hours_short">Ma–Vr: 11–22 · Za–Zo: 10–22</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="right">
+
+    <!-- mobile header -->
+    <div class="mobile-header">
+      <a href="index.html"><img class="mobile-logo" src="https://i0.wp.com/masalrestaurant.nl/wp-content/uploads/2021/11/Masal_Logo_DEF.png?fit=600%2C304&ssl=1" alt="Masal"></a>
+      <div class="lang-sw" style="gap:.3rem">
+        <button onclick="setLang('nl')" style="border-color:rgba(0,0,0,.15);color:#888">NL</button>
+        <button onclick="setLang('en')" style="border-color:rgba(0,0,0,.15);color:#888">EN</button>
+        <button onclick="setLang('tr')" style="border-color:rgba(0,0,0,.15);color:#888">TR</button>
+      </div>
+    </div>
+
+    <!-- FORM -->
+    <div id="formWrap">
+      <div class="form-header">
+        <div class="step-label" data-i18n="form_label">Reservering</div>
+        <h2 data-i18n="form_title">Boek uw tafel</h2>
+        <p data-i18n="form_desc">Vul onderstaand formulier in en ontvang een bevestiging per e-mail.</p>
+      </div>
+
+      <form id="resForm" onsubmit="submitForm(event)" novalidate>
+
+        <!-- Persons counter -->
+        <div class="person-row">
+          <div class="person-label" data-i18n="f_persons">Aantal personen</div>
+          <div class="counter">
+            <button type="button" onclick="changeCount(-1)">−</button>
+            <span id="personCount">2</span>
+            <button type="button" onclick="changeCount(1)">+</button>
+          </div>
+        </div>
+
+        <!-- Date + Time -->
+        <div class="date-grid">
+          <div class="field">
+            <label data-i18n="f_date">Datum</label>
+            <input type="date" id="resDate" required>
+          </div>
+          <div class="field">
+            <label data-i18n="f_time">Tijd</label>
+            <div class="time-grid" id="timeGrid"></div>
+          </div>
+        </div>
+
+        <!-- Name + Phone -->
+        <div class="field-row">
+          <div class="field">
+            <label data-i18n="f_name">Naam</label>
+            <input type="text" id="resName" placeholder="Volledige naam" required>
+          </div>
+          <div class="field">
+            <label data-i18n="f_phone">Telefoon</label>
+            <input type="tel" id="resPhone" placeholder="+31 6 ..." required>
+          </div>
+        </div>
+
+        <!-- Email -->
+        <div class="field-row">
+          <div class="field full">
+            <label>E-mail</label>
+            <input type="email" id="resEmail" placeholder="naam@email.com" required>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="field-row">
+          <div class="field full">
+            <label data-i18n="f_notes">Bijzonderheden</label>
+            <textarea id="resNotes" data-i18n-ph="f_notes_ph" placeholder="Allergieën, gelegenheid, speciale wensen..."></textarea>
+          </div>
+        </div>
+
+        <button type="submit" class="submit-btn" id="submitBtn">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          <span data-i18n="res_submit">Reservering Bevestigen</span>
+        </button>
+      </form>
+    </div>
+
+    <!-- SUCCESS -->
+    <div class="success" id="successWrap">
+      <div class="success-icon">✓</div>
+      <h3 data-i18n="confirm_title">Reservering Ontvangen!</h3>
+      <p data-i18n="confirm_desc">Bedankt voor uw reservering. U ontvangt binnenkort een bevestiging per e-mail.</p>
+      <div class="success-detail" id="successDetail"></div>
+      <a href="index.html" class="back-site" data-i18n="back_site">Terug naar website</a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL='https://mytqxxdzfrropqcrhipv.supabase.co';
+const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15dHF4eGR6ZnJyb3BxY3JoaXB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MjgwMTUsImV4cCI6MjA5MTAwNDAxNX0.eKAts80PGm6TTYSllnYq79UaG0_ERJi7FBLnh2GgG4I';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
+
+const TIMES=['10:00','10:30','11:00','11:30','12:00','12:30','13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30','19:00','19:30','20:00','20:30','21:00','21:30'];
+
+const T={
+  nl:{
+    back:'Terug naar site',
+    left_label:'Reserveren',
+    left_title:'Boek uw tafel bij<br><em>Restaurant Masal</em>',
+    left_desc:'Elke dag vers bereid, 100% halal. Ontbijt, lunch en diner in het hart van Tilburg.',
+    hours_short:'Ma–Vr: 11:00–22:00 · Za–Zo: 10:00–22:00',
+    form_label:'Uw Reservering',form_title:'Boek uw tafel',
+    form_desc:'Vul onderstaand formulier in en ontvang een bevestiging per e-mail.',
+    f_persons:'Aantal personen',f_date:'Datum',f_time:'Tijd',f_name:'Naam',
+    f_phone:'Telefoon',f_notes:'Bijzonderheden',f_notes_ph:'Allergieën, gelegenheid, speciale wensen...',
+    res_submit:'Reservering Bevestigen',
+    confirm_title:'Reservering Ontvangen!',
+    confirm_desc:'Bedankt voor uw reservering. U ontvangt binnenkort een bevestiging per e-mail.',
+    back_site:'Terug naar website',
+    err_fields:'Vul alle verplichte velden in.',err_time:'Selecteer een tijdstip.',
+    lbl_name:'Naam',lbl_date:'Datum',lbl_time:'Tijd',lbl_persons:'Personen',lbl_phone:'Telefoon',
+  },
+  en:{
+    back:'Back to site',
+    left_label:'Reserve',
+    left_title:'Book your table at<br><em>Restaurant Masal</em>',
+    left_desc:'Freshly prepared every day, 100% halal. Breakfast, lunch and dinner in the heart of Tilburg.',
+    hours_short:'Mon–Fri: 11:00–22:00 · Sat–Sun: 10:00–22:00',
+    form_label:'Your Reservation',form_title:'Book your table',
+    form_desc:'Fill in the form below and receive a confirmation by email.',
+    f_persons:'Number of guests',f_date:'Date',f_time:'Time',f_name:'Name',
+    f_phone:'Phone',f_notes:'Special requests',f_notes_ph:'Allergies, occasion, special wishes...',
+    res_submit:'Confirm Reservation',
+    confirm_title:'Reservation Received!',
+    confirm_desc:'Thank you for your reservation. You will receive a confirmation by email shortly.',
+    back_site:'Back to website',
+    err_fields:'Please fill in all required fields.',err_time:'Please select a time.',
+    lbl_name:'Name',lbl_date:'Date',lbl_time:'Time',lbl_persons:'Guests',lbl_phone:'Phone',
+  },
+  tr:{
+    back:'Siteye dön',
+    left_label:'Rezervasyon',
+    left_title:'<em>Restaurant Masal</em>\'da<br>masanızı ayırtın',
+    left_desc:'Her gün taze hazırlanmış, %100 helal. Tilburg\'un kalbinde kahvaltı, öğle ve akşam yemeği.',
+    hours_short:'Pzt–Cum: 11:00–22:00 · Cmt–Paz: 10:00–22:00',
+    form_label:'Rezervasyonunuz',form_title:'Masanızı ayırtın',
+    form_desc:'Formu doldurun ve e-posta ile onay alın.',
+    f_persons:'Kişi sayısı',f_date:'Tarih',f_time:'Saat',f_name:'Ad Soyad',
+    f_phone:'Telefon',f_notes:'Özel istekler',f_notes_ph:'Alerji, özel gün, diğer istekler...',
+    res_submit:'Rezervasyonu Onayla',
+    confirm_title:'Rezervasyon Alındı!',
+    confirm_desc:'Rezervasyonunuz için teşekkür ederiz. Kısa süre içinde e-posta ile onay alacaksınız.',
+    back_site:'Siteye dön',
+    err_fields:'Lütfen tüm zorunlu alanları doldurun.',err_time:'Lütfen bir saat seçin.',
+    lbl_name:'Ad',lbl_date:'Tarih',lbl_time:'Saat',lbl_persons:'Kişi',lbl_phone:'Telefon',
+  }
+};
+
+let lang=localStorage.getItem('masalLang')||'nl';
+let selectedTime=null;
+let personCount=2;
+
+function t(k){return T[lang][k]||k}
+
+function setLang(l){
+  lang=l;
+  localStorage.setItem('masalLang',l);
+  document.documentElement.lang=l;
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const k=el.dataset.i18n;
+    if(T[l][k]){
+      if(T[l][k].includes('<'))el.innerHTML=T[l][k];
+      else el.textContent=T[l][k];
+    }
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{
+    const k=el.dataset.i18nPh;
+    if(T[l][k])el.placeholder=T[l][k];
+  });
+  document.querySelectorAll('.lang-sw button').forEach(b=>b.classList.toggle('active',b.textContent===l.toUpperCase()));
+}
+
+// Persons counter
+function changeCount(d){
+  personCount=Math.max(1,Math.min(30,personCount+d));
+  document.getElementById('personCount').textContent=personCount;
+}
+
+// Time chips
+function buildTimeGrid(){
+  const grid=document.getElementById('timeGrid');
+  grid.innerHTML=TIMES.map(t=>`<div class="time-chip" onclick="selectTime('${t}',this)">${t}</div>`).join('');
+}
+function selectTime(t,el){
+  selectedTime=t;
+  document.querySelectorAll('.time-chip').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+// Set min date to today
+function initDate(){
+  const d=new Date();
+  const s=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  document.getElementById('resDate').min=s;
+}
+
+// Submit
+async function submitForm(e){
+  e.preventDefault();
+  const name=document.getElementById('resName').value.trim();
+  const phone=document.getElementById('resPhone').value.trim();
+  const email=document.getElementById('resEmail').value.trim();
+  const date=document.getElementById('resDate').value;
+  const notes=document.getElementById('resNotes').value.trim();
+  if(!name||!phone||!email||!date){alert(t('err_fields'));return}
+  if(!selectedTime){alert(t('err_time'));return}
+  const btn=document.getElementById('submitBtn');
+  btn.disabled=true;
+  const {error}=await sb.from('reservations').insert({
+    name,phone,email,date,time:selectedTime,persons:String(personCount),notes
+  });
+  btn.disabled=false;
+  if(error){alert('Error: '+error.message);return}
+  // Show success
+  document.getElementById('formWrap').style.display='none';
+  const sw=document.getElementById('successWrap');
+  sw.style.display='block';
+  document.getElementById('successDetail').innerHTML=`
+    <div><strong>${t('lbl_name')}</strong>${name}</div>
+    <div><strong>${t('lbl_date')}</strong>${date}</div>
+    <div><strong>${t('lbl_time')}</strong>${selectedTime}</div>
+    <div><strong>${t('lbl_persons')}</strong>${personCount}</div>
+    <div><strong>${t('lbl_phone')}</strong>${phone}</div>`;
+  // re-apply lang to success screen
+  setLang(lang);
+}
+
+// Init
+buildTimeGrid();
+initDate();
+setLang(lang);
+</script>
+</body>
+</html>
