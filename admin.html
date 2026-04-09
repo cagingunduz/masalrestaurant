@@ -224,9 +224,9 @@ tr:hover td{background:#fcfbf7}
   <div class="modal" style="max-width:320px">
     <h3 data-i18n="add_staff_title">Medewerker toevoegen</h3>
     <label data-i18n="f_name">Naam</label>
-    <input type="text" id="newStaffName" class="input" style="width:100%" placeholder="Volledige naam">
+    <input type="text" id="newStaffName" class="input" style="width:100%" data-i18n-ph="name_ph" placeholder="Volledige naam">
     <label data-i18n="initials">Initialen</label>
-    <input type="text" id="newStaffInitials" class="input" maxlength="3" style="width:100%" placeholder="bijv. AK">
+    <input type="text" id="newStaffInitials" class="input" maxlength="3" style="width:100%" data-i18n-ph="initials_ph" placeholder="bijv. AK">
     <label data-i18n="color">Kleur</label><br>
     <input type="color" id="newStaffColor" value="#c6a55c" style="margin-top:.3rem;height:38px;width:60px;border:1px solid #ddd;border-radius:6px;cursor:pointer;padding:2px">
     <div class="modal-actions">
@@ -259,6 +259,7 @@ const I18N={
     col_date:'Datum',col_time:'Tijd',col_name:'Naam',col_phone:'Telefoon',col_email:'E-mail',col_persons:'Personen',col_notes:'Notities',col_status:'Status',col_actions:'Acties',
     col_type:'Type',col_guests:'Gasten',col_decor:'Aankleding',col_cake:'Taart',col_wishes:'Wensen',
     add_staff:'+ Medewerker',add_staff_title:'Medewerker toevoegen',initials:'Initialen',color:'Kleur',
+    name_ph:'Volledige naam',initials_ph:'bijv. AK',hour_unit:'uur',
     col_staff:'Medewerker',col_total:'Totaal',no_staff:'Geen medewerkers. Voeg er een toe.',
     confirm_delete_res:'Reservering verwijderen?',confirm_delete_party:'Aanvraag verwijderen?',confirm_delete_staff:'Medewerker verwijderen?',
     btn_cancel_res:'Annuleren',confirm_cancel_res:'Reservering annuleren?',confirm_cancel_party:'Aanvraag annuleren?',
@@ -276,6 +277,7 @@ const I18N={
     col_date:'Tarih',col_time:'Saat',col_name:'Ad',col_phone:'Telefon',col_email:'E-posta',col_persons:'Kişi',col_notes:'Notlar',col_status:'Durum',col_actions:'İşlem',
     col_type:'Tür',col_guests:'Misafir',col_decor:'Dekor',col_cake:'Pasta',col_wishes:'İstekler',
     add_staff:'+ Personel',add_staff_title:'Personel ekle',initials:'Kısaltma',color:'Renk',
+    name_ph:'Tam adı',initials_ph:'örn. AK',hour_unit:'saat',
     col_staff:'Personel',col_total:'Toplam',no_staff:'Personel yok. Yeni ekleyin.',
     confirm_delete_res:'Rezervasyon silinsin mi?',confirm_delete_party:'Talep silinsin mi?',confirm_delete_staff:'Personel silinsin mi?',
     btn_cancel_res:'İptal Et',confirm_cancel_res:'Rezervasyon iptal edilsin mi?',confirm_cancel_party:'Talep iptal edilsin mi?',
@@ -463,7 +465,7 @@ function prevWeek(){currentWeek=addDays(currentWeek,-7);updateWeekLabel();loadSh
 function nextWeek(){currentWeek=addDays(currentWeek,7);updateWeekLabel();loadShifts()}
 
 function hrsNum(s,e){const[sh,sm]=s.split(':').map(Number);const[eh,em]=e.split(':').map(Number);return((eh*60+em)-(sh*60+sm))/60}
-function hrsLabel(n){return n<=0?'':n%1===0?n+'u':n.toFixed(1)+'u'}
+function hrsLabel(n){const u=t('hour_unit');return n<=0?'':n%1===0?n+' '+u:n.toFixed(1)+' '+u}
 
 async function loadShifts(){
   if(!currentWeek)currentWeek=mondayOf(new Date());
