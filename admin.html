@@ -577,7 +577,8 @@ async function saveStaff(){
   const initials=document.getElementById('newStaffInitials').value.trim().toUpperCase();
   const color=document.getElementById('newStaffColor').value;
   if(!name){alert(t('err')+'Naam vereist');return}
-  const{error}=await sb.from('profiles').insert({name,initials:initials||name.substring(0,2).toUpperCase(),color,role:'staff'});
+  const id=crypto.randomUUID();
+  const{error}=await sb.from('profiles').insert({id,name,initials:initials||name.substring(0,2).toUpperCase(),color,role:'staff'});
   if(error){alert(t('err')+error.message);return}
   // Reload profiles
   const{data:p}=await sb.from('profiles').select('*').order('name');
