@@ -61,20 +61,32 @@ tr:hover td{background:#fcfbf7}
 .input,.select{padding:.55rem .8rem;border:1px solid #ddd;border-radius:6px;font-size:.85rem;outline:none;background:#fff}
 .input:focus,.select:focus{border-color:var(--gold)}
 
-/* Shifts */
-.shift-toolbar{background:#fff;padding:1rem 1.2rem;border-radius:10px;margin-bottom:1.2rem;display:flex;gap:1rem;align-items:center;flex-wrap:wrap;box-shadow:0 4px 20px rgba(0,0,0,.04)}
-.week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:.8rem}
-.day-col{background:#fff;border-radius:10px;padding:1rem;box-shadow:0 4px 20px rgba(0,0,0,.04);min-height:180px}
-.day-col h4{font-size:.78rem;letter-spacing:1px;text-transform:uppercase;color:var(--gold-dark);margin-bottom:.2rem}
-.day-col .date{font-size:.7rem;color:var(--muted);margin-bottom:.8rem}
-.shift-card{background:#fafafa;border-left:3px solid var(--gold);padding:.55rem .7rem;border-radius:5px;margin-bottom:.5rem;font-size:.78rem;cursor:pointer;transition:background .15s}
-.shift-card:hover{background:#f4f0e2}
-.shift-time{font-weight:600;color:#222;margin-bottom:.2rem}
-.shift-staff{font-size:.7rem;color:var(--muted);display:flex;flex-wrap:wrap;gap:.2rem;margin-top:.3rem}
-.staff-pill{display:inline-flex;align-items:center;gap:.25rem;background:#fff;border:1px solid #e5e1d8;padding:.1rem .45rem;border-radius:20px;font-size:.7rem}
-.staff-dot{width:7px;height:7px;border-radius:50%;display:inline-block}
-.add-shift-btn{width:100%;background:transparent;border:1px dashed #ccc;color:var(--muted);padding:.5rem;border-radius:5px;cursor:pointer;font-size:.75rem;margin-top:.3rem}
-.add-shift-btn:hover{border-color:var(--gold);color:var(--gold-dark)}
+/* Shifts — Excel table */
+.week-label{font-size:.88rem;font-weight:500;color:#444;background:#f7f5f0;padding:.35rem .9rem;border-radius:6px;border:1px solid #e5e1d8;white-space:nowrap}
+.sched-wrap{overflow-x:auto;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.04)}
+.sched-table{width:100%;border-collapse:collapse;background:#fff;min-width:720px}
+.sched-th{background:#fafafa;text-align:center;padding:.6rem .4rem;font-size:.68rem;letter-spacing:1px;text-transform:uppercase;color:var(--muted);border-bottom:2px solid #eee;border-right:1px solid #eee;white-space:nowrap;min-width:105px}
+.sched-th.staff-th{text-align:left;min-width:155px;padding-left:1rem;border-right:2px solid #e0dbd0}
+.sched-th.total-th{min-width:64px;border-right:none;border-left:2px solid #e0dbd0;background:#fdf9f4}
+.sched-th.wknd{background:#fff9ef}
+.sched-tr:hover .sched-td{background:#fcfbf7}
+.sched-tr:hover .sched-td.staff-td,.sched-tr:hover .sched-td.total-td{background:#f7f5f0}
+.sched-td{padding:0;border-bottom:1px solid #f0ece4;border-right:1px solid #f0ece4;position:relative}
+.sched-td.staff-td{padding:.55rem 1rem;background:#fafafa;border-right:2px solid #e0dbd0;white-space:nowrap;font-size:.85rem;font-weight:500;vertical-align:middle}
+.sched-td.total-td{text-align:center;background:#fdf9f4;border-left:2px solid #e0dbd0;border-right:none;padding:.4rem .3rem;font-size:.8rem;font-weight:600;color:var(--gold-dark);vertical-align:middle}
+.sched-td.wknd{background:#fffcf5}
+.sched-cell{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:54px;cursor:pointer;padding:.35rem .25rem;transition:background .12s;text-align:center;gap:2px}
+.sched-cell:hover{background:#fdf8f0}
+.sv-time{font-size:.82rem;font-weight:600;color:#222;letter-spacing:.2px}
+.sv-hrs{font-size:.67rem;color:var(--muted)}
+.sched-cell.empty{color:#d0cbc0;font-size:1.3rem;line-height:1}
+.sched-cell.empty:hover{color:var(--gold)}
+.staff-dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0}
+.del-staff-btn{background:none;border:none;color:#ccc;cursor:pointer;font-size:.8rem;margin-left:.4rem;padding:.1rem .3rem;border-radius:3px;line-height:1;vertical-align:middle}
+.del-staff-btn:hover{color:#c0392b;background:#fff0ee}
+/* cell edit modal */
+.cell-modal{max-width:270px}
+.time-row{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
 
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:100;padding:1rem}
 .modal-bg.open{display:flex}
@@ -89,9 +101,9 @@ tr:hover td{background:#fcfbf7}
 .staff-row input{width:auto}
 
 @media(max-width:900px){
-  .week-grid{grid-template-columns:1fr;gap:.6rem}
   table{font-size:.8rem}
   th,td{padding:.6rem .5rem}
+  .sched-wrap{border-radius:6px}
 }
 </style>
 </head>
@@ -168,37 +180,58 @@ tr:hover td{background:#fcfbf7}
     <section class="section" id="sec-shifts">
       <div class="toolbar">
         <h2 data-i18n="tab_shifts">Shifts</h2>
-        <div class="actions">
-          <button class="btn ghost" onclick="prevWeek()" data-i18n="prev">← Vorige</button>
-          <input type="date" id="weekPicker" class="input" onchange="onWeekChange()">
-          <button class="btn ghost" onclick="nextWeek()" data-i18n="next">Volgende →</button>
-          <button class="btn ghost" onclick="loadShifts()" data-i18n="refresh">Vernieuwen</button>
+        <div class="actions" style="flex-wrap:wrap;gap:.5rem">
+          <button class="btn ghost small" onclick="prevWeek()">←</button>
+          <span class="week-label" id="weekLabel">—</span>
+          <button class="btn ghost small" onclick="nextWeek()">→</button>
+          <input type="date" id="weekPicker" class="input" onchange="onWeekChange()" style="width:138px">
+          <button class="btn ghost small" onclick="openAddStaff()" data-i18n="add_staff">+ Medewerker</button>
+          <button class="btn ghost small" onclick="loadShifts()" title="Vernieuwen">↻</button>
         </div>
       </div>
-      <div id="weekGrid" class="week-grid"></div>
+      <div class="sched-wrap">
+        <table class="sched-table" id="schedTable"></table>
+      </div>
     </section>
 
   </main>
 </div>
 
-<!-- SHIFT MODAL -->
-<div class="modal-bg" id="shiftModal">
-  <div class="modal">
-    <h3 id="shiftModalTitle" data-i18n="new_shift">Nieuwe shift</h3>
-    <input type="hidden" id="shiftId">
-    <input type="hidden" id="shiftDayIndex">
-    <label data-i18n="date">Datum</label>
-    <input type="text" id="shiftDate" disabled>
-    <label data-i18n="start_time">Begintijd</label>
-    <input type="time" id="shiftStart" required>
-    <label data-i18n="end_time">Eindtijd</label>
-    <input type="time" id="shiftEnd" required>
-    <label data-i18n="assign_staff">Personeel toewijzen</label>
-    <div class="staff-list" id="staffList"></div>
+<!-- CELL EDIT MODAL -->
+<div class="modal-bg" id="cellModal">
+  <div class="modal cell-modal">
+    <h3 id="cellModalTitle" style="font-size:1rem;margin-bottom:1rem"></h3>
+    <div class="time-row">
+      <div>
+        <label data-i18n="start_time">Begintijd</label>
+        <input type="time" id="cellStart" class="input" style="width:100%">
+      </div>
+      <div>
+        <label data-i18n="end_time">Eindtijd</label>
+        <input type="time" id="cellEnd" class="input" style="width:100%">
+      </div>
+    </div>
     <div class="modal-actions">
-      <button class="btn danger small" id="deleteBtn" onclick="deleteShift()" style="margin-right:auto;display:none" data-i18n="delete">Verwijderen</button>
-      <button class="btn ghost" onclick="closeShiftModal()" data-i18n="cancel">Annuleren</button>
-      <button class="btn" onclick="saveShift()" data-i18n="save">Opslaan</button>
+      <button class="btn danger small" id="cellDeleteBtn" onclick="deleteCellShift()" style="margin-right:auto;display:none" data-i18n="delete">Wissen</button>
+      <button class="btn ghost" onclick="closeCellModal()" data-i18n="cancel">Annuleren</button>
+      <button class="btn" onclick="saveCellShift()" data-i18n="save">Opslaan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD STAFF MODAL -->
+<div class="modal-bg" id="addStaffModal">
+  <div class="modal" style="max-width:320px">
+    <h3 data-i18n="add_staff_title">Medewerker toevoegen</h3>
+    <label data-i18n="f_name">Naam</label>
+    <input type="text" id="newStaffName" class="input" style="width:100%" placeholder="Volledige naam">
+    <label data-i18n="initials">Initialen</label>
+    <input type="text" id="newStaffInitials" class="input" maxlength="3" style="width:100%" placeholder="bijv. AK">
+    <label data-i18n="color">Kleur</label><br>
+    <input type="color" id="newStaffColor" value="#c6a55c" style="margin-top:.3rem;height:38px;width:60px;border:1px solid #ddd;border-radius:6px;cursor:pointer;padding:2px">
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeAddStaff()" data-i18n="cancel">Annuleren</button>
+      <button class="btn" onclick="saveStaff()" data-i18n="save">Opslaan</button>
     </div>
   </div>
 </div>
@@ -225,8 +258,9 @@ const I18N={
     no_reservations:'Geen reserveringen gevonden',no_party:'Geen aanvragen gevonden',
     col_date:'Datum',col_time:'Tijd',col_name:'Naam',col_phone:'Telefoon',col_email:'E-mail',col_persons:'Personen',col_notes:'Notities',col_status:'Status',col_actions:'Acties',
     col_type:'Type',col_guests:'Gasten',col_decor:'Aankleding',col_cake:'Taart',col_wishes:'Wensen',
-    nobody:'Niemand',add_shift:'+ Shift toevoegen',
-    confirm_delete_res:'Reservering verwijderen?',confirm_delete_party:'Aanvraag verwijderen?',confirm_delete_shift:'Shift verwijderen?',
+    add_staff:'+ Medewerker',add_staff_title:'Medewerker toevoegen',initials:'Initialen',color:'Kleur',
+    col_staff:'Medewerker',col_total:'Totaal',no_staff:'Geen medewerkers. Voeg er een toe.',
+    confirm_delete_res:'Reservering verwijderen?',confirm_delete_party:'Aanvraag verwijderen?',confirm_delete_staff:'Medewerker verwijderen?',
     btn_cancel_res:'Annuleren',confirm_cancel_res:'Reservering annuleren?',confirm_cancel_party:'Aanvraag annuleren?',
     err:'Fout: ',time_required:'Tijd vereist'
   },
@@ -236,14 +270,14 @@ const I18N={
     tab_reservations:'Rezervasyonlar',tab_party:'Etkinlik Talepleri',tab_shifts:'Vardiyalar',
     filter_all:'Tümü',status_new:'Yeni',status_confirmed:'Onaylandı',status_cancelled:'İptal',
     refresh:'Yenile',prev:'← Önceki',next:'Sonraki →',
-    new_shift:'Yeni vardiya',edit_shift:'Vardiyayı düzenle',
-    date:'Tarih',start_time:'Başlangıç',end_time:'Bitiş',assign_staff:'Personel ata',
+    date:'Tarih',start_time:'Başlangıç',end_time:'Bitiş',
     delete:'Sil',cancel:'İptal',save:'Kaydet',
     no_reservations:'Rezervasyon bulunamadı',no_party:'Talep bulunamadı',
     col_date:'Tarih',col_time:'Saat',col_name:'Ad',col_phone:'Telefon',col_email:'E-posta',col_persons:'Kişi',col_notes:'Notlar',col_status:'Durum',col_actions:'İşlem',
     col_type:'Tür',col_guests:'Misafir',col_decor:'Dekor',col_cake:'Pasta',col_wishes:'İstekler',
-    nobody:'Kimse',add_shift:'+ Vardiya ekle',
-    confirm_delete_res:'Rezervasyon silinsin mi?',confirm_delete_party:'Talep silinsin mi?',confirm_delete_shift:'Vardiya silinsin mi?',
+    add_staff:'+ Personel',add_staff_title:'Personel ekle',initials:'Kısaltma',color:'Renk',
+    col_staff:'Personel',col_total:'Toplam',no_staff:'Personel yok. Yeni ekleyin.',
+    confirm_delete_res:'Rezervasyon silinsin mi?',confirm_delete_party:'Talep silinsin mi?',confirm_delete_staff:'Personel silinsin mi?',
     btn_cancel_res:'İptal Et',confirm_cancel_res:'Rezervasyon iptal edilsin mi?',confirm_cancel_party:'Talep iptal edilsin mi?',
     err:'Hata: ',time_required:'Saat gerekli'
   }
@@ -310,7 +344,7 @@ async function showApp(){
   loadReservations();
   // Init shifts week to current Monday
   currentWeek=mondayOf(new Date());
-  document.getElementById('weekPicker').value=fmtDate(currentWeek);
+  updateWeekLabel();
 }
 
 if(sessionStorage.getItem('masalAdmin')==='1'){showApp()}
@@ -410,114 +444,153 @@ async function deleteParty(id){
 }
 
 // === SHIFTS ===
-function mondayOf(d){
-  const x=new Date(d);
-  const day=(x.getDay()+6)%7; // Mon=0
-  x.setDate(x.getDate()-day);
-  x.setHours(0,0,0,0);
-  return x;
-}
+let cellState={};
+
+function mondayOf(d){const x=new Date(d);const day=(x.getDay()+6)%7;x.setDate(x.getDate()-day);x.setHours(0,0,0,0);return x}
 function fmtDate(d){return d.toISOString().slice(0,10)}
 function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x}
 
-function onWeekChange(){
-  const v=document.getElementById('weekPicker').value;
-  if(!v)return;
-  currentWeek=mondayOf(new Date(v));
+function updateWeekLabel(){
+  const end=addDays(currentWeek,6);
+  const MO=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+  const s=currentWeek.getDate()+' '+MO[currentWeek.getMonth()];
+  const e=end.getDate()+' '+MO[end.getMonth()]+' '+end.getFullYear();
+  document.getElementById('weekLabel').textContent=s+' – '+e;
   document.getElementById('weekPicker').value=fmtDate(currentWeek);
-  loadShifts();
 }
-function prevWeek(){currentWeek=addDays(currentWeek,-7);document.getElementById('weekPicker').value=fmtDate(currentWeek);loadShifts()}
-function nextWeek(){currentWeek=addDays(currentWeek,7);document.getElementById('weekPicker').value=fmtDate(currentWeek);loadShifts()}
+function onWeekChange(){const v=document.getElementById('weekPicker').value;if(!v)return;currentWeek=mondayOf(new Date(v+'T12:00:00'));updateWeekLabel();loadShifts()}
+function prevWeek(){currentWeek=addDays(currentWeek,-7);updateWeekLabel();loadShifts()}
+function nextWeek(){currentWeek=addDays(currentWeek,7);updateWeekLabel();loadShifts()}
+
+function hrsNum(s,e){const[sh,sm]=s.split(':').map(Number);const[eh,em]=e.split(':').map(Number);return((eh*60+em)-(sh*60+sm))/60}
+function hrsLabel(n){return n<=0?'':n%1===0?n+'u':n.toFixed(1)+'u'}
 
 async function loadShifts(){
   if(!currentWeek)currentWeek=mondayOf(new Date());
+  updateWeekLabel();
   const ws=fmtDate(currentWeek);
-  const {data:shifts}=await sb.from('shifts').select('*').eq('week_start',ws).order('start_time');
+  const{data:shifts=[]}=await sb.from('shifts').select('*').eq('week_start',ws);
   const ids=(shifts||[]).map(s=>s.id);
   let assigns=[];
-  if(ids.length){
-    const {data}=await sb.from('shift_assignments').select('*').in('shift_id',ids);
-    assigns=data||[];
-  }
-  const grid=document.getElementById('weekGrid');
-  grid.innerHTML='';
-  for(let i=0;i<7;i++){
-    const dayDate=addDays(currentWeek,i);
-    const dayShifts=(shifts||[]).filter(s=>s.day_index===i);
-    const col=document.createElement('div');
-    col.className='day-col';
-    col.innerHTML=`<h4>${DAY_NAMES[i]}</h4><div class="date">${fmtDate(dayDate)}</div>`+
-      dayShifts.map(s=>{
-        const sa=assigns.filter(a=>a.shift_id===s.id);
-        const staff=sa.map(a=>{
-          const p=profiles.find(pr=>pr.id===a.staff_id);
-          if(!p)return '';
-          return `<span class="staff-pill"><span class="staff-dot" style="background:${p.color||'#999'}"></span>${esc(p.initials||p.name)}</span>`;
-        }).join('');
-        return `<div class="shift-card" onclick='openShiftModal(${JSON.stringify(s)},${JSON.stringify(sa.map(x=>x.staff_id))})'>
-          <div class="shift-time">${s.start_time} – ${s.end_time}</div>
-          <div class="shift-staff">${staff||`<em>${t('nobody')}</em>`}</div>
-        </div>`;
-      }).join('')+
-      `<button class="add-shift-btn" onclick="openShiftModal(null,[],${i})">${t('add_shift')}</button>`;
-    grid.appendChild(col);
-  }
+  if(ids.length){const{data}=await sb.from('shift_assignments').select('*').in('shift_id',ids);assigns=data||[];}
+
+  // matrix[staffId][dayIndex] = {shiftId, assignId, start, end}
+  const matrix={};
+  profiles.forEach(p=>{matrix[p.id]={}});
+  shifts.forEach(s=>{
+    assigns.filter(a=>a.shift_id===s.id).forEach(a=>{
+      if(matrix[a.staff_id]&&!matrix[a.staff_id][s.day_index])
+        matrix[a.staff_id][s.day_index]={shiftId:s.id,assignId:a.id,start:s.start_time,end:s.end_time};
+    });
+  });
+
+  const DN=currentLang==='tr'?['Pt','Sa','Ça','Pe','Cu','Ct','Pz']:['Ma','Di','Wo','Do','Vr','Za','Zo'];
+  const MO=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+
+  // Header
+  const thDays=DN.map((d,i)=>{
+    const dt=addDays(currentWeek,i);
+    const isWknd=i>=5;
+    return`<th class="sched-th${isWknd?' wknd':''}">${d}<br><small style="font-weight:400;font-size:.68rem">${dt.getDate()} ${MO[dt.getMonth()]}</small></th>`;
+  }).join('');
+
+  // Rows
+  const staff=profiles.filter(p=>p.role!=='admin'||profiles.length===1);
+  const rows=staff.length?staff.map(p=>{
+    let weekTotal=0;
+    const cells=DN.map((_,i)=>{
+      const cell=matrix[p.id]?.[i];
+      const isWknd=i>=5;
+      if(cell){
+        const h=hrsNum(cell.start,cell.end);weekTotal+=h;
+        const data=`'${p.id}',${i},'${cell.shiftId}','${cell.assignId}','${cell.start}','${cell.end}'`;
+        return`<td class="sched-td${isWknd?' wknd':''}"><div class="sched-cell filled" onclick="openCellModal(${data})"><span class="sv-time">${cell.start.slice(0,5)}–${cell.end.slice(0,5)}</span><span class="sv-hrs">${hrsLabel(h)}</span></div></td>`;
+      }else{
+        const data=`'${p.id}',${i},null,null,'09:00','17:00'`;
+        return`<td class="sched-td${isWknd?' wknd':''}"><div class="sched-cell empty" onclick="openCellModal(${data})">+</div></td>`;
+      }
+    }).join('');
+    return`<tr class="sched-tr">
+      <td class="sched-td staff-td">
+        <span class="staff-dot" style="background:${p.color||'#aaa'}"></span>&nbsp;${esc(p.name||'?')}
+        <button class="del-staff-btn" onclick="deleteStaff('${p.id}',event)" title="${t('confirm_delete_staff')}">✕</button>
+      </td>
+      ${cells}
+      <td class="sched-td total-td">${weekTotal>0?hrsLabel(weekTotal):'–'}</td>
+    </tr>`;
+  }).join(''):`<tr><td colspan="9" class="empty" style="padding:2rem">${t('no_staff')}</td></tr>`;
+
+  document.getElementById('schedTable').innerHTML=`
+    <thead><tr>
+      <th class="sched-th staff-th">${t('col_staff')}</th>
+      ${thDays}
+      <th class="sched-th total-th">${t('col_total')}</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>`;
 }
 
-function openShiftModal(shift,staffIds,dayIndex){
-  selectedStaff=new Set(staffIds||[]);
-  const isNew=!shift;
-  document.getElementById('shiftModalTitle').textContent=isNew?t('new_shift'):t('edit_shift');
-  document.getElementById('shiftId').value=isNew?'':shift.id;
-  const di=isNew?dayIndex:shift.day_index;
-  document.getElementById('shiftDayIndex').value=di;
-  document.getElementById('shiftDate').value=DAY_NAMES[di]+' '+fmtDate(addDays(currentWeek,di));
-  document.getElementById('shiftStart').value=isNew?'09:00':shift.start_time;
-  document.getElementById('shiftEnd').value=isNew?'17:00':shift.end_time;
-  document.getElementById('deleteBtn').style.display=isNew?'none':'inline-block';
-  // Render staff list
-  const sl=document.getElementById('staffList');
-  sl.innerHTML=profiles.map(p=>`
-    <label class="staff-row">
-      <input type="checkbox" value="${p.id}" ${selectedStaff.has(p.id)?'checked':''} onchange="toggleStaff('${p.id}',this.checked)">
-      <span class="staff-dot" style="background:${p.color||'#999'}"></span>
-      <span>${esc(p.name)} <span style="color:#999">(${esc(p.role||'')})</span></span>
-    </label>`).join('');
-  document.getElementById('shiftModal').classList.add('open');
+// Cell modal
+function openCellModal(staffId,dayIndex,shiftId,assignId,start,end){
+  cellState={staffId,dayIndex,shiftId,assignId};
+  const p=profiles.find(x=>x.id===staffId);
+  const DN=currentLang==='tr'?['Pt','Sa','Ça','Pe','Cu','Ct','Pz']:['Ma','Di','Wo','Do','Vr','Za','Zo'];
+  const dt=addDays(currentWeek,dayIndex);
+  const MO=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+  document.getElementById('cellModalTitle').textContent=(p?.name||'?')+' · '+DN[dayIndex]+' '+dt.getDate()+' '+MO[dt.getMonth()];
+  document.getElementById('cellStart').value=start||'09:00';
+  document.getElementById('cellEnd').value=end||'17:00';
+  document.getElementById('cellDeleteBtn').style.display=shiftId?'inline-block':'none';
+  document.getElementById('cellModal').classList.add('open');
 }
-function toggleStaff(id,on){if(on)selectedStaff.add(id);else selectedStaff.delete(id)}
-function closeShiftModal(){document.getElementById('shiftModal').classList.remove('open')}
+function closeCellModal(){document.getElementById('cellModal').classList.remove('open');cellState={}}
 
-async function saveShift(){
-  const id=document.getElementById('shiftId').value;
-  const day_index=parseInt(document.getElementById('shiftDayIndex').value,10);
-  const start_time=document.getElementById('shiftStart').value;
-  const end_time=document.getElementById('shiftEnd').value;
+async function saveCellShift(){
+  const{staffId,dayIndex,shiftId}=cellState;
+  const start_time=document.getElementById('cellStart').value;
+  const end_time=document.getElementById('cellEnd').value;
   if(!start_time||!end_time){alert(t('time_required'));return}
-  let shiftId=id;
-  if(id){
-    const {error}=await sb.from('shifts').update({start_time,end_time,day_index}).eq('id',id);
-    if(error){alert(t('err')+error.message);return}
-    await sb.from('shift_assignments').delete().eq('shift_id',id);
+  if(shiftId){
+    await sb.from('shifts').update({start_time,end_time}).eq('id',shiftId);
   }else{
-    const {data,error}=await sb.from('shifts').insert({week_start:fmtDate(currentWeek),day_index,start_time,end_time}).select().single();
+    const{data,error}=await sb.from('shifts').insert({week_start:fmtDate(currentWeek),day_index:dayIndex,start_time,end_time}).select().single();
     if(error){alert(t('err')+error.message);return}
-    shiftId=data.id;
+    await sb.from('shift_assignments').insert({shift_id:data.id,staff_id:staffId});
   }
-  if(selectedStaff.size){
-    const rows=[...selectedStaff].map(staff_id=>({shift_id:shiftId,staff_id}));
-    await sb.from('shift_assignments').insert(rows);
-  }
-  closeShiftModal();
-  loadShifts();
+  closeCellModal();loadShifts();
 }
-async function deleteShift(){
-  const id=document.getElementById('shiftId').value;
-  if(!id||!confirm(t('confirm_delete_shift')))return;
-  await sb.from('shift_assignments').delete().eq('shift_id',id);
-  await sb.from('shifts').delete().eq('id',id);
-  closeShiftModal();
+
+async function deleteCellShift(){
+  const{shiftId,assignId}=cellState;
+  if(!shiftId)return;
+  await sb.from('shift_assignments').delete().eq('id',assignId);
+  const{count}=await sb.from('shift_assignments').select('*',{count:'exact',head:true}).eq('shift_id',shiftId);
+  if(!count)await sb.from('shifts').delete().eq('id',shiftId);
+  closeCellModal();loadShifts();
+}
+
+// Staff management
+function openAddStaff(){document.getElementById('newStaffName').value='';document.getElementById('newStaffInitials').value='';document.getElementById('newStaffColor').value='#c6a55c';document.getElementById('addStaffModal').classList.add('open')}
+function closeAddStaff(){document.getElementById('addStaffModal').classList.remove('open')}
+
+async function saveStaff(){
+  const name=document.getElementById('newStaffName').value.trim();
+  const initials=document.getElementById('newStaffInitials').value.trim().toUpperCase();
+  const color=document.getElementById('newStaffColor').value;
+  if(!name){alert(t('err')+'Naam vereist');return}
+  const{error}=await sb.from('profiles').insert({name,initials:initials||name.substring(0,2).toUpperCase(),color,role:'staff'});
+  if(error){alert(t('err')+error.message);return}
+  // Reload profiles
+  const{data:p}=await sb.from('profiles').select('*').order('name');
+  profiles=p||[];
+  closeAddStaff();loadShifts();
+}
+
+async function deleteStaff(id,e){
+  e.stopPropagation();
+  if(!confirm(t('confirm_delete_staff')))return;
+  await sb.from('shift_assignments').delete().eq('staff_id',id);
+  await sb.from('profiles').delete().eq('id',id);
+  profiles=profiles.filter(p=>p.id!==id);
   loadShifts();
 }
 
