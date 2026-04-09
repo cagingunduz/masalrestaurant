@@ -111,6 +111,20 @@ a{text-decoration:none;color:inherit}
 .sum-key{color:var(--muted);font-size:.72rem;letter-spacing:1px;text-transform:uppercase}
 .sum-val{color:var(--text);font-weight:500}
 
+/* ── PARTY BANNER ── */
+.party-banner{background:rgba(198,165,92,.08);border:1px solid rgba(198,165,92,.3);border-radius:10px;padding:1.2rem 1.4rem;display:flex;align-items:flex-start;gap:.9rem;margin-top:1.4rem}
+.party-banner-icon{font-size:1.4rem;flex-shrink:0;margin-top:.1rem}
+.party-banner-body{flex:1}
+.party-banner-body strong{display:block;color:var(--gold-light);font-size:.88rem;margin-bottom:.25rem}
+.party-banner-body p{color:var(--muted);font-size:.8rem;line-height:1.5}
+.btn-party-switch{width:100%;padding:1rem;margin-top:1.2rem;background:transparent;color:var(--gold);border:1px solid var(--gold);border-radius:8px;font-family:'Jost',sans-serif;font-size:.82rem;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-weight:500;transition:all .3s}
+.btn-party-switch:hover{background:rgba(198,165,92,.1)}
+
+/* ── SELECT STYLED ── */
+.field select{background:var(--card2);border:1px solid var(--border2);padding:.85rem 1rem;font-family:'Jost',sans-serif;font-size:.9rem;color:var(--text);border-radius:8px;outline:none;transition:border-color .25s;-webkit-appearance:none;cursor:pointer}
+.field select:focus{border-color:var(--gold)}
+.field select option{background:var(--card)}
+
 /* ── BUTTONS ── */
 .btn-primary{width:100%;padding:1.05rem;margin-top:1.5rem;background:var(--gold);color:#111;border:none;border-radius:8px;font-family:'Jost',sans-serif;font-size:.82rem;letter-spacing:2.5px;text-transform:uppercase;cursor:pointer;font-weight:600;transition:all .3s;display:flex;align-items:center;justify-content:center;gap:.6rem}
 .btn-primary:hover:not(:disabled){background:var(--gold-light);transform:translateY(-1px);box-shadow:0 8px 28px rgba(198,165,92,.2)}
@@ -247,8 +261,17 @@ a{text-decoration:none;color:inherit}
         <div class="ctr-num" id="ctrNum">2</div>
         <button class="ctr-btn" onclick="changeCount(1)">+</button>
       </div>
-      <div class="person-hint" data-i18n="s3_hint">Voor groepen > 10 personen, neem contact op.</div>
     </div>
+    <div id="partyBanner" style="display:none" class="party-banner">
+      <div class="party-banner-icon">🎉</div>
+      <div class="party-banner-body">
+        <strong data-i18n="p_banner_title">Grote groep gedetecteerd</strong>
+        <p data-i18n="p_banner_desc">Voor groepen van 26+ personen kunt u een evenementaanvraag indienen.</p>
+      </div>
+    </div>
+    <button class="btn-party-switch" id="btnPartySwitch" style="display:none" onclick="goParty()">
+      <span data-i18n="p_switch">Evenementaanvraag Indienen →</span>
+    </button>
     <div class="section-label" data-i18n="s3_occasion">Bijzondere gelegenheid</div>
     <div class="occ-grid" id="occGrid"></div>
     <button class="btn-primary" onclick="goStep(4)">
@@ -308,6 +331,84 @@ a{text-decoration:none;color:inherit}
     </button>
   </div>
 
+  <!-- PARTY CARD -->
+  <div class="wizard-card" id="cardParty" style="display:none">
+    <div class="card-title" data-i18n="p_title">Feestelijk Evenement</div>
+    <div class="card-sub" data-i18n="p_sub">Voor groepen van 26+ personen verwerken wij uw aanvraag als evenement. Wij nemen contact met u op om alles te bespreken.</div>
+
+    <div class="summary-box" style="margin-bottom:1.4rem">
+      <div class="sum-title" data-i18n="p_capacity">Capaciteit</div>
+      <div class="sum-row"><span class="sum-key" data-i18n="lbl_persons">Personen</span><span class="sum-val" id="partyPersonsDisplay">—</span></div>
+    </div>
+
+    <form id="partyForm" onsubmit="submitParty(event)" novalidate>
+      <div class="field-row">
+        <div class="field">
+          <label data-i18n="f_name">Naam</label>
+          <input type="text" id="pName" placeholder="Volledige naam" required>
+        </div>
+        <div class="field">
+          <label data-i18n="f_phone">Telefoon</label>
+          <input type="tel" id="pPhone" placeholder="+31 6 ..." required>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field full">
+          <label>E-mail</label>
+          <input type="email" id="pEmail" placeholder="naam@email.com" required>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label data-i18n="f_date">Datum</label>
+          <input type="date" id="pDate" required>
+        </div>
+        <div class="field">
+          <label data-i18n="f_event_type">Soort feest</label>
+          <select id="pType" required>
+            <option value="" data-i18n="f_select">Selecteer...</option>
+            <option data-i18n="party_tag1">Bruiloft</option>
+            <option data-i18n="party_tag3">Verjaardag</option>
+            <option data-i18n="party_tag4">Bedrijfsfeest</option>
+            <option data-i18n="party_tag5">Jubileum</option>
+            <option data-i18n="f_other">Anders</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label data-i18n="f_decor">Aankleding</label>
+          <select id="pDecor">
+            <option data-i18n="f_no_decor">Geen aankleding</option>
+            <option data-i18n="f_own_decor">Eigen aankleding</option>
+          </select>
+        </div>
+        <div class="field">
+          <label data-i18n="f_cake">Taart</label>
+          <select id="pCake">
+            <option data-i18n="f_no_cake">Geen taart</option>
+            <option data-i18n="f_masal_cake">Standaard gebak Masal</option>
+            <option data-i18n="f_own_cake">Eigen taart (€15 service)</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field full">
+          <label data-i18n="f_wishes">Overige wensen</label>
+          <textarea id="pWishes" data-i18n-ph="f_notes_ph" placeholder="Bijzondere wensen..."></textarea>
+        </div>
+      </div>
+      <button type="submit" class="btn-primary" id="partySubmitBtn">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        <span data-i18n="p_submit">Aanvraag Versturen</span>
+      </button>
+    </form>
+    <button class="btn-back" onclick="goStep(3)">
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 12H5M5 12l7 7M5 12l7-7"/></svg>
+      <span data-i18n="btn_back">Terug</span>
+    </button>
+  </div>
+
   <!-- SUCCESS -->
   <div class="success-wrap" id="successWrap">
     <div class="success-ring">✓</div>
@@ -341,7 +442,14 @@ const T={
     s1_title:'Kies een datum',s1_sub:'Selecteer de gewenste reserveringsdatum.',
     s2_title:'Kies een tijdstip',
     s3_title:'Aantal gasten',s3_sub:'Hoeveel personen komen er?',
-    s3_label:'Aantal personen',s3_hint:'Voor groepen > 10 personen, neem contact op.',
+    s3_label:'Aantal personen',
+    p_title:'Feestelijk Evenement',p_sub:'Voor groepen van 26+ personen verwerken wij uw aanvraag als evenement. Wij nemen contact met u op.',
+    p_capacity:'Capaciteit',p_banner_title:'Grote groep gedetecteerd',p_banner_desc:'Voor groepen van 26+ personen kunt u een evenementaanvraag indienen.',
+    p_switch:'Evenementaanvraag Indienen →',p_submit:'Aanvraag Versturen',
+    p_confirm_title:'Aanvraag Ontvangen!',p_confirm_desc:'Bedankt voor uw aanvraag. Wij nemen zo snel mogelijk contact met u op.',
+    f_event_type:'Soort feest',f_select:'Selecteer...',f_decor:'Aankleding',f_no_decor:'Geen aankleding',f_own_decor:'Eigen aankleding',
+    f_cake:'Taart',f_no_cake:'Geen taart',f_masal_cake:'Standaard gebak Masal',f_own_cake:'Eigen taart (€15 service)',f_wishes:'Overige wensen',
+    party_tag1:'Bruiloft',party_tag3:'Verjaardag',party_tag4:'Bedrijfsfeest',party_tag5:'Jubileum',f_other:'Anders',
     s3_occasion:'Bijzondere gelegenheid (optioneel)',
     s4_title:'Uw gegevens',s4_sub:'Vul uw contactgegevens in om de reservering te bevestigen.',
     sum_title:'Reservering overzicht',
@@ -365,7 +473,14 @@ const T={
     s1_title:'Choose a date',s1_sub:'Select your preferred reservation date.',
     s2_title:'Choose a time',
     s3_title:'Number of guests',s3_sub:'How many people are joining?',
-    s3_label:'Number of guests',s3_hint:'For groups > 10 people, please call us.',
+    s3_label:'Number of guests',
+    p_title:'Special Event',p_sub:'For groups of 26+ people we process your request as an event. We will contact you to discuss the details.',
+    p_capacity:'Capacity',p_banner_title:'Large group detected',p_banner_desc:'For groups of 26+ people you can submit an event request.',
+    p_switch:'Submit Event Request →',p_submit:'Send Request',
+    p_confirm_title:'Request Received!',p_confirm_desc:'Thank you for your request. We will contact you as soon as possible.',
+    f_event_type:'Type of event',f_select:'Select...',f_decor:'Decoration',f_no_decor:'No decoration',f_own_decor:'Own decoration',
+    f_cake:'Cake',f_no_cake:'No cake',f_masal_cake:'Standard Masal pastry',f_own_cake:'Own cake (€15 service)',f_wishes:'Other wishes',
+    party_tag1:'Wedding',party_tag3:'Birthday',party_tag4:'Corporate event',party_tag5:'Anniversary',f_other:'Other',
     s3_occasion:'Special occasion (optional)',
     s4_title:'Your details',s4_sub:'Enter your contact details to confirm the reservation.',
     sum_title:'Reservation summary',
@@ -389,7 +504,14 @@ const T={
     s1_title:'Tarih seçin',s1_sub:'Rezervasyon için istediğiniz tarihi seçin.',
     s2_title:'Saat seçin',
     s3_title:'Kişi sayısı',s3_sub:'Kaç kişi gelecek?',
-    s3_label:'Kişi sayısı',s3_hint:'10\'dan fazla kişi için lütfen bizi arayın.',
+    s3_label:'Kişi sayısı',
+    p_title:'Özel Etkinlik',p_sub:'26+ kişilik gruplar için talebinizi etkinlik olarak işliyoruz. Detayları görüşmek için sizinle iletişime geçeceğiz.',
+    p_capacity:'Kapasite',p_banner_title:'Büyük grup tespit edildi',p_banner_desc:'26+ kişilik gruplar için etkinlik talebi gönderebilirsiniz.',
+    p_switch:'Etkinlik Talebi Gönder →',p_submit:'Talebi Gönder',
+    p_confirm_title:'Talep Alındı!',p_confirm_desc:'Talebiniz için teşekkür ederiz. En kısa sürede sizinle iletişime geçeceğiz.',
+    f_event_type:'Etkinlik türü',f_select:'Seçin...',f_decor:'Dekorasyon',f_no_decor:'Dekorasyon yok',f_own_decor:'Kendi dekorasyonunuz',
+    f_cake:'Pasta',f_no_cake:'Pasta yok',f_masal_cake:'Standart Masal pastası',f_own_cake:'Kendi pastanız (€15 hizmet)',f_wishes:'Diğer istekler',
+    party_tag1:'Düğün',party_tag3:'Doğum günü',party_tag4:'Şirket etkinliği',party_tag5:'Yıl dönümü',f_other:'Diğer',
     s3_occasion:'Özel gün (isteğe bağlı)',
     s4_title:'Bilgileriniz',s4_sub:'Rezervasyonu onaylamak için iletişim bilgilerinizi girin.',
     sum_title:'Rezervasyon özeti',
@@ -450,9 +572,21 @@ function goStep(n){
   [1,2,3,4].forEach(i=>{
     document.getElementById('card'+i).style.display=i===n?'block':'none';
   });
+  document.getElementById('cardParty').style.display='none';
   updateStepIndicator();
   if(n===2)updateS2Sub();
   if(n===4)updateSummary();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function goParty(){
+  [1,2,3,4].forEach(i=>document.getElementById('card'+i).style.display='none');
+  document.getElementById('cardParty').style.display='block';
+  document.getElementById('partyPersonsDisplay').textContent=personCount;
+  // set min date
+  const now=new Date();
+  const s=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+  document.getElementById('pDate').min=s;
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -547,8 +681,12 @@ function updateS2Sub(){
 
 /* ── PERSONS ── */
 function changeCount(d){
-  personCount=Math.max(1,Math.min(30,personCount+d));
+  personCount=Math.max(1,Math.min(500,personCount+d));
   document.getElementById('ctrNum').textContent=personCount;
+  const isParty=personCount>25;
+  document.getElementById('partyBanner').style.display=isParty?'flex':'none';
+  document.getElementById('btnPartySwitch').style.display=isParty?'block':'none';
+  document.querySelector('#card3 .btn-primary').style.display=isParty?'none':'flex';
 }
 
 /* ── OCCASIONS ── */
@@ -574,6 +712,43 @@ function updateSummary(){
   document.getElementById('sumDate').textContent=selectedDate||'—';
   document.getElementById('sumTime').textContent=selectedTime||'—';
   document.getElementById('sumPersons').textContent=personCount;
+}
+
+/* ── SUBMIT PARTY ── */
+async function submitParty(e){
+  e.preventDefault();
+  const name=document.getElementById('pName').value.trim();
+  const phone=document.getElementById('pPhone').value.trim();
+  const email=document.getElementById('pEmail').value.trim();
+  const event_date=document.getElementById('pDate').value;
+  const event_type=document.getElementById('pType').value;
+  const decoration=document.getElementById('pDecor').value;
+  const cake=document.getElementById('pCake').value;
+  const wishes=document.getElementById('pWishes').value.trim();
+  if(!name||!phone||!email||!event_date||!event_type){alert(t('err_fields'));return}
+  const btn=document.getElementById('partySubmitBtn');
+  btn.disabled=true;
+  const{error}=await sb.from('party_requests').insert({
+    name,phone,email,guests:String(personCount),event_date,event_type,decoration,cake,wishes
+  });
+  btn.disabled=false;
+  if(error){alert('Error: '+error.message);return}
+  document.body.innerHTML=`
+  <div class="page" style="padding-top:4rem">
+    <div class="success-wrap" style="display:block">
+      <div class="success-ring">✓</div>
+      <h3>${t('p_confirm_title')}</h3>
+      <p>${t('p_confirm_desc')}</p>
+      <div class="success-detail">
+        <div class="sum-row"><span class="sum-key">${t('lbl_name')}</span><span class="sum-val">${name}</span></div>
+        <div class="sum-row"><span class="sum-key">${t('lbl_date')}</span><span class="sum-val">${event_date}</span></div>
+        <div class="sum-row"><span class="sum-key">${t('lbl_persons')}</span><span class="sum-val">${personCount}</span></div>
+        <div class="sum-row"><span class="sum-key">${t('f_event_type')}</span><span class="sum-val">${event_type}</span></div>
+        <div class="sum-row"><span class="sum-key">${t('lbl_phone')}</span><span class="sum-val">${phone}</span></div>
+      </div>
+      <a href="index.html" class="back-site">${t('back_site')}</a>
+    </div>
+  </div>`;
 }
 
 /* ── SUBMIT ── */
