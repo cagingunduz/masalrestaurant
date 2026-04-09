@@ -482,7 +482,7 @@ async function loadShifts(){
   shifts.forEach(s=>{
     assigns.filter(a=>a.shift_id===s.id).forEach(a=>{
       if(matrix[a.staff_id]&&!matrix[a.staff_id][s.day_index])
-        matrix[a.staff_id][s.day_index]={shiftId:s.id,assignId:a.id,start:s.start_time,end:s.end_time};
+        matrix[a.staff_id][s.day_index]={shiftId:s.id,start:s.start_time,end:s.end_time};
     });
   });
 
@@ -505,7 +505,7 @@ async function loadShifts(){
       const isWknd=i>=5;
       if(cell){
         const h=hrsNum(cell.start,cell.end);weekTotal+=h;
-        const data=`'${p.id}',${i},'${cell.shiftId}','${cell.assignId}','${cell.start}','${cell.end}'`;
+        const data=`'${p.id}',${i},'${cell.shiftId}','${cell.start}','${cell.end}'`;
         return`<td class="sched-td${isWknd?' wknd':''}"><div class="sched-cell filled" onclick="openCellModal(${data})"><span class="sv-time">${cell.start.slice(0,5)}–${cell.end.slice(0,5)}</span><span class="sv-hrs">${hrsLabel(h)}</span></div></td>`;
       }else{
         const data=`'${p.id}',${i},null,null,'09:00','17:00'`;
@@ -532,8 +532,8 @@ async function loadShifts(){
 }
 
 // Cell modal
-function openCellModal(staffId,dayIndex,shiftId,assignId,start,end){
-  cellState={staffId,dayIndex,shiftId,assignId};
+function openCellModal(staffId,dayIndex,shiftId,start,end){
+  cellState={staffId,dayIndex,shiftId};
   const p=profiles.find(x=>x.id===staffId);
   const DN=currentLang==='tr'?['Pt','Sa','Ça','Pe','Cu','Ct','Pz']:['Ma','Di','Wo','Do','Vr','Za','Zo'];
   const dt=addDays(currentWeek,dayIndex);
@@ -562,9 +562,9 @@ async function saveCellShift(){
 }
 
 async function deleteCellShift(){
-  const{shiftId,assignId}=cellState;
+  const{shiftId,staffId}=cellState;
   if(!shiftId)return;
-  await sb.from('shift_assignments').delete().eq('id',assignId);
+  await sb.from('shift_assignments').delete().eq('shift_id',shiftId).eq('staff_id',staffId);
   const{count}=await sb.from('shift_assignments').select('*',{count:'exact',head:true}).eq('shift_id',shiftId);
   if(!count)await sb.from('shifts').delete().eq('id',shiftId);
   closeCellModal();loadShifts();
