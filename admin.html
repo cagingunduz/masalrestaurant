@@ -620,12 +620,30 @@ async function saveCellShift(){
   if(!start_time||!end_time){alert(t('time_required'));return}
   if(shiftId){
     await sb.from('shifts').update({start_time,end_time}).eq('id',shiftId);
+    sendShiftNotification(staffId,dayIndex,start_time,end_time,true);
   }else{
     const{data,error}=await sb.from('shifts').insert({week_start:fmtDate(currentWeek),day_index:dayIndex,start_time,end_time}).select().single();
     if(error){alert(t('err')+error.message);return}
     await sb.from('shift_assignments').insert({shift_id:data.id,staff_id:staffId});
+    sendShiftNotification(staffId,dayIndex,start_time,end_time,false);
   }
   closeCellModal();loadShifts();
+}
+
+async function sendShiftNotification(staffId,dayIndex,start,end,isUpdate){
+  try{
+    const{data:p}=await sb.from('profiles').select('push_token,name').eq('id',staffId).single();
+    if(!p?.push_token)return;
+    const DN=['Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag','Zondag'];
+    const day=DN[dayIndex];
+    const title=isUpdate?'Vardiya güncellendi 📅':'Yeni vardiya atandı 📅';
+    const body=`${day}: ${start.slice(0,5)} – ${end.slice(0,5)}`;
+    await fetch('https://exp.host/--/api/v2/push/send',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body:JSON.stringify({to:p.push_token,title,body,sound:'default'}),
+    });
+  }catch(e){/* bildirim hatası sessizce geç */}
 }
 
 async function deleteCellShift(){
