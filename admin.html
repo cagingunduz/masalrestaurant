@@ -218,6 +218,7 @@ tr:hover td{background:#fcfbf7}
           <span class="week-label" id="haccpWeekLabel">—</span>
           <button class="btn ghost small" onclick="haccpNextWeek()">→</button>
           <button class="btn ghost small" onclick="loadHaccp()" title="Vernieuwen">↻</button>
+          <button class="btn ghost small" onclick="printHaccp()">🖨 Print</button>
         </div>
       </div>
       <div style="display:flex;gap:1rem;margin-bottom:1rem;align-items:center;flex-wrap:wrap">
@@ -413,6 +414,18 @@ async function showApp(){
   updateWeekLabel();
   // Init HACCP week
   haccpCurrentWeek=mondayOf(new Date());
+  // Realtime: auto-reload shifts and reservations on changes
+  sb.channel('admin-rt')
+    .on('postgres_changes',{event:'*',schema:'public',table:'shifts'},()=>{
+      if(document.querySelector('.tab.active')?.dataset.tab==='shifts')loadShifts();
+    })
+    .on('postgres_changes',{event:'*',schema:'public',table:'shift_assignments'},()=>{
+      if(document.querySelector('.tab.active')?.dataset.tab==='shifts')loadShifts();
+    })
+    .on('postgres_changes',{event:'*',schema:'public',table:'reservations'},()=>{
+      if(document.querySelector('.tab.active')?.dataset.tab==='reservations')loadReservations();
+    })
+    .subscribe();
 }
 
 if(sessionStorage.getItem('masalAdmin')==='1'){showApp()}
@@ -831,6 +844,62 @@ async function saveHaccpNotes(){
     .upsert({week_number:week,year,notes:notes||null,paraaf:paraaf||null},{onConflict:'week_number,year'});
   if(error)alert('Fout: '+error.message);
   else haccpNotesData={notes,paraaf};
+}
+
+function printHaccp(){
+  const {week,year}=getISOWeekNum(haccpCurrentWeek);
+  const printWin=window.open('','_blank','width=900,height=700');
+  const MO_NL=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+  const MO_TR=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+  const MO=currentLang==='tr'?MO_TR:MO_NL;
+  const end=addDays(haccpCurrentWeek,6);
+  const weekLabel=`Week ${week} · ${haccpCurrentWeek.getDate()} ${MO[haccpCurrentWeek.getMonth()]} – ${end.getDate()} ${MO[end.getMonth()]} ${year}`;
+  const dayLabels=currentLang==='tr'?HACCP_DAY_TR:HACCP_DAY_NL;
+  const rows=HACCP_LOCS.map(loc=>{
+    const cells=HACCP_DAYS.map((day,di)=>{
+      const val=haccpData[loc.key]?.[day];
+      const hasVal=val!==null&&val!==undefined&&val!=='';
+      const ok=isTempCellOk(loc,val);
+      let bg='',color='';
+      if(hasVal&&ok===true){bg='#d4edda';color='#155724';}
+      else if(hasVal&&ok===false){bg='#f8d7da';color='#721c24';}
+      let display='';
+      if(hasVal){display=loc.type==='check'?(val==='ja'?'✓':'✗'):val;}
+      return`<td style="border:1px solid #ccc;text-align:center;padding:4px 6px;font-size:11px;background:${bg};color:${color};min-width:38px">${esc(String(display))}</td>`;
+    }).join('');
+    const locLabel=currentLang==='tr'?(loc.labelTR||loc.label):loc.label;
+    return`<tr><td style="border:1px solid #ccc;padding:4px 8px;font-size:11px;white-space:nowrap">${esc(locLabel)}</td><td style="border:1px solid #ccc;padding:4px 8px;font-size:10px;color:#666;white-space:nowrap">${esc(loc.norm)}</td>${cells}</tr>`;
+  }).join('');
+  const dayHeaders=dayLabels.map((d,i)=>{
+    const dt=addDays(haccpCurrentWeek,i);
+    return`<th style="border:1px solid #ccc;padding:4px;font-size:10px;text-align:center;background:#f0f0f0;min-width:38px">${d}<br><span style="font-weight:400;font-size:9px">${dt.getDate()} ${MO[dt.getMonth()]}</span></th>`;
+  }).join('');
+  const notes=haccpNotesData.notes||'';
+  const paraaf=haccpNotesData.paraaf||'';
+  printWin.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <title>HACCP ${weekLabel}</title>
+    <style>body{font-family:Arial,sans-serif;padding:20px}h1{font-size:16px;margin-bottom:4px}h2{font-size:12px;color:#666;margin-bottom:12px}table{border-collapse:collapse;width:100%}@media print{button{display:none}}</style>
+  </head><body>
+    <h1>Registratie temperaturen</h1>
+    <h2>${weekLabel}</h2>
+    <table>
+      <thead><tr>
+        <th style="border:1px solid #ccc;padding:4px 8px;font-size:10px;text-align:left;background:#f0f0f0;min-width:160px">Locatie</th>
+        <th style="border:1px solid #ccc;padding:4px 8px;font-size:10px;background:#f0f0f0;min-width:70px">Norm</th>
+        ${dayHeaders}
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div style="margin-top:16px;border:1px solid #ccc;padding:12px;border-radius:4px">
+      <p style="font-size:11px;font-weight:bold;margin-bottom:6px">Opmerkingen / corrigerende maatregelen:</p>
+      <p style="font-size:11px;min-height:40px">${esc(notes)}</p>
+      <p style="font-size:11px;margin-top:8px"><strong>Paraaf:</strong> ${esc(paraaf)}</p>
+    </div>
+    <div style="margin-top:12px;text-align:center">
+      <button onclick="window.print()" style="padding:8px 20px;background:#c6a55c;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:13px">🖨 Afdrukken</button>
+    </div>
+  </body></html>`);
+  printWin.document.close();
 }
 
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
