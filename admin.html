@@ -529,7 +529,7 @@ async function deleteParty(id){
 let cellState={};
 
 function mondayOf(d){const x=new Date(d);const day=(x.getDay()+6)%7;x.setDate(x.getDate()-day);x.setHours(0,0,0,0);return x}
-function fmtDate(d){return d.toISOString().slice(0,10)}
+function fmtDate(d){const pad=n=>String(n).padStart(2,'0');return`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`}
 function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x}
 
 function updateWeekLabel(){
