@@ -100,6 +100,20 @@ tr:hover td{background:#fcfbf7}
 .staff-row:hover{background:#fafafa}
 .staff-row input{width:auto}
 
+/* HACCP table */
+.haccp-th{background:#fafafa;padding:.6rem .5rem;font-size:.72rem;letter-spacing:.8px;text-transform:uppercase;color:#888;font-weight:600;border-bottom:2px solid #eee;border-right:1px solid #eee;text-align:center;white-space:nowrap}
+.haccp-th.loc-th{text-align:left;min-width:160px;padding-left:1rem;border-right:2px solid #e0dbd0}
+.haccp-th.norm-th{min-width:80px;border-right:2px solid #e0dbd0}
+.haccp-th.wknd{background:#fff9ef;color:var(--gold-dark)}
+.haccp-td{padding:0;border-bottom:1px solid #f0ece4;border-right:1px solid #f0ece4;text-align:center}
+.haccp-td.loc-td{padding:.55rem 1rem;background:#fafafa;border-right:2px solid #e0dbd0;text-align:left;font-size:.85rem;font-weight:500;white-space:nowrap}
+.haccp-td.norm-td{padding:.4rem .6rem;background:#fafaf7;border-right:2px solid #e0dbd0;font-size:.78rem;color:#888;white-space:nowrap}
+.haccp-cell{min-height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:.3rem .2rem;transition:background .1s;font-size:.82rem;font-weight:600;color:#444}
+.haccp-cell:hover{background:#fdf8f0}
+.haccp-cell.ok{background:#d4edda;color:#155724}
+.haccp-cell.nok{background:#f8d7da;color:#721c24}
+.haccp-cell.empty{color:#ccc;font-weight:400}
+
 @media(max-width:900px){
   table{font-size:.8rem}
   th,td{padding:.6rem .5rem}
@@ -145,6 +159,7 @@ tr:hover td{background:#fcfbf7}
     <div class="tab active" data-tab="reservations" data-i18n="tab_reservations" onclick="switchTab('reservations')">Reserveringen</div>
     <div class="tab" data-tab="party" data-i18n="tab_party" onclick="switchTab('party')">Feest aanvragen</div>
     <div class="tab" data-tab="shifts" data-i18n="tab_shifts" onclick="switchTab('shifts')">Shifts</div>
+    <div class="tab" data-tab="haccp" onclick="switchTab('haccp')">HACCP</div>
   </div>
   <main>
 
@@ -191,6 +206,45 @@ tr:hover td{background:#fcfbf7}
       </div>
       <div class="sched-wrap">
         <table class="sched-table" id="schedTable"></table>
+      </div>
+    </section>
+
+    <!-- HACCP -->
+    <section class="section" id="sec-haccp">
+      <div class="toolbar">
+        <h2>Registratie temperaturen</h2>
+        <div class="actions" style="flex-wrap:wrap;gap:.5rem">
+          <button class="btn ghost small" onclick="haccpPrevWeek()">←</button>
+          <span class="week-label" id="haccpWeekLabel">—</span>
+          <button class="btn ghost small" onclick="haccpNextWeek()">→</button>
+          <button class="btn ghost small" onclick="loadHaccp()" title="Vernieuwen">↻</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:1rem;margin-bottom:1rem;align-items:center;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:.4rem">
+          <div style="width:12px;height:12px;border-radius:3px;background:#d4edda;border:1px solid #c3e6cb"></div>
+          <span style="font-size:.8rem;color:#666">Binnen norm</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:.4rem">
+          <div style="width:12px;height:12px;border-radius:3px;background:#f8d7da;border:1px solid #f5c6cb"></div>
+          <span style="font-size:.8rem;color:#666">Afwijking</span>
+        </div>
+        <span style="font-size:.8rem;color:#999;margin-left:auto">Klik op een cel om te bewerken</span>
+      </div>
+      <div style="overflow-x:auto;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.04)">
+        <table id="haccpTable" style="min-width:700px;background:#fff;border-collapse:collapse;width:100%">
+          <thead><tr id="haccpHeader"></tr></thead>
+          <tbody id="haccpBody"></tbody>
+        </table>
+      </div>
+      <div style="margin-top:1.5rem;background:#fff;border-radius:10px;padding:1.5rem;box-shadow:0 4px 20px rgba(0,0,0,.04)">
+        <h3 style="font-family:Georgia,serif;font-size:1.1rem;margin-bottom:1rem">Opmerkingen / corrigerende maatregelen</h3>
+        <textarea id="haccpNotes" rows="3" class="input" style="width:100%;resize:vertical;font-size:.9rem;line-height:1.5" placeholder="Notities..."></textarea>
+        <div style="display:flex;align-items:center;gap:.8rem;margin-top:.8rem;flex-wrap:wrap">
+          <label style="font-size:.85rem;color:#666;white-space:nowrap">Paraaf:</label>
+          <input type="text" id="haccpParaaf" class="input" style="width:120px" placeholder="Initialen...">
+          <button class="btn" onclick="saveHaccpNotes()">Opslaan</button>
+        </div>
       </div>
     </section>
 
@@ -347,6 +401,8 @@ async function showApp(){
   // Init shifts week to current Monday
   currentWeek=mondayOf(new Date());
   updateWeekLabel();
+  // Init HACCP week
+  haccpCurrentWeek=mondayOf(new Date());
 }
 
 if(sessionStorage.getItem('masalAdmin')==='1'){showApp()}
@@ -358,6 +414,7 @@ function switchTab(name){
   if(name==='reservations')loadReservations();
   if(name==='party')loadParty();
   if(name==='shifts')loadShifts();
+  if(name==='haccp')loadHaccp();
 }
 
 // === RESERVATIONS ===
@@ -595,6 +652,142 @@ async function deleteStaff(id,e){
   await sb.from('profiles').delete().eq('id',id);
   profiles=profiles.filter(p=>p.id!==id);
   loadShifts();
+}
+
+// === HACCP TEMPERATURE REGISTRATION ===
+const HACCP_LOCS=[
+  {key:'koelvriesruimte',label:'Koelvriesruimte',norm:'Max. 7°C',type:'temp',maxVal:7},
+  {key:'koelcel_1',label:'Koelcel',norm:'Max. 7°C',type:'temp',maxVal:7},
+  {key:'koelcel_2',label:'Koelcel',norm:'< -18°C',type:'temp_min',maxVal:-18},
+  {key:'vriezer_1',label:'Vriezer',norm:'< -18°C',type:'temp_min',maxVal:-18},
+  {key:'vriezer_2',label:'Vriezer',norm:'< -18°C',type:'temp_min',maxVal:-18},
+  {key:'vriezer_ijs',label:'Vriezer ijs',norm:'Max. 7°C',type:'temp',maxVal:7},
+  {key:'koelwerkbank_1',label:'Koelwerkbank',norm:'Max. 7°C',type:'temp',maxVal:7},
+  {key:'koelwerkbank_2',label:'Koelwerkbank',norm:'Max. 7°C',type:'temp',maxVal:7},
+  {key:'koelwerkbank_3',label:'Koelwerkbank',norm:'Max. 7°C',type:'temp',maxVal:7},
+  {key:'saladiere_1',label:'Saladiere',norm:'Zie instr.',type:'text'},
+  {key:'saladiere_2',label:'Saladiere',norm:'Zie instr.',type:'text'},
+  {key:'tht_fifo',label:'THT, FiFo, juiste scheiding',norm:'Zie schema',type:'check'},
+  {key:'afgedekt',label:'Afgedekt, codering',norm:'> 60°C',type:'temp_hot',minVal:60},
+  {key:'reiniging',label:'Juiste reiniging en desinfectie',norm:'> 80°C',type:'temp_hot',minVal:80},
+  {key:'vaatwasser',label:'Vaatwasser wastemperatuur (display)',norm:'Zie instr.',type:'text'},
+  {key:'naspoeltemp',label:'Naspoeltemperatuur (display)',norm:'—',type:'text'},
+  {key:'softijs',label:'Softijsmachine pasteurisatie',norm:'Ja/Nee',type:'check'},
+];
+const HACCP_DAYS=['mon','tue','wed','thu','fri','sat','sun'];
+const HACCP_DAY_NL=['Ma','Di','Wo','Do','Vr','Za','Zo'];
+let haccpCurrentWeek=null;
+let haccpData={};
+let haccpNotesData={notes:'',paraaf:''};
+
+function getISOWeekNum(date){
+  const d=new Date(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate()));
+  const dayNum=d.getUTCDay()||7;
+  d.setUTCDate(d.getUTCDate()+4-dayNum);
+  const yearStart=new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  return{week:Math.ceil((((d-yearStart)/86400000)+1)/7),year:d.getUTCFullYear()};
+}
+function isTempCellOk(loc,value){
+  if(value===''||value===null||value===undefined)return null;
+  if(loc.type==='check')return value==='ja';
+  if(loc.type==='text')return null;
+  const num=parseFloat(value);
+  if(isNaN(num))return null;
+  if((loc.type==='temp'||loc.type==='temp_min')&&loc.maxVal!==undefined)return num<=loc.maxVal;
+  if(loc.type==='temp_hot'&&loc.minVal!==undefined)return num>=loc.minVal;
+  return null;
+}
+function haccpPrevWeek(){haccpCurrentWeek=addDays(haccpCurrentWeek,-7);loadHaccp()}
+function haccpNextWeek(){haccpCurrentWeek=addDays(haccpCurrentWeek,7);loadHaccp()}
+function updateHaccpWeekLabel(){
+  const{week,year}=getISOWeekNum(haccpCurrentWeek);
+  const end=addDays(haccpCurrentWeek,6);
+  const MO=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+  const s=haccpCurrentWeek.getDate()+' '+MO[haccpCurrentWeek.getMonth()];
+  const e=end.getDate()+' '+MO[end.getMonth()]+' '+end.getFullYear();
+  document.getElementById('haccpWeekLabel').textContent=`Week ${week} · ${s} – ${e}`;
+}
+async function loadHaccp(){
+  if(!haccpCurrentWeek)haccpCurrentWeek=mondayOf(new Date());
+  updateHaccpWeekLabel();
+  const{week,year}=getISOWeekNum(haccpCurrentWeek);
+  const[regRes,notesRes]=await Promise.all([
+    sb.from('temp_registrations').select('*').eq('week_number',week).eq('year',year),
+    sb.from('temp_week_notes').select('*').eq('week_number',week).eq('year',year).maybeSingle(),
+  ]);
+  haccpData={};
+  (regRes.data||[]).forEach(row=>{
+    haccpData[row.location_key]={mon:row.mon,tue:row.tue,wed:row.wed,thu:row.thu,fri:row.fri,sat:row.sat,sun:row.sun};
+  });
+  haccpNotesData=notesRes.data||{notes:'',paraaf:''};
+  renderHaccpTable();
+}
+function renderHaccpTable(){
+  const header=document.getElementById('haccpHeader');
+  const body=document.getElementById('haccpBody');
+  if(!header||!body)return;
+  const MO=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+  header.innerHTML=
+    `<th class="haccp-th loc-th">Locatie</th>`+
+    `<th class="haccp-th norm-th">Norm</th>`+
+    HACCP_DAY_NL.map((d,i)=>{
+      const dt=addDays(haccpCurrentWeek,i);
+      return`<th class="haccp-th${i>=5?' wknd':''}">${d}<br><small style="font-weight:400;font-size:.65rem">${dt.getDate()} ${MO[dt.getMonth()]}</small></th>`;
+    }).join('');
+  body.innerHTML=HACCP_LOCS.map(loc=>{
+    const cells=HACCP_DAYS.map((day,di)=>{
+      const val=haccpData[loc.key]?.[day];
+      const hasVal=val!==null&&val!==undefined&&val!=='';
+      const ok=isTempCellOk(loc,val);
+      const isWknd=di>=5;
+      let cls='haccp-cell';
+      let display='—';
+      if(hasVal){
+        display=loc.type==='check'?(val==='ja'?'✓':'✗'):val;
+        if(ok===true)cls+=' ok';
+        else if(ok===false)cls+=' nok';
+      }else{cls+=' empty'}
+      const wkndStyle=isWknd&&!hasVal?'background:#fffcf5;':'';
+      return`<td class="haccp-td" style="${wkndStyle}"><div class="${cls}" onclick="haccpEditCell('${loc.key}','${day}')">${esc(String(display))}</div></td>`;
+    }).join('');
+    return`<tr><td class="haccp-td loc-td">${esc(loc.label)}</td><td class="haccp-td norm-td">${esc(loc.norm)}</td>${cells}</tr>`;
+  }).join('');
+  document.getElementById('haccpNotes').value=haccpNotesData.notes||'';
+  document.getElementById('haccpParaaf').value=haccpNotesData.paraaf||'';
+}
+function haccpEditCell(locKey,day){
+  const loc=HACCP_LOCS.find(l=>l.key===locKey);
+  if(!loc)return;
+  const existing=haccpData[locKey]?.[day];
+  let newVal;
+  if(loc.type==='check'){
+    if(existing==='ja')newVal='nee';
+    else if(existing==='nee')newVal='';
+    else newVal='ja';
+  }else{
+    const input=prompt(`${loc.label} — ${HACCP_DAY_NL[HACCP_DAYS.indexOf(day)]}\nNorm: ${loc.norm}\n\nHuidige waarde: ${existing||'(leeg)'}\nNieuwe waarde (leeg = wissen):`,existing||'');
+    if(input===null)return;
+    newVal=input.trim();
+  }
+  saveTempCell(locKey,day,newVal||null);
+}
+async function saveTempCell(locKey,day,value){
+  const{week,year}=getISOWeekNum(haccpCurrentWeek);
+  const existing=haccpData[locKey]||{};
+  const newRow={...existing,[day]:value};
+  const{error}=await sb.from('temp_registrations')
+    .upsert({week_number:week,year,location_key:locKey,...newRow},{onConflict:'week_number,year,location_key'});
+  if(!error){haccpData[locKey]=newRow;renderHaccpTable();}
+  else alert('Fout: '+error.message);
+}
+async function saveHaccpNotes(){
+  const{week,year}=getISOWeekNum(haccpCurrentWeek);
+  const notes=document.getElementById('haccpNotes').value;
+  const paraaf=document.getElementById('haccpParaaf').value;
+  const{error}=await sb.from('temp_week_notes')
+    .upsert({week_number:week,year,notes:notes||null,paraaf:paraaf||null},{onConflict:'week_number,year'});
+  if(error)alert('Fout: '+error.message);
+  else haccpNotesData={notes,paraaf};
 }
 
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
