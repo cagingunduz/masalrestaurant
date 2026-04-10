@@ -212,7 +212,7 @@ tr:hover td{background:#fcfbf7}
     <!-- HACCP -->
     <section class="section" id="sec-haccp">
       <div class="toolbar">
-        <h2>Registratie temperaturen</h2>
+        <h2 data-i18n="haccp_title">Registratie temperaturen</h2>
         <div class="actions" style="flex-wrap:wrap;gap:.5rem">
           <button class="btn ghost small" onclick="haccpPrevWeek()">←</button>
           <span class="week-label" id="haccpWeekLabel">—</span>
@@ -223,13 +223,13 @@ tr:hover td{background:#fcfbf7}
       <div style="display:flex;gap:1rem;margin-bottom:1rem;align-items:center;flex-wrap:wrap">
         <div style="display:flex;align-items:center;gap:.4rem">
           <div style="width:12px;height:12px;border-radius:3px;background:#d4edda;border:1px solid #c3e6cb"></div>
-          <span style="font-size:.8rem;color:#666">Binnen norm</span>
+          <span style="font-size:.8rem;color:#666" data-i18n="haccp_ok">Binnen norm</span>
         </div>
         <div style="display:flex;align-items:center;gap:.4rem">
           <div style="width:12px;height:12px;border-radius:3px;background:#f8d7da;border:1px solid #f5c6cb"></div>
-          <span style="font-size:.8rem;color:#666">Afwijking</span>
+          <span style="font-size:.8rem;color:#666" data-i18n="haccp_nok">Afwijking</span>
         </div>
-        <span style="font-size:.8rem;color:#999;margin-left:auto">Klik op een cel om te bewerken</span>
+        <span style="font-size:.8rem;color:#999;margin-left:auto" data-i18n="haccp_hint">Klik op een cel om te bewerken</span>
       </div>
       <div style="overflow-x:auto;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.04)">
         <table id="haccpTable" style="min-width:700px;background:#fff;border-collapse:collapse;width:100%">
@@ -238,12 +238,12 @@ tr:hover td{background:#fcfbf7}
         </table>
       </div>
       <div style="margin-top:1.5rem;background:#fff;border-radius:10px;padding:1.5rem;box-shadow:0 4px 20px rgba(0,0,0,.04)">
-        <h3 style="font-family:Georgia,serif;font-size:1.1rem;margin-bottom:1rem">Opmerkingen / corrigerende maatregelen</h3>
-        <textarea id="haccpNotes" rows="3" class="input" style="width:100%;resize:vertical;font-size:.9rem;line-height:1.5" placeholder="Notities..."></textarea>
+        <h3 style="font-family:Georgia,serif;font-size:1.1rem;margin-bottom:1rem" data-i18n="haccp_notes_title">Opmerkingen / corrigerende maatregelen</h3>
+        <textarea id="haccpNotes" rows="3" class="input" data-i18n-ph="haccp_notes_ph" style="width:100%;resize:vertical;font-size:.9rem;line-height:1.5" placeholder="Notities..."></textarea>
         <div style="display:flex;align-items:center;gap:.8rem;margin-top:.8rem;flex-wrap:wrap">
-          <label style="font-size:.85rem;color:#666;white-space:nowrap">Paraaf:</label>
-          <input type="text" id="haccpParaaf" class="input" style="width:120px" placeholder="Initialen...">
-          <button class="btn" onclick="saveHaccpNotes()">Opslaan</button>
+          <label style="font-size:.85rem;color:#666;white-space:nowrap" data-i18n="haccp_paraaf">Paraaf:</label>
+          <input type="text" id="haccpParaaf" class="input" style="width:120px" data-i18n-ph="haccp_paraaf_ph" placeholder="Initialen...">
+          <button class="btn" onclick="saveHaccpNotes()" data-i18n="save">Opslaan</button>
         </div>
       </div>
     </section>
@@ -317,7 +317,12 @@ const I18N={
     col_staff:'Medewerker',col_total:'Totaal',no_staff:'Geen medewerkers. Voeg er een toe.',
     confirm_delete_res:'Reservering verwijderen?',confirm_delete_party:'Aanvraag verwijderen?',confirm_delete_staff:'Medewerker verwijderen?',
     btn_cancel_res:'Annuleren',confirm_cancel_res:'Reservering annuleren?',confirm_cancel_party:'Aanvraag annuleren?',
-    err:'Fout: ',time_required:'Tijd vereist'
+    err:'Fout: ',time_required:'Tijd vereist',
+    haccp_title:'Registratie temperaturen',haccp_ok:'Binnen norm',haccp_nok:'Afwijking',
+    haccp_hint:'Klik op een cel om te bewerken',
+    haccp_notes_title:'Opmerkingen / corrigerende maatregelen',
+    haccp_notes_ph:'Notities...',haccp_paraaf:'Paraaf:',haccp_paraaf_ph:'Initialen...',
+    haccp_col_loc:'Locatie',haccp_col_norm:'Norm'
   },
   tr:{
     login_subtitle:'Devam etmek için şifrenizi giriniz',password:'Şifre',login_btn:'Giriş Yap',login_error:'Geçersiz şifre',
@@ -335,7 +340,12 @@ const I18N={
     col_staff:'Personel',col_total:'Toplam',no_staff:'Personel yok. Yeni ekleyin.',
     confirm_delete_res:'Rezervasyon silinsin mi?',confirm_delete_party:'Talep silinsin mi?',confirm_delete_staff:'Personel silinsin mi?',
     btn_cancel_res:'İptal Et',confirm_cancel_res:'Rezervasyon iptal edilsin mi?',confirm_cancel_party:'Talep iptal edilsin mi?',
-    err:'Hata: ',time_required:'Saat gerekli'
+    err:'Hata: ',time_required:'Saat gerekli',
+    haccp_title:'Sıcaklık Kayıt Formu',haccp_ok:'Norm dahilinde',haccp_nok:'Sapma',
+    haccp_hint:'Düzenlemek için bir hücreye tıklayın',
+    haccp_notes_title:'Açıklamalar / düzeltici tedbirler',
+    haccp_notes_ph:'Notlar...',haccp_paraaf:'İmza:',haccp_paraaf_ph:'Baş harfler...',
+    haccp_col_loc:'Lokasyon',haccp_col_norm:'Norm'
   }
 };
 
@@ -728,8 +738,8 @@ function renderHaccpTable(){
   if(!header||!body)return;
   const MO=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
   header.innerHTML=
-    `<th class="haccp-th loc-th">Locatie</th>`+
-    `<th class="haccp-th norm-th">Norm</th>`+
+    `<th class="haccp-th loc-th">${t('haccp_col_loc')}</th>`+
+    `<th class="haccp-th norm-th">${t('haccp_col_norm')}</th>`+
     HACCP_DAY_NL.map((d,i)=>{
       const dt=addDays(haccpCurrentWeek,i);
       return`<th class="haccp-th${i>=5?' wknd':''}">${d}<br><small style="font-weight:400;font-size:.65rem">${dt.getDate()} ${MO[dt.getMonth()]}</small></th>`;
