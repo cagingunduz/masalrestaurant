@@ -666,26 +666,29 @@ async function deleteStaff(id,e){
 
 // === HACCP TEMPERATURE REGISTRATION ===
 const HACCP_LOCS=[
-  {key:'koelvriesruimte',label:'Koelvriesruimte',norm:'Max. 7°C',type:'temp',maxVal:7},
-  {key:'koelcel_1',label:'Koelcel',norm:'Max. 7°C',type:'temp',maxVal:7},
-  {key:'koelcel_2',label:'Koelcel',norm:'< -18°C',type:'temp_min',maxVal:-18},
-  {key:'vriezer_1',label:'Vriezer',norm:'< -18°C',type:'temp_min',maxVal:-18},
-  {key:'vriezer_2',label:'Vriezer',norm:'< -18°C',type:'temp_min',maxVal:-18},
-  {key:'vriezer_ijs',label:'Vriezer ijs',norm:'Max. 7°C',type:'temp',maxVal:7},
-  {key:'koelwerkbank_1',label:'Koelwerkbank',norm:'Max. 7°C',type:'temp',maxVal:7},
-  {key:'koelwerkbank_2',label:'Koelwerkbank',norm:'Max. 7°C',type:'temp',maxVal:7},
-  {key:'koelwerkbank_3',label:'Koelwerkbank',norm:'Max. 7°C',type:'temp',maxVal:7},
-  {key:'saladiere_1',label:'Saladiere',norm:'Zie instr.',type:'text'},
-  {key:'saladiere_2',label:'Saladiere',norm:'Zie instr.',type:'text'},
-  {key:'tht_fifo',label:'THT, FiFo, juiste scheiding',norm:'Zie schema',type:'check'},
-  {key:'afgedekt',label:'Afgedekt, codering',norm:'> 60°C',type:'temp_hot',minVal:60},
-  {key:'reiniging',label:'Juiste reiniging en desinfectie',norm:'> 80°C',type:'temp_hot',minVal:80},
-  {key:'vaatwasser',label:'Vaatwasser wastemperatuur (display)',norm:'Zie instr.',type:'text'},
-  {key:'naspoeltemp',label:'Naspoeltemperatuur (display)',norm:'—',type:'text'},
-  {key:'softijs',label:'Softijsmachine pasteurisatie',norm:'Ja/Nee',type:'check'},
+  {key:'koelvriesruimte',label:'Koelvriesruimte',labelTR:'Soğuk depo',norm:'Max. 7°C',type:'temp',maxVal:7},
+  {key:'koelcel_1',label:'Koelcel',labelTR:'Soğuk hücre',norm:'Max. 7°C',type:'temp',maxVal:7},
+  {key:'koelcel_2',label:'Koelcel',labelTR:'Soğuk hücre',norm:'< -18°C',type:'temp_min',maxVal:-18},
+  {key:'vriezer_1',label:'Vriezer',labelTR:'Dondurucu',norm:'< -18°C',type:'temp_min',maxVal:-18},
+  {key:'vriezer_2',label:'Vriezer',labelTR:'Dondurucu',norm:'< -18°C',type:'temp_min',maxVal:-18},
+  {key:'vriezer_ijs',label:'Vriezer ijs',labelTR:'Buz dondurucusu',norm:'Max. 7°C',type:'temp',maxVal:7},
+  {key:'koelwerkbank_1',label:'Koelwerkbank',labelTR:'Soğutmalı tezgah',norm:'Max. 7°C',type:'temp',maxVal:7},
+  {key:'koelwerkbank_2',label:'Koelwerkbank',labelTR:'Soğutmalı tezgah',norm:'Max. 7°C',type:'temp',maxVal:7},
+  {key:'koelwerkbank_3',label:'Koelwerkbank',labelTR:'Soğutmalı tezgah',norm:'Max. 7°C',type:'temp',maxVal:7},
+  {key:'saladiere_1',label:'Saladiere',labelTR:'Salata ünitesi',norm:'Zie instr.',type:'text'},
+  {key:'saladiere_2',label:'Saladiere',labelTR:'Salata ünitesi',norm:'Zie instr.',type:'text'},
+  {key:'tht_fifo',label:'THT, FiFo, juiste scheiding',labelTR:'THT, FiFo, doğru ayrım',norm:'Zie schema',type:'check'},
+  {key:'afgedekt',label:'Afgedekt, codering',labelTR:'Kapalı, kodlama',norm:'> 60°C',type:'temp_hot',minVal:60},
+  {key:'reiniging',label:'Juiste reiniging en desinfectie',labelTR:'Temizlik ve dezenfeksiyon',norm:'> 80°C',type:'temp_hot',minVal:80},
+  {key:'vaatwasser',label:'Vaatwasser wastemperatuur (display)',labelTR:'Bulaşık makinesi sıcaklığı (ekran)',norm:'Zie instr.',type:'text'},
+  {key:'naspoeltemp',label:'Naspoeltemperatuur (display)',labelTR:'Son durulama sıcaklığı (ekran)',norm:'—',type:'text'},
+  {key:'softijs',label:'Softijsmachine pasteurisatie',labelTR:'Soft dondurma makinesi pastörizasyonu',norm:'Ja/Nee',type:'check'},
 ];
 const HACCP_DAYS=['mon','tue','wed','thu','fri','sat','sun'];
 const HACCP_DAY_NL=['Ma','Di','Wo','Do','Vr','Za','Zo'];
+const HACCP_DAY_TR=['Pt','Sa','Ça','Pe','Cu','Ct','Pz'];
+function haccpDayLabels(){return currentLang==='tr'?HACCP_DAY_TR:HACCP_DAY_NL;}
+function haccpLocLabel(loc){return currentLang==='tr'?(loc.labelTR||loc.label):loc.label;}
 let haccpCurrentWeek=null;
 let haccpData={};
 let haccpNotesData={notes:'',paraaf:''};
@@ -712,10 +715,13 @@ function haccpNextWeek(){haccpCurrentWeek=addDays(haccpCurrentWeek,7);loadHaccp(
 function updateHaccpWeekLabel(){
   const{week,year}=getISOWeekNum(haccpCurrentWeek);
   const end=addDays(haccpCurrentWeek,6);
-  const MO=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+  const MO_NL=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+  const MO_TR=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+  const MO=currentLang==='tr'?MO_TR:MO_NL;
   const s=haccpCurrentWeek.getDate()+' '+MO[haccpCurrentWeek.getMonth()];
   const e=end.getDate()+' '+MO[end.getMonth()]+' '+end.getFullYear();
-  document.getElementById('haccpWeekLabel').textContent=`Week ${week} · ${s} – ${e}`;
+  const weekWord=currentLang==='tr'?'Hafta':'Week';
+  document.getElementById('haccpWeekLabel').textContent=`${weekWord} ${week} · ${s} – ${e}`;
 }
 async function loadHaccp(){
   if(!haccpCurrentWeek)haccpCurrentWeek=mondayOf(new Date());
@@ -736,11 +742,14 @@ function renderHaccpTable(){
   const header=document.getElementById('haccpHeader');
   const body=document.getElementById('haccpBody');
   if(!header||!body)return;
-  const MO=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+  const MO_NL=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+  const MO_TR=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+  const MO=currentLang==='tr'?MO_TR:MO_NL;
+  const dayLabels=haccpDayLabels();
   header.innerHTML=
     `<th class="haccp-th loc-th">${t('haccp_col_loc')}</th>`+
     `<th class="haccp-th norm-th">${t('haccp_col_norm')}</th>`+
-    HACCP_DAY_NL.map((d,i)=>{
+    dayLabels.map((d,i)=>{
       const dt=addDays(haccpCurrentWeek,i);
       return`<th class="haccp-th${i>=5?' wknd':''}">${d}<br><small style="font-weight:400;font-size:.65rem">${dt.getDate()} ${MO[dt.getMonth()]}</small></th>`;
     }).join('');
@@ -760,7 +769,7 @@ function renderHaccpTable(){
       const wkndStyle=isWknd&&!hasVal?'background:#fffcf5;':'';
       return`<td class="haccp-td" style="${wkndStyle}"><div class="${cls}" onclick="haccpEditCell('${loc.key}','${day}')">${esc(String(display))}</div></td>`;
     }).join('');
-    return`<tr><td class="haccp-td loc-td">${esc(loc.label)}</td><td class="haccp-td norm-td">${esc(loc.norm)}</td>${cells}</tr>`;
+    return`<tr><td class="haccp-td loc-td">${esc(haccpLocLabel(loc))}</td><td class="haccp-td norm-td">${esc(loc.norm)}</td>${cells}</tr>`;
   }).join('');
   document.getElementById('haccpNotes').value=haccpNotesData.notes||'';
   document.getElementById('haccpParaaf').value=haccpNotesData.paraaf||'';
@@ -769,13 +778,19 @@ function haccpEditCell(locKey,day){
   const loc=HACCP_LOCS.find(l=>l.key===locKey);
   if(!loc)return;
   const existing=haccpData[locKey]?.[day];
+  const dayLabels=haccpDayLabels();
+  const dayLabel=dayLabels[HACCP_DAYS.indexOf(day)];
+  const locLabel=haccpLocLabel(loc);
   let newVal;
   if(loc.type==='check'){
     if(existing==='ja')newVal='nee';
     else if(existing==='nee')newVal='';
     else newVal='ja';
   }else{
-    const input=prompt(`${loc.label} — ${HACCP_DAY_NL[HACCP_DAYS.indexOf(day)]}\nNorm: ${loc.norm}\n\nHuidige waarde: ${existing||'(leeg)'}\nNieuwe waarde (leeg = wissen):`,existing||'');
+    const curLabel=currentLang==='tr'?'Mevcut değer':'Huidige waarde';
+    const newLabel=currentLang==='tr'?'Yeni değer (boş = sil)':'Nieuwe waarde (leeg = wissen)';
+    const emptyLabel=currentLang==='tr'?'(boş)':'(leeg)';
+    const input=prompt(`${locLabel} — ${dayLabel}\nNorm: ${loc.norm}\n\n${curLabel}: ${existing||emptyLabel}\n${newLabel}:`,existing||'');
     if(input===null)return;
     newVal=input.trim();
   }
