@@ -219,6 +219,7 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
           <button class="btn ghost small" onclick="haccpNextWeek()">→</button>
           <button class="btn ghost small" onclick="loadHaccp()" title="Vernieuwen">↻</button>
           <button class="btn ghost small" onclick="printHaccp()">🖨 Print</button>
+          <button class="btn ghost small" onclick="haccpAutoFill()" title="Vul lege cellen automatisch in met geldige waarden">🎲 Auto</button>
           <button class="btn small" onclick="openAddHaccpLoc()" style="margin-left:.3rem" data-i18n="haccp_add_btn">+ Locatie</button>
         </div>
       </div>
@@ -796,6 +797,52 @@ function deleteHaccpLoc(key){
   if(!confirm('Verwijderen?'))return;
   customHaccpLocs=customHaccpLocs.filter(l=>l.key!==key);
   saveCustomHaccpLocs();
+  renderHaccpTable();
+}
+
+function haccpRandVal(loc){
+  const r=(min,max)=>Math.round((min+(Math.random()*(max-min)))*10)/10;
+  if(loc.type==='check')return'ja';
+  if(loc.type==='text')return null;
+  if(loc.type==='temp'&&loc.maxVal!=null)return String(r(Math.max(0,loc.maxVal-5),loc.maxVal));
+  if(loc.type==='temp_min'&&loc.maxVal!=null)return String(r(loc.maxVal-8,loc.maxVal));
+  if(loc.type==='temp_hot'&&loc.minVal!=null)return String(r(loc.minVal,loc.minVal+15));
+  return null;
+}
+async function haccpAutoFill(){
+  const confirmMsg=currentLang==='tr'
+    ?'Boş hücreler otomatik doldurulsun mu? (Mevcut değerler değişmez)'
+    :'Lege cellen automatisch invullen met geldige waarden? (Bestaande waarden blijven ongewijzigd)';
+  if(!confirm(confirmMsg))return;
+  const{week,year}=getISOWeekNum(haccpCurrentWeek);
+  const allLocs=[...HACCP_LOCS,...customHaccpLocs];
+  const upserts=[];
+  for(const loc of allLocs){
+    if(loc.type==='text')continue;
+    const existing=haccpData[loc.key]||{};
+    const row={week_number:week,year,location_key:loc.key};
+    let changed=false;
+    for(const day of HACCP_DAYS){
+      const cur=existing[day];
+      const isEmpty=cur===null||cur===undefined||cur==='';
+      if(isEmpty){
+        const val=haccpRandVal(loc);
+        if(val!==null){row[day]=val;changed=true;}
+        else row[day]=cur??null;
+      }else{
+        row[day]=cur;
+      }
+    }
+    if(changed)upserts.push(row);
+  }
+  if(!upserts.length)return;
+  const{error}=await sb.from('temp_registrations')
+    .upsert(upserts,{onConflict:'week_number,year,location_key'});
+  if(error){alert('Fout: '+error.message);return;}
+  upserts.forEach(row=>{
+    const{week_number,year,location_key,...days}=row;
+    haccpData[location_key]={...( haccpData[location_key]||{}),...days};
+  });
   renderHaccpTable();
 }
 
