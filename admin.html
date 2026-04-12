@@ -219,6 +219,7 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
           <button class="btn ghost small" onclick="haccpNextWeek()">→</button>
           <button class="btn ghost small" onclick="loadHaccp()" title="Vernieuwen">↻</button>
           <button class="btn ghost small" onclick="printHaccp()">🖨 Print</button>
+          <button class="btn small" onclick="openAddHaccpLoc()" style="margin-left:.3rem" data-i18n="haccp_add_btn">+ Locatie</button>
         </div>
       </div>
       <div style="display:flex;gap:1rem;margin-bottom:1rem;align-items:center;flex-wrap:wrap">
@@ -274,6 +275,35 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
   </div>
 </div>
 
+<!-- ADD HACCP LOCATION MODAL -->
+<div class="modal-bg" id="addHaccpLocModal">
+  <div class="modal" style="max-width:360px">
+    <h3 data-i18n="haccp_add_title">Locatie toevoegen</h3>
+    <label data-i18n="haccp_lbl_nl">Naam (NL)</label>
+    <input type="text" id="haccpLocNL" class="input" style="width:100%" placeholder="bijv. Koelkast keuken">
+    <label data-i18n="haccp_lbl_tr">Naam (TR)</label>
+    <input type="text" id="haccpLocTR" class="input" style="width:100%" placeholder="örn. Mutfak buzdolabı">
+    <label data-i18n="haccp_lbl_norm">Norm</label>
+    <input type="text" id="haccpLocNorm" class="input" style="width:100%" placeholder="bijv. Max. 7°C">
+    <label data-i18n="haccp_lbl_type">Type</label>
+    <select id="haccpLocType" class="select" style="width:100%" onchange="haccpTypeChange()">
+      <option value="temp">Temperatuur max (Max. 7°C)</option>
+      <option value="temp_min">Temperatuur min (< -18°C)</option>
+      <option value="temp_hot">Temperatuur heet (> 60°C)</option>
+      <option value="text">Vrije tekst</option>
+      <option value="check">Ja / Nee</option>
+    </select>
+    <div id="haccpThresholdWrap" style="margin-top:.5rem">
+      <label id="haccpThresholdLabel">Grenswaarde</label>
+      <input type="number" id="haccpLocThreshold" class="input" style="width:100%" placeholder="bijv. 7">
+    </div>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeAddHaccpLoc()" data-i18n="cancel">Annuleren</button>
+      <button class="btn" onclick="saveHaccpLoc()" data-i18n="save">Opslaan</button>
+    </div>
+  </div>
+</div>
+
 <!-- ADD STAFF MODAL -->
 <div class="modal-bg" id="addStaffModal">
   <div class="modal" style="max-width:320px">
@@ -323,7 +353,9 @@ const I18N={
     haccp_hint:'Klik op een cel om te bewerken',
     haccp_notes_title:'Opmerkingen / corrigerende maatregelen',
     haccp_notes_ph:'Notities...',haccp_paraaf:'Paraaf:',haccp_paraaf_ph:'Initialen...',
-    haccp_col_loc:'Locatie',haccp_col_norm:'Norm'
+    haccp_col_loc:'Locatie',haccp_col_norm:'Norm',
+    haccp_add_btn:'+ Locatie',haccp_add_title:'Locatie toevoegen',
+    haccp_lbl_nl:'Naam (NL)',haccp_lbl_tr:'Naam (TR)',haccp_lbl_norm:'Norm',haccp_lbl_type:'Type'
   },
   tr:{
     login_subtitle:'Devam etmek için şifrenizi giriniz',password:'Şifre',login_btn:'Giriş Yap',login_error:'Geçersiz şifre',
@@ -346,7 +378,9 @@ const I18N={
     haccp_hint:'Düzenlemek için bir hücreye tıklayın',
     haccp_notes_title:'Açıklamalar / düzeltici tedbirler',
     haccp_notes_ph:'Notlar...',haccp_paraaf:'İmza:',haccp_paraaf_ph:'Baş harfler...',
-    haccp_col_loc:'Lokasyon',haccp_col_norm:'Norm'
+    haccp_col_loc:'Lokasyon',haccp_col_norm:'Norm',
+    haccp_add_btn:'+ Parça ekle',haccp_add_title:'Parça ekle',
+    haccp_lbl_nl:'Ad (NL)',haccp_lbl_tr:'Ad (TR)',haccp_lbl_norm:'Norm',haccp_lbl_type:'Tür'
   }
 };
 
@@ -720,6 +754,51 @@ let haccpCurrentWeek=null;
 let haccpData={};
 let haccpNotesData={notes:'',paraaf:''};
 
+// Custom HACCP locations (stored in localStorage)
+let customHaccpLocs=JSON.parse(localStorage.getItem('haccp_custom_locs')||'[]');
+function saveCustomHaccpLocs(){localStorage.setItem('haccp_custom_locs',JSON.stringify(customHaccpLocs));}
+
+function openAddHaccpLoc(){
+  document.getElementById('haccpLocNL').value='';
+  document.getElementById('haccpLocTR').value='';
+  document.getElementById('haccpLocNorm').value='';
+  document.getElementById('haccpLocType').value='temp';
+  document.getElementById('haccpLocThreshold').value='';
+  haccpTypeChange();
+  document.getElementById('addHaccpLocModal').style.display='flex';
+}
+function closeAddHaccpLoc(){document.getElementById('addHaccpLocModal').style.display='none';}
+function haccpTypeChange(){
+  const type=document.getElementById('haccpLocType').value;
+  const wrap=document.getElementById('haccpThresholdWrap');
+  const lbl=document.getElementById('haccpThresholdLabel');
+  if(type==='temp'||type==='temp_min'){wrap.style.display='';lbl.textContent='Max waarde (°C)';}
+  else if(type==='temp_hot'){wrap.style.display='';lbl.textContent='Min waarde (°C)';}
+  else{wrap.style.display='none';}
+}
+function saveHaccpLoc(){
+  const label=document.getElementById('haccpLocNL').value.trim();
+  const labelTR=document.getElementById('haccpLocTR').value.trim();
+  const norm=document.getElementById('haccpLocNorm').value.trim();
+  const type=document.getElementById('haccpLocType').value;
+  const threshold=parseFloat(document.getElementById('haccpLocThreshold').value);
+  if(!label){alert('Naam (NL) is verplicht');return;}
+  const key='custom_'+Date.now();
+  const loc={key,label,labelTR:labelTR||label,norm:norm||'—',type,custom:true};
+  if(type==='temp'||type==='temp_min')loc.maxVal=isNaN(threshold)?7:threshold;
+  if(type==='temp_hot')loc.minVal=isNaN(threshold)?60:threshold;
+  customHaccpLocs.push(loc);
+  saveCustomHaccpLocs();
+  closeAddHaccpLoc();
+  renderHaccpTable();
+}
+function deleteHaccpLoc(key){
+  if(!confirm('Verwijderen?'))return;
+  customHaccpLocs=customHaccpLocs.filter(l=>l.key!==key);
+  saveCustomHaccpLocs();
+  renderHaccpTable();
+}
+
 function getISOWeekNum(date){
   const d=new Date(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate()));
   const dayNum=d.getUTCDay()||7;
@@ -780,7 +859,8 @@ function renderHaccpTable(){
       const dt=addDays(haccpCurrentWeek,i);
       return`<th class="haccp-th${i>=5?' wknd':''}">${d}<br><small style="font-weight:400;font-size:.65rem">${dt.getDate()} ${MO[dt.getMonth()]}</small></th>`;
     }).join('');
-  body.innerHTML=HACCP_LOCS.map(loc=>{
+  const allLocs=[...HACCP_LOCS,...customHaccpLocs];
+  body.innerHTML=allLocs.map(loc=>{
     const cells=HACCP_DAYS.map((day,di)=>{
       const val=haccpData[loc.key]?.[day];
       const hasVal=val!==null&&val!==undefined&&val!=='';
@@ -796,7 +876,9 @@ function renderHaccpTable(){
       const wkndStyle=isWknd&&!hasVal?'background:#fffcf5;':'';
       return`<td class="haccp-td" style="${wkndStyle}"><div class="${cls}" onclick="haccpEditCell('${loc.key}','${day}')">${esc(String(display))}</div></td>`;
     }).join('');
-    return`<tr><td class="haccp-td loc-td">${esc(haccpLocLabel(loc))}</td><td class="haccp-td norm-td">${esc(loc.norm)}</td>${cells}</tr>`;
+    const isCustom=customHaccpLocs.some(c=>c.key===loc.key);
+    const locLabel=`${esc(haccpLocLabel(loc))}${isCustom?`<button onclick="deleteHaccpLoc('${loc.key}')" style="float:right;background:none;border:none;color:#ccc;cursor:pointer;font-size:.8rem;padding:0 0 0 .4rem" title="Verwijderen">✕</button>`:''}`;
+    return`<tr><td class="haccp-td loc-td">${locLabel}</td><td class="haccp-td norm-td">${esc(loc.norm)}</td>${cells}</tr>`;
   }).join('');
   document.getElementById('haccpNotes').value=haccpNotesData.notes||'';
   document.getElementById('haccpParaaf').value=haccpNotesData.paraaf||'';
