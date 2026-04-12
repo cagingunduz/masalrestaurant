@@ -60,10 +60,8 @@ main{flex:1;padding:2rem 2.5rem;overflow:auto}
 .name-cell{font-weight:500}
 .notes-cell{font-size:.78rem;color:var(--muted);max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-/* confirm button */
-.btn-confirm{background:transparent;border:1px solid rgba(76,175,80,.4);color:#4CAF50;padding:.3rem .75rem;border-radius:5px;font-size:.72rem;letter-spacing:.5px;cursor:pointer;font-family:'Jost',sans-serif;transition:all .2s;white-space:nowrap}
-.btn-confirm:hover{background:#4CAF50;color:#fff}
-.btn-confirm.done{background:rgba(76,175,80,.15);border-color:transparent;color:rgba(76,175,80,.5);cursor:default}
+/* cancelled row */
+tr.cancelled-row td{color:rgba(255,255,255,.3)!important;text-decoration:line-through;background:linear-gradient(transparent calc(50% - 1px),#e74c3c calc(50% - 1px),#e74c3c calc(50% + 1px),transparent calc(50% + 1px))!important}
 
 .date-group{margin-bottom:2.5rem}
 .date-group-label{font-size:.72rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:.8rem;padding-bottom:.5rem;border-bottom:1px solid var(--border)}
@@ -227,8 +225,8 @@ async function confirmRow(id,type){
 async function loadToday(){
   const td=todayStr();
   const [{data:res,error:e1},{data:party,error:e2}]=await Promise.all([
-    sb.from('reservations').select('*').eq('date',td).neq('status','cancelled').order('time'),
-    sb.from('party_requests').select('*').eq('event_date',td).neq('status','cancelled').order('created_at')
+    sb.from('reservations').select('*').eq('date',td).order('time'),
+    sb.from('party_requests').select('*').eq('event_date',td).order('created_at')
   ]);
   const sum=document.getElementById('todaySummary');
   const c=document.getElementById('todayContent');
@@ -255,8 +253,8 @@ async function loadToday(){
 async function loadUpcoming(){
   const td=todayStr();
   const [{data:res,error:e1},{data:party,error:e2}]=await Promise.all([
-    sb.from('reservations').select('*').gt('date',td).neq('status','cancelled').order('date').order('time'),
-    sb.from('party_requests').select('*').gt('event_date',td).neq('status','cancelled').order('event_date')
+    sb.from('reservations').select('*').gt('date',td).order('date').order('time'),
+    sb.from('party_requests').select('*').gt('event_date',td).order('event_date')
   ]);
   const c=document.getElementById('upcomingContent');
   if(e1){c.innerHTML=`<div class="empty"><p>${esc(e1.message)}</p></div>`;return}
@@ -288,22 +286,20 @@ function renderTable(rows,showTime){
       <th>${t('col_phone')}</th>
       <th>${t('col_status')}</th>
       <th>${t('col_notes')}</th>
-      <th></th>
     </tr></thead>
     <tbody>${rows.map(r=>{
       const isParty=r._type==='party';
       const persons=isParty?(r.guests||''):(r.persons||'');
       const notes=isParty?(r.wishes||''):(r.notes||'');
-      const isDone=r.status==='confirmed';
-      return`<tr>
+      const isCancelled=r.status==='cancelled';
+      return`<tr${isCancelled?' class="cancelled-row"':''}>
         ${showTime?`<td>${isParty?'<span class="time-badge" style="opacity:.4">—</span>':timeLabel(r.time)}</td>`:''}
         <td><div class="name-cell">${esc(r.name)}</div></td>
         <td><span class="type-badge ${isParty?'party':'res'}">${t(isParty?'type_party':'type_res')}</span></td>
         <td>${persons}</td>
         <td>${esc(r.phone||'')}</td>
-        <td><div class="status-cell"><span class="status-dot ${r.status||'new'}" id="dot-${r.id}"></span><span id="lbl-${r.id}">${t('status_'+(r.status||'new'))}</span></div></td>
+        <td><div class="status-cell"><span class="status-dot ${r.status||'new'}"></span><span>${t('status_'+(r.status||'new'))}</span></div></td>
         <td><div class="notes-cell">${esc(notes||'—')}</div></td>
-        <td><button class="btn-confirm${isDone?' done':''}" id="cb-${r.id}" ${isDone?'disabled':''} onclick="confirmRow('${r.id}','${r._type}')">${isDone?t('btn_confirmed'):t('btn_confirm')}</button></td>
       </tr>`;
     }).join('')}</tbody></table>`;
 }

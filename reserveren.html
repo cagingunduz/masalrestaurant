@@ -462,6 +462,7 @@ const T={
     back_site:'Terug naar website',
     lbl_date:'Datum',lbl_time:'Tijd',lbl_persons:'Personen',lbl_name:'Naam',lbl_phone:'Telefoon',
     err_fields:'Vul alle verplichte velden in.',err_time:'Selecteer eerst een tijdstip.',
+    lnk_confirm:'✓ Reservering bevestigen',lnk_cancel:'✕ Reservering annuleren',
     months:['Januari','Februari','Maart','April','Mei','Juni','Juli','Augustus','September','Oktober','November','December'],
     days:['Ma','Di','Wo','Do','Vr','Za','Zo'],
   },
@@ -493,6 +494,7 @@ const T={
     back_site:'Back to website',
     lbl_date:'Date',lbl_time:'Time',lbl_persons:'Guests',lbl_name:'Name',lbl_phone:'Phone',
     err_fields:'Please fill in all required fields.',err_time:'Please select a time first.',
+    lnk_confirm:'✓ Confirm reservation',lnk_cancel:'✕ Cancel reservation',
     months:['January','February','March','April','May','June','July','August','September','October','November','December'],
     days:['Mo','Tu','We','Th','Fr','Sa','Su'],
   },
@@ -524,6 +526,7 @@ const T={
     back_site:'Siteye dön',
     lbl_date:'Tarih',lbl_time:'Saat',lbl_persons:'Kişi',lbl_name:'Ad',lbl_phone:'Telefon',
     err_fields:'Lütfen tüm zorunlu alanları doldurun.',err_time:'Lütfen önce bir saat seçin.',
+    lnk_confirm:'✓ Rezervasyonu onayla',lnk_cancel:'✕ Rezervasyonu iptal et',
     months:['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'],
     days:['Pt','Sa','Ça','Pe','Cu','Ct','Pz'],
   }
@@ -763,16 +766,14 @@ async function submitForm(e){
   const occ=selectedOccasion?'\n['+selectedOccasion+']':'';
   const btn=document.getElementById('submitBtn');
   btn.disabled=true;
-  const{error}=await sb.from('reservations').insert({
+  const{data,error}=await sb.from('reservations').insert({
     name,phone,email,date:selectedDate,time:selectedTime,
     persons:String(personCount),notes:(notes+occ).trim()
-  });
+  }).select('id').single();
   btn.disabled=false;
   if(error){alert('Error: '+error.message);return}
-  // Show success
-  document.querySelector('.page').innerHTML=`<div style="height:2rem"></div>`;
-  const sw=document.getElementById('successWrap');
-  // Rebuild page for success
+  const rid=data?.id||'';
+  const base=window.location.origin+window.location.pathname.replace(/\/[^/]*$/,'/');
   document.body.innerHTML=`
   <div class="page" style="padding-top:4rem">
     <div class="success-wrap" id="sw2" style="display:block">
@@ -786,7 +787,11 @@ async function submitForm(e){
         <div class="sum-row"><span class="sum-key">${t('lbl_persons')}</span><span class="sum-val">${personCount}</span></div>
         <div class="sum-row"><span class="sum-key">${t('lbl_phone')}</span><span class="sum-val">${phone}</span></div>
       </div>
-      <a href="index.html" class="back-site">${t('back_site')}</a>
+      ${rid?`<div style="margin-top:1.5rem;display:flex;flex-direction:column;gap:.7rem;align-items:center">
+        <a href="${base}confirm.html?id=${rid}" style="display:inline-block;padding:.6rem 1.6rem;border-radius:6px;background:#4CAF50;color:#fff;text-decoration:none;font-size:.85rem;letter-spacing:.5px">${t('lnk_confirm')}</a>
+        <a href="${base}cancel.html?id=${rid}" style="display:inline-block;padding:.6rem 1.6rem;border-radius:6px;border:1px solid #e74c3c;color:#e74c3c;text-decoration:none;font-size:.85rem;letter-spacing:.5px">${t('lnk_cancel')}</a>
+      </div>`:''}
+      <a href="index.html" class="back-site" style="margin-top:1rem">${t('back_site')}</a>
     </div>
   </div>`;
 }

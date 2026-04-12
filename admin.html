@@ -461,14 +461,7 @@ async function loadReservations(){
         <td>${esc(String(r.persons||''))}</td>
         <td>${esc(r.notes||'')}</td>
         <td><span class="badge ${r.status||'new'}">${t('status_'+(r.status||'new'))}</span></td>
-        <td style="display:flex;gap:.4rem;align-items:center;flex-wrap:wrap">
-          <select class="select" onchange="updateRes('${r.id}',this.value)">
-            <option value="">—</option>
-            <option value="new">${t('status_new')}</option>
-            <option value="confirmed">${t('status_confirmed')}</option>
-            <option value="cancelled">${t('status_cancelled')}</option>
-          </select>
-          ${r.status!=='cancelled'?`<button class="btn small" style="background:#e67e22;color:#fff" onclick="cancelRes('${r.id}')">${t('btn_cancel_res')}</button>`:''}
+        <td>
           <button class="btn small danger" onclick="deleteRes('${r.id}')">×</button>
         </td>
       </tr>`).join('')}</tbody></table>`;
