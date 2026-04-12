@@ -458,7 +458,7 @@ const T={
     btn_next:'Volgende',btn_back:'Terug',
     res_submit:'Reservering Bevestigen',
     confirm_title:'Reservering Ontvangen!',
-    confirm_desc:'Bedankt voor uw reservering. U ontvangt binnenkort een bevestiging per e-mail.',
+    confirm_desc:'Bedankt voor uw reservering. Controleer uw e-mailbox voor de bevestiging en de link om uw reservering te annuleren of bevestigen.',
     back_site:'Terug naar website',
     lbl_date:'Datum',lbl_time:'Tijd',lbl_persons:'Personen',lbl_name:'Naam',lbl_phone:'Telefoon',
     err_fields:'Vul alle verplichte velden in.',err_time:'Selecteer eerst een tijdstip.',
@@ -490,7 +490,7 @@ const T={
     btn_next:'Next',btn_back:'Back',
     res_submit:'Confirm Reservation',
     confirm_title:'Reservation Received!',
-    confirm_desc:'Thank you for your reservation. You will receive a confirmation by email shortly.',
+    confirm_desc:'Thank you for your reservation. Please check your email for the confirmation and the link to confirm or cancel your reservation.',
     back_site:'Back to website',
     lbl_date:'Date',lbl_time:'Time',lbl_persons:'Guests',lbl_name:'Name',lbl_phone:'Phone',
     err_fields:'Please fill in all required fields.',err_time:'Please select a time first.',
@@ -522,7 +522,7 @@ const T={
     btn_next:'Devam',btn_back:'Geri',
     res_submit:'Rezervasyonu Onayla',
     confirm_title:'Rezervasyon Alındı!',
-    confirm_desc:'Rezervasyonunuz için teşekkür ederiz. Kısa süre içinde e-posta ile onay alacaksınız.',
+    confirm_desc:'Rezervasyonunuz için teşekkür ederiz. Onay ve iptal/onaylama linkini almak için e-posta kutunuzu kontrol edin.',
     back_site:'Siteye dön',
     lbl_date:'Tarih',lbl_time:'Saat',lbl_persons:'Kişi',lbl_name:'Ad',lbl_phone:'Telefon',
     err_fields:'Lütfen tüm zorunlu alanları doldurun.',err_time:'Lütfen önce bir saat seçin.',
@@ -787,11 +787,7 @@ async function submitForm(e){
         <div class="sum-row"><span class="sum-key">${t('lbl_persons')}</span><span class="sum-val">${personCount}</span></div>
         <div class="sum-row"><span class="sum-key">${t('lbl_phone')}</span><span class="sum-val">${phone}</span></div>
       </div>
-      ${rid?`<div style="margin-top:1.5rem;display:flex;flex-direction:column;gap:.7rem;align-items:center">
-        <a href="${base}confirm.html?id=${rid}" style="display:inline-block;padding:.6rem 1.6rem;border-radius:6px;background:#4CAF50;color:#fff;text-decoration:none;font-size:.85rem;letter-spacing:.5px">${t('lnk_confirm')}</a>
-        <a href="${base}cancel.html?id=${rid}" style="display:inline-block;padding:.6rem 1.6rem;border-radius:6px;border:1px solid #e74c3c;color:#e74c3c;text-decoration:none;font-size:.85rem;letter-spacing:.5px">${t('lnk_cancel')}</a>
-      </div>`:''}
-      <a href="index.html" class="back-site" style="margin-top:1rem">${t('back_site')}</a>
+      <a href="index.html" class="back-site">${t('back_site')}</a>
     </div>
   </div>`;
 }
