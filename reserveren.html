@@ -76,6 +76,7 @@ a{text-decoration:none;color:inherit}
 .time-chip{background:var(--card2);border:1px solid var(--border2);padding:.6rem .3rem;border-radius:8px;text-align:center;cursor:pointer;font-size:.84rem;color:var(--muted);transition:all .18s;user-select:none}
 .time-chip:hover{border-color:var(--gold);color:var(--gold-light)}
 .time-chip.selected{background:var(--gold);border-color:var(--gold);color:#111;font-weight:600}
+.time-chip.disabled{opacity:.25;cursor:not-allowed;pointer-events:none}
 
 /* ── PERSON COUNTER ── */
 .person-block{display:flex;flex-direction:column;align-items:center;padding:1.5rem 0 1rem}
@@ -655,17 +656,27 @@ function renderCal(){
 
 function selectDate(ds){
   selectedDate=ds;
+  selectedTime=null;
   renderCal();
+  buildTimeGrid();
   document.getElementById('btnDate').disabled=false;
 }
 
 /* ── TIME ── */
 function buildTimeGrid(){
   const grid=document.getElementById('timeGrid');
+  const now=new Date();
+  const todayStr=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+  const isToday=selectedDate===todayStr;
+  const nowMins=now.getHours()*60+now.getMinutes();
   grid.innerHTML=TIMES.map(ti=>{
-    const sel=ti===selectedTime?' selected':'';
-    return`<div class="time-chip${sel}" onclick="selectTime('${ti}',this)">${ti}</div>`;
+    const [h,m]=ti.split(':').map(Number);
+    const isPast=isToday&&(h*60+m)<=nowMins;
+    const sel=ti===selectedTime&&!isPast?' selected':'';
+    if(isPast&&ti===selectedTime)selectedTime=null;
+    return`<div class="time-chip${sel}${isPast?' disabled':''}" ${!isPast?`onclick="selectTime('${ti}',this)"`:''}>${ti}</div>`;
   }).join('');
+  if(isToday&&selectedTime===null)document.getElementById('btnTime').disabled=true;
 }
 
 function selectTime(ti,el){
