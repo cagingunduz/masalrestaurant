@@ -580,7 +580,7 @@ async function loadShifts(){
   const staff=profiles.filter(p=>p.role!=='admin'||profiles.length===1);
   const rows=staff.length?staff.map(p=>{
     let weekTotal=0;
-    const tint=hexTint(p.color,0.12);
+    const tint=hexTint(p.color,0.28);
     const bg=tint?`style="background:${tint}"`:'';
     const cells=DN.map((_,i)=>{
       const cell=matrix[p.id]?.[i];
