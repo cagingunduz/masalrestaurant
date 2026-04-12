@@ -56,6 +56,9 @@ tr:hover td{background:#fcfbf7}
 .badge.new{background:#fff4d6;color:#9c7e3e}
 .badge.confirmed{background:#d4edda;color:#155724}
 .badge.cancelled{background:#f8d7da;color:#721c24}
+tr.cancelled-row{position:relative}
+tr.cancelled-row td{color:#aaa!important;text-decoration:line-through}
+tr.cancelled-row::after{content:'';position:absolute;top:50%;left:0;width:100%;height:2px;background:#e74c3c;pointer-events:none}
 .empty{text-align:center;padding:3rem;color:var(--muted);background:#fff;border-radius:10px}
 
 .input,.select{padding:.55rem .8rem;border:1px solid #ddd;border-radius:6px;font-size:.85rem;outline:none;background:#fff}
@@ -451,7 +454,7 @@ async function loadReservations(){
   c.innerHTML=`<table>
     <thead><tr><th>${t('col_date')}</th><th>${t('col_time')}</th><th>${t('col_name')}</th><th>${t('col_phone')}</th><th>${t('col_email')}</th><th>${t('col_persons')}</th><th>${t('col_notes')}</th><th>${t('col_status')}</th><th>${t('col_actions')}</th></tr></thead>
     <tbody>${data.map(r=>`
-      <tr>
+      <tr${r.status==='cancelled'?' class="cancelled-row"':''}>
         <td>${r.date||''}</td>
         <td>${r.time||''}</td>
         <td>${esc(r.name)}</td>
