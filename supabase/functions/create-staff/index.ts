@@ -16,13 +16,18 @@ Deno.serve(async (req) => {
     { auth: { autoRefreshToken: false, persistSession: false } }
   )
 
-  const { name, email, password, color, department } = await req.json()
+  const { name, password, color, department } = await req.json()
 
-  if (!name || !email || !password) {
-    return new Response(JSON.stringify({ error: 'name, email and password are required' }), {
+  if (!name || !password) {
+    return new Response(JSON.stringify({ error: 'name and password are required' }), {
       status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })
   }
+
+  // Auto-generate internal email — not shown to anyone
+  const slug = name.toLowerCase().replace(/\s+/g, '.').replace(/[^a-z0-9.]/g, '')
+  const rand = Math.random().toString(36).slice(2, 6)
+  const email = `${slug}.${rand}@masalstaff.internal`
 
   // Create Supabase Auth user
   const { data: authData, error: authError } = await supabase.auth.admin.createUser({
