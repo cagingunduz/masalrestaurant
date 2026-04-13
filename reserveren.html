@@ -671,7 +671,7 @@ function buildTimeGrid(){
   const nowMins=now.getHours()*60+now.getMinutes();
   grid.innerHTML=TIMES.map(ti=>{
     const [h,m]=ti.split(':').map(Number);
-    const isPast=isToday&&(h*60+m)<=nowMins;
+    const isPast=isToday&&(h*60+m)<=(nowMins+30);
     const sel=ti===selectedTime&&!isPast?' selected':'';
     if(isPast&&ti===selectedTime)selectedTime=null;
     return`<div class="time-chip${sel}${isPast?' disabled':''}" ${!isPast?`onclick="selectTime('${ti}',this)"`:''}>${ti}</div>`;
