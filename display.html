@@ -49,13 +49,23 @@ main{flex:1;padding:2rem 2.5rem;overflow:auto}
 .type-badge.party{background:rgba(180,100,255,.2);color:#c87eff;border:1px solid rgba(180,100,255,.3)}
 .type-badge.res{background:rgba(198,165,92,.12);color:var(--gold);border:1px solid rgba(198,165,92,.25)}
 
-/* status cell — all inline */
-.status-cell{display:flex;align-items:center;gap:.4rem;white-space:nowrap}
-.status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+/* status cell */
+.status-cell{display:flex;align-items:center;gap:.55rem;white-space:nowrap;flex-wrap:wrap}
+.status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 .status-dot.new{background:var(--gold)}
 .status-dot.confirmed{background:#4CAF50}
 .status-dot.cancelled{background:#c0392b}
 .status-dot.arrived{background:#2196F3}
+
+/* action buttons in table */
+.action-btn{display:inline-flex;align-items:center;gap:.3rem;padding:.22rem .65rem;border-radius:20px;font-size:.68rem;letter-spacing:1px;text-transform:uppercase;font-family:'Jost',sans-serif;font-weight:500;cursor:pointer;border:1px solid;transition:all .18s;line-height:1.4}
+.action-btn:hover{opacity:.8;transform:translateY(-1px)}
+.action-btn:active{transform:translateY(0)}
+.action-btn.confirm{background:transparent;border-color:rgba(198,165,92,.5);color:var(--gold)}
+.action-btn.confirm:hover{background:rgba(198,165,92,.12);border-color:var(--gold)}
+.action-btn.arrived{background:transparent;border-color:rgba(76,175,80,.5);color:#4CAF50}
+.action-btn.arrived:hover{background:rgba(76,175,80,.1);border-color:#4CAF50}
+.action-btn:disabled{opacity:.4;cursor:default;transform:none}
 
 .persons-badge{display:inline-flex;align-items:center;gap:.35rem;color:var(--muted);font-size:.85rem;white-space:nowrap}
 .name-cell{font-weight:500}
@@ -214,7 +224,7 @@ async function confirmRow(id,type){
   await sb.from(table).update({status:'confirmed'}).eq('id',id);
   // Update button instantly
   const btn=document.getElementById('cb-'+id);
-  if(btn){btn.textContent=t('btn_confirmed');btn.className='btn-confirm done';btn.disabled=true}
+  if(btn){btn.outerHTML=`<button id="ab-${id}" class="action-btn arrived" onclick="arrivedRow('${id}','${type}')">↓ ${t('btn_arrived')}</button>`}
   // Update dot
   const dot=document.getElementById('dot-'+id);
   if(dot){dot.className='status-dot confirmed'}
@@ -310,7 +320,7 @@ function renderTable(rows,showTime){
         <td><span class="type-badge ${isParty?'party':'res'}">${t(isParty?'type_party':'type_res')}</span></td>
         <td>${persons}</td>
         <td>${esc(r.phone||'')}</td>
-        <td><div class="status-cell"><span id="dot-${r.id}" class="status-dot ${r.status||'new'}"></span><span id="lbl-${r.id}">${t('status_'+(r.status||'new'))}</span>${(r.status||'new')==='new'?`<button id="cb-${r.id}" class="btn-confirm" onclick="confirmRow('${r.id}','${r._type==='party'?'party':'res'}')">${t('btn_confirm')}</button>`:''}${r.status==='confirmed'?`<button id="ab-${r.id}" class="btn-confirm" style="background:#2196F3" onclick="arrivedRow('${r.id}','${r._type==='party'?'party':'res'}')">${t('btn_arrived')}</button>`:''}</div></td>
+        <td><div class="status-cell"><span id="dot-${r.id}" class="status-dot ${r.status||'new'}"></span><span id="lbl-${r.id}">${t('status_'+(r.status||'new'))}</span>${(r.status||'new')==='new'?`<button id="cb-${r.id}" class="action-btn confirm" onclick="confirmRow('${r.id}','${r._type==='party'?'party':'res'}')">✓ ${t('btn_confirm')}</button>`:''}${r.status==='confirmed'?`<button id="ab-${r.id}" class="action-btn arrived" onclick="arrivedRow('${r.id}','${r._type==='party'?'party':'res'}')">↓ ${t('btn_arrived')}</button>`:''}</div></td>
         <td><div class="notes-cell">${esc(notes||'—')}</div></td>
       </tr>`;
     }).join('')}</tbody></table>`;
