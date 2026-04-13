@@ -1,0 +1,41 @@
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
+  }
+
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  )
+
+  const { userId } = await req.json()
+
+  if (!userId) {
+    return new Response(JSON.stringify({ error: 'userId is required' }), {
+      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    })
+  }
+
+  // Delete profile (ignore error if already gone)
+  await supabase.from('profiles').delete().eq('id', userId)
+
+  // Delete Auth user — ignore "User not found" for legacy staff without Auth accounts
+  const { error } = await supabase.auth.admin.deleteUser(userId)
+  if (error && !error.message.includes('User not found')) {
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    })
+  }
+
+  return new Response(JSON.stringify({ success: true }), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+  })
+})

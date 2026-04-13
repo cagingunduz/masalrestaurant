@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Masal Admin</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--gold:#c6a55c;--gold-dark:#9c7e3e;--dark:#1a1a1a;--bg:#f7f5f0;--muted:#888}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,system-ui,sans-serif;background:var(--bg);color:#222;min-height:100vh}
+.login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:2rem}
+.login-box{background:#fff;padding:2.5rem;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.1);max-width:380px;width:100%;text-align:center}
+.login-box .login-logo{height:60px;width:auto;margin-bottom:.3rem;filter:invert(72%) sepia(40%) saturate(400%) hue-rotate(5deg) brightness(95%)}
+.login-box p{color:var(--muted);font-size:.9rem;margin-bottom:1.5rem}
+.login-box input{width:100%;padding:.85rem 1rem;border:1px solid #ddd;border-radius:8px;font-size:.95rem;margin-bottom:1rem;outline:none}
+.login-box input:focus{border-color:var(--gold)}
+.login-box button{width:100%;padding:.85rem;background:var(--gold);color:#fff;border:none;border-radius:8px;font-size:.95rem;font-weight:500;cursor:pointer;letter-spacing:1px;text-transform:uppercase}
+.login-box button:hover{background:var(--gold-dark)}
+.login-error{color:#c0392b;font-size:.85rem;margin-top:.5rem;min-height:1.2em}
+
+header{background:var(--dark);color:#fff;padding:1.2rem 2rem;display:flex;align-items:center;justify-content:space-between}
+header .logo{height:40px;width:auto;filter:brightness(0) invert(1)}
+header .user{display:flex;align-items:center;gap:1rem;font-size:.9rem;color:#bbb}
+header button{background:transparent;border:1px solid var(--gold);color:var(--gold);padding:.4rem .9rem;border-radius:6px;cursor:pointer;font-size:.8rem;letter-spacing:1px;text-transform:uppercase}
+header button:hover{background:var(--gold);color:#fff}
+.lang-switch{display:flex;gap:.3rem;border:1px solid rgba(198,165,92,.3);border-radius:6px;padding:.2rem}
+.lang-switch button{border:none;background:transparent;color:#bbb;padding:.25rem .55rem;font-size:.75rem;border-radius:4px;cursor:pointer;letter-spacing:.5px}
+.lang-switch button.active{background:var(--gold);color:#fff}
+
+.tabs{background:#fff;border-bottom:1px solid #e5e1d8;display:flex;padding:0 2rem}
+.tab{padding:1rem 1.4rem;cursor:pointer;color:var(--muted);font-size:.85rem;letter-spacing:1px;text-transform:uppercase;border-bottom:2px solid transparent;transition:all .2s}
+.tab:hover{color:#222}
+.tab.active{color:var(--gold-dark);border-bottom-color:var(--gold)}
+
+main{padding:2rem}
+.section{display:none}
+.section.active{display:block}
+.toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;gap:1rem;flex-wrap:wrap}
+.toolbar h2{font-family:Georgia,serif;font-size:1.4rem}
+.toolbar .actions{display:flex;gap:.6rem;align-items:center}
+.btn{background:var(--gold);color:#fff;border:none;padding:.6rem 1.2rem;border-radius:6px;cursor:pointer;font-size:.85rem;letter-spacing:.5px}
+.btn:hover{background:var(--gold-dark)}
+.btn.ghost{background:transparent;color:var(--gold-dark);border:1px solid var(--gold)}
+.btn.ghost:hover{background:var(--gold);color:#fff}
+.btn.danger{background:#c0392b}
+.btn.danger:hover{background:#922b21}
+.btn.small{padding:.35rem .7rem;font-size:.75rem}
+
+table{width:100%;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.04);border-collapse:collapse}
+th{background:#fafafa;text-align:left;padding:.9rem 1rem;font-size:.72rem;letter-spacing:1px;text-transform:uppercase;color:var(--muted);font-weight:500;border-bottom:1px solid #eee}
+td{padding:.9rem 1rem;font-size:.88rem;border-bottom:1px solid #f3f3f3;vertical-align:top}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fcfbf7}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:20px;font-size:.7rem;letter-spacing:.5px;text-transform:uppercase}
+.badge.new{background:#fff4d6;color:#9c7e3e}
+.badge.confirmed{background:#d4edda;color:#155724}
+.badge.cancelled{background:#f8d7da;color:#721c24}
+tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background:linear-gradient(transparent calc(50% - 1px),#e74c3c calc(50% - 1px),#e74c3c calc(50% + 1px),transparent calc(50% + 1px))!important}
+.empty{text-align:center;padding:3rem;color:var(--muted);background:#fff;border-radius:10px}
+
+.input,.select{padding:.55rem .8rem;border:1px solid #ddd;border-radius:6px;font-size:.85rem;outline:none;background:#fff}
+.input:focus,.select:focus{border-color:var(--gold)}
+
+/* Shifts — Excel table */
+.week-label{font-size:.88rem;font-weight:500;color:#444;background:#f7f5f0;padding:.35rem .9rem;border-radius:6px;border:1px solid #e5e1d8;white-space:nowrap}
+.sched-wrap{overflow-x:auto;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.04)}
+.sched-table{width:100%;border-collapse:collapse;background:#fff;min-width:720px}
+.sched-th{background:#fafafa;text-align:center;padding:.6rem .4rem;font-size:.68rem;letter-spacing:1px;text-transform:uppercase;color:var(--muted);border-bottom:2px solid #eee;border-right:1px solid #eee;white-space:nowrap;min-width:105px}
+.sched-th.staff-th{text-align:left;min-width:155px;padding-left:1rem;border-right:2px solid #e0dbd0}
+.sched-th.total-th{min-width:64px;border-right:none;border-left:2px solid #e0dbd0;background:#fdf9f4}
+.sched-th.wknd{background:#fff9ef}
+.sched-tr:hover .sched-td:not([style*="background"]){background:#fcfbf7}
+.sched-td{padding:0;border-bottom:1px solid #f0ece4;border-right:1px solid #f0ece4;position:relative}
+.sched-td.staff-td{padding:.45rem 1rem;background:#fafafa;border-right:2px solid #e0dbd0;white-space:nowrap;font-size:.85rem;font-weight:500;vertical-align:middle}
+.staff-dept{display:block;font-size:.7rem;font-weight:400;color:#aaa;margin-top:.1rem;letter-spacing:.3px}
+.sched-td.total-td{text-align:center;background:#fdf9f4;border-left:2px solid #e0dbd0;border-right:none;padding:.4rem .3rem;font-size:.8rem;font-weight:600;color:var(--gold-dark);vertical-align:middle}
+.sched-td.wknd{background:#fffcf5}
+.sched-cell{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:54px;cursor:pointer;padding:.35rem .25rem;transition:background .12s;text-align:center;gap:2px}
+.sched-cell:hover{background:#fdf8f0}
+.sv-time{font-size:.82rem;font-weight:600;color:#222;letter-spacing:.2px}
+.sv-hrs{font-size:.67rem;color:var(--muted)}
+.sched-cell.empty{color:#d0cbc0;font-size:1.3rem;line-height:1}
+.sched-cell.empty:hover{color:var(--gold)}
+.staff-dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0}
+.del-staff-btn{background:none;border:none;color:#ccc;cursor:pointer;font-size:.8rem;margin-left:.4rem;padding:.1rem .3rem;border-radius:3px;line-height:1;vertical-align:middle}
+.del-staff-btn:hover{color:#c0392b;background:#fff0ee}
+/* cell edit modal */
+.cell-modal{max-width:270px}
+.time-row{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:100;padding:1rem}
+.modal-bg.open{display:flex}
+.modal{background:#fff;padding:2rem;border-radius:12px;max-width:480px;width:100%;max-height:90vh;overflow-y:auto}
+.modal h3{font-family:Georgia,serif;font-size:1.3rem;margin-bottom:1rem}
+.modal label{display:block;font-size:.75rem;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin:.8rem 0 .3rem}
+.modal input,.modal select{width:100%;padding:.6rem .8rem;border:1px solid #ddd;border-radius:6px;font-size:.9rem;outline:none}
+.modal-actions{display:flex;gap:.6rem;justify-content:flex-end;margin-top:1.5rem}
+.staff-list{display:flex;flex-direction:column;gap:.4rem;max-height:240px;overflow-y:auto;border:1px solid #eee;border-radius:6px;padding:.5rem}
+.staff-row{display:flex;align-items:center;gap:.6rem;padding:.4rem;border-radius:5px;cursor:pointer}
+.staff-row:hover{background:#fafafa}
+.staff-row input{width:auto}
+
+/* HACCP table */
+.haccp-th{background:#fafafa;padding:.6rem .5rem;font-size:.72rem;letter-spacing:.8px;text-transform:uppercase;color:#888;font-weight:600;border-bottom:2px solid #eee;border-right:1px solid #eee;text-align:center;white-space:nowrap}
+.haccp-th.loc-th{text-align:left;min-width:160px;padding-left:1rem;border-right:2px solid #e0dbd0}
+.haccp-th.norm-th{min-width:80px;border-right:2px solid #e0dbd0}
+.haccp-th.wknd{background:#fff9ef;color:var(--gold-dark)}
+.haccp-td{padding:0;border-bottom:1px solid #f0ece4;border-right:1px solid #f0ece4;text-align:center}
+.haccp-td.loc-td{padding:.55rem 1rem;background:#fafafa;border-right:2px solid #e0dbd0;text-align:left;font-size:.85rem;font-weight:500;white-space:nowrap}
+.haccp-td.norm-td{padding:.4rem .6rem;background:#fafaf7;border-right:2px solid #e0dbd0;font-size:.78rem;color:#888;white-space:nowrap}
+.haccp-cell{min-height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:.3rem .2rem;transition:background .1s;font-size:.82rem;font-weight:600;color:#444}
+.haccp-cell:hover{background:#fdf8f0}
+.haccp-cell.ok{background:#d4edda;color:#155724}
+.haccp-cell.nok{background:#f8d7da;color:#721c24}
+.haccp-cell.empty{color:#ccc;font-weight:400}
+
+@media(max-width:900px){
+  table{font-size:.8rem}
+  th,td{padding:.6rem .5rem}
+  .sched-wrap{border-radius:6px}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="loginWrap">
+  <div class="login-box">
+    <img class="login-logo" src="https://i0.wp.com/masalrestaurant.nl/wp-content/uploads/2021/11/Masal_Logo_DEF.png?fit=600%2C304&ssl=1" alt="Masal">
+    <p data-i18n="login_subtitle">Voer uw wachtwoord in om door te gaan</p>
+    <form onsubmit="login(event)">
+      <input type="password" id="pw" data-i18n-ph="password" placeholder="Wachtwoord" autocomplete="current-password" required>
+      <button type="submit" data-i18n="login_btn">Inloggen</button>
+      <div class="login-error" id="loginErr"></div>
+    </form>
+    <div style="margin-top:1rem;display:flex;justify-content:center;gap:.3rem">
+      <div class="lang-switch" style="border-color:#ddd">
+        <button id="langNL2" class="active" onclick="setLang('nl')" style="color:#888">NL</button>
+        <button id="langTR2" onclick="setLang('tr')" style="color:#888">TR</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN APP -->
+<div id="app" style="display:none">
+  <header>
+    <img class="logo" src="https://i0.wp.com/masalrestaurant.nl/wp-content/uploads/2021/11/Masal_Logo_DEF.png?fit=600%2C304&ssl=1" alt="Masal">
+    <div class="user">
+      <div class="lang-switch">
+        <button id="langNL" class="active" onclick="setLang('nl')">NL</button>
+        <button id="langTR" onclick="setLang('tr')">TR</button>
+      </div>
+      <span id="userName"></span>
+      <button onclick="logout()" data-i18n="logout">Uitloggen</button>
+    </div>
+  </header>
+  <div class="tabs">
+    <div class="tab active" data-tab="reservations" data-i18n="tab_reservations" onclick="switchTab('reservations')">Reserveringen</div>
+    <div class="tab" data-tab="party" data-i18n="tab_party" onclick="switchTab('party')">Feest aanvragen</div>
+    <div class="tab" data-tab="shifts" data-i18n="tab_shifts" onclick="switchTab('shifts')">Shifts</div>
+    <div class="tab" data-tab="haccp" onclick="switchTab('haccp')">HACCP</div>
+  </div>
+  <main>
+
+    <!-- RESERVATIONS -->
+    <section class="section active" id="sec-reservations">
+      <div class="toolbar">
+        <h2 data-i18n="tab_reservations">Reserveringen</h2>
+        <div class="actions">
+          <select class="select" id="resFilter" onchange="loadReservations()">
+            <option value="all" data-i18n="filter_all">Alle</option>
+            <option value="new" data-i18n="status_new">Nieuw</option>
+            <option value="confirmed" data-i18n="status_confirmed">Bevestigd</option>
+            <option value="cancelled" data-i18n="status_cancelled">Geannuleerd</option>
+          </select>
+          <button class="btn ghost" onclick="loadReservations()" data-i18n="refresh">Vernieuwen</button>
+        </div>
+      </div>
+      <div id="resContainer"></div>
+    </section>
+
+    <!-- PARTY REQUESTS -->
+    <section class="section" id="sec-party">
+      <div class="toolbar">
+        <h2 data-i18n="tab_party">Feest aanvragen</h2>
+        <div class="actions">
+          <button class="btn ghost" onclick="loadParty()" data-i18n="refresh">Vernieuwen</button>
+        </div>
+      </div>
+      <div id="partyContainer"></div>
+    </section>
+
+    <!-- SHIFTS -->
+    <section class="section" id="sec-shifts">
+      <div class="toolbar">
+        <h2 data-i18n="tab_shifts">Shifts</h2>
+        <div class="actions" style="flex-wrap:wrap;gap:.5rem">
+          <button class="btn ghost small" onclick="prevWeek()">←</button>
+          <span class="week-label" id="weekLabel">—</span>
+          <button class="btn ghost small" onclick="nextWeek()">→</button>
+          <input type="date" id="weekPicker" class="input" onchange="onWeekChange()" style="width:138px">
+          <button class="btn ghost small" onclick="openAddStaff()" data-i18n="add_staff">+ Medewerker</button>
+          <button class="btn ghost small" onclick="loadShifts()" title="Vernieuwen">↻</button>
+        </div>
+      </div>
+      <div class="sched-wrap">
+        <table class="sched-table" id="schedTable"></table>
+      </div>
+    </section>
+
+    <!-- HACCP -->
+    <section class="section" id="sec-haccp">
+      <div class="toolbar">
+        <h2 data-i18n="haccp_title">Registratie temperaturen</h2>
+        <div class="actions" style="flex-wrap:wrap;gap:.5rem">
+          <button class="btn ghost small" onclick="haccpPrevWeek()">←</button>
+          <span class="week-label" id="haccpWeekLabel">—</span>
+          <button class="btn ghost small" onclick="haccpNextWeek()">→</button>
+          <button class="btn ghost small" onclick="loadHaccp()" title="Vernieuwen">↻</button>
+          <button class="btn ghost small" onclick="printHaccp()">🖨 Print</button>
+          <button class="btn ghost small" onclick="haccpAutoFill()" title="Vul lege cellen automatisch in met geldige waarden">🎲 Auto</button>
+          <button class="btn small" onclick="openAddHaccpLoc()" style="margin-left:.3rem" data-i18n="haccp_add_btn">+ Locatie</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:1rem;margin-bottom:1rem;align-items:center;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:.4rem">
+          <div style="width:12px;height:12px;border-radius:3px;background:#d4edda;border:1px solid #c3e6cb"></div>
+          <span style="font-size:.8rem;color:#666" data-i18n="haccp_ok">Binnen norm</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:.4rem">
+          <div style="width:12px;height:12px;border-radius:3px;background:#f8d7da;border:1px solid #f5c6cb"></div>
+          <span style="font-size:.8rem;color:#666" data-i18n="haccp_nok">Afwijking</span>
+        </div>
+        <span style="font-size:.8rem;color:#999;margin-left:auto" data-i18n="haccp_hint">Klik op een cel om te bewerken</span>
+      </div>
+      <div style="overflow-x:auto;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.04)">
+        <table id="haccpTable" style="min-width:700px;background:#fff;border-collapse:collapse;width:100%">
+          <thead><tr id="haccpHeader"></tr></thead>
+          <tbody id="haccpBody"></tbody>
+        </table>
+      </div>
+      <div style="margin-top:1.5rem;background:#fff;border-radius:10px;padding:1.5rem;box-shadow:0 4px 20px rgba(0,0,0,.04)">
+        <h3 style="font-family:Georgia,serif;font-size:1.1rem;margin-bottom:1rem" data-i18n="haccp_notes_title">Opmerkingen / corrigerende maatregelen</h3>
+        <textarea id="haccpNotes" rows="3" class="input" data-i18n-ph="haccp_notes_ph" style="width:100%;resize:vertical;font-size:.9rem;line-height:1.5" placeholder="Notities..."></textarea>
+        <div style="display:flex;align-items:center;gap:.8rem;margin-top:.8rem;flex-wrap:wrap">
+          <label style="font-size:.85rem;color:#666;white-space:nowrap" data-i18n="haccp_paraaf">Paraaf:</label>
+          <input type="text" id="haccpParaaf" class="input" style="width:120px" data-i18n-ph="haccp_paraaf_ph" placeholder="Initialen...">
+          <button class="btn" onclick="saveHaccpNotes()" data-i18n="save">Opslaan</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- CELL EDIT MODAL -->
+<div class="modal-bg" id="cellModal">
+  <div class="modal cell-modal">
+    <h3 id="cellModalTitle" style="font-size:1rem;margin-bottom:1rem"></h3>
+    <div class="time-row">
+      <div>
+        <label data-i18n="start_time">Begintijd</label>
+        <input type="time" id="cellStart" class="input" style="width:100%">
+      </div>
+      <div>
+        <label data-i18n="end_time">Eindtijd</label>
+        <input type="time" id="cellEnd" class="input" style="width:100%">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn danger small" id="cellDeleteBtn" onclick="deleteCellShift()" style="margin-right:auto;display:none" data-i18n="delete">Wissen</button>
+      <button class="btn ghost" onclick="closeCellModal()" data-i18n="cancel">Annuleren</button>
+      <button class="btn" onclick="saveCellShift()" data-i18n="save">Opslaan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD HACCP LOCATION MODAL -->
+<div class="modal-bg" id="addHaccpLocModal">
+  <div class="modal" style="max-width:360px">
+    <h3 data-i18n="haccp_add_title">Locatie toevoegen</h3>
+    <label data-i18n="haccp_lbl_nl">Naam (NL)</label>
+    <input type="text" id="haccpLocNL" class="input" style="width:100%" placeholder="bijv. Koelkast keuken">
+    <label data-i18n="haccp_lbl_tr">Naam (TR)</label>
+    <input type="text" id="haccpLocTR" class="input" style="width:100%" placeholder="örn. Mutfak buzdolabı">
+    <label data-i18n="haccp_lbl_norm">Norm</label>
+    <input type="text" id="haccpLocNorm" class="input" style="width:100%" placeholder="bijv. Max. 7°C">
+    <label data-i18n="haccp_lbl_type">Type</label>
+    <select id="haccpLocType" class="select" style="width:100%" onchange="haccpTypeChange()">
+      <option value="temp">Temperatuur max (Max. 7°C)</option>
+      <option value="temp_min">Temperatuur min (< -18°C)</option>
+      <option value="temp_hot">Temperatuur heet (> 60°C)</option>
+      <option value="text">Vrije tekst</option>
+      <option value="check">Ja / Nee</option>
+    </select>
+    <div id="haccpThresholdWrap" style="margin-top:.5rem">
+      <label id="haccpThresholdLabel">Grenswaarde</label>
+      <input type="number" id="haccpLocThreshold" class="input" style="width:100%" placeholder="bijv. 7">
+    </div>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeAddHaccpLoc()" data-i18n="cancel">Annuleren</button>
+      <button class="btn" onclick="saveHaccpLoc()" data-i18n="save">Opslaan</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT STAFF MODAL -->
+<div class="modal-bg" id="editStaffModal">
+  <div class="modal" style="max-width:320px">
+    <h3 data-i18n="edit_staff_title">Medewerker bewerken</h3>
+    <input type="hidden" id="editStaffId">
+    <label data-i18n="staff_dept">Afdeling / Bölüm</label>
+    <input type="text" id="editStaffDept" class="input" style="width:100%" placeholder="bijv. Keuken, Bar...">
+    <label data-i18n="staff_pass">Nieuw wachtwoord</label>
+    <input type="password" id="editStaffPass" class="input" style="width:100%" placeholder="Leeg = ongewijzigd">
+    <label data-i18n="color">Kleur</label><br>
+    <input type="color" id="editStaffColor" style="margin-top:.3rem;height:38px;width:60px;border:1px solid #ddd;border-radius:6px;cursor:pointer;padding:2px">
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeEditStaff()" data-i18n="cancel">Annuleren</button>
+      <button class="btn" onclick="saveEditStaff()" data-i18n="save">Opslaan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD STAFF MODAL -->
+<div class="modal-bg" id="addStaffModal">
+  <div class="modal" style="max-width:320px">
+    <h3 data-i18n="add_staff_title">Medewerker toevoegen</h3>
+    <label data-i18n="f_name">Naam</label>
+    <input type="text" id="newStaffName" class="input" style="width:100%" data-i18n-ph="name_ph" placeholder="Volledige naam">
+    <label data-i18n="staff_dept">Afdeling / Bölüm</label>
+    <input type="text" id="newStaffDept" class="input" style="width:100%" placeholder="bijv. Keuken, Bar, Bediening...">
+    <label data-i18n="staff_pass">Şifre</label>
+    <input type="password" id="newStaffPass" class="input" style="width:100%" placeholder="••••••••">
+    <label data-i18n="color">Kleur</label><br>
+    <input type="color" id="newStaffColor" value="#c6a55c" style="margin-top:.3rem;height:38px;width:60px;border:1px solid #ddd;border-radius:6px;cursor:pointer;padding:2px">
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeAddStaff()" data-i18n="cancel">Annuleren</button>
+      <button class="btn" onclick="saveStaff()" data-i18n="save">Opslaan</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL='https://mytqxxdzfrropqcrhipv.supabase.co';
+const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15dHF4eGR6ZnJyb3BxY3JoaXB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MjgwMTUsImV4cCI6MjA5MTAwNDAxNX0.eKAts80PGm6TTYSllnYq79UaG0_ERJi7FBLnh2GgG4I';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
+
+const ADMIN_PASSWORD='blabla';
+const DAY_NAMES_NL=['Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag','Zondag'];
+const DAY_NAMES_TR=['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
+
+const I18N={
+  nl:{
+    login_subtitle:'Voer uw wachtwoord in om door te gaan',password:'Wachtwoord',login_btn:'Inloggen',login_error:'Ongeldig wachtwoord',
+    logout:'Uitloggen',
+    tab_reservations:'Reserveringen',tab_party:'Feest aanvragen',tab_shifts:'Shifts',
+    filter_all:'Alle',status_new:'Nieuw',status_confirmed:'Bevestigd',status_cancelled:'Geannuleerd',
+    refresh:'Vernieuwen',prev:'← Vorige',next:'Volgende →',
+    new_shift:'Nieuwe shift',edit_shift:'Shift bewerken',
+    date:'Datum',start_time:'Begintijd',end_time:'Eindtijd',assign_staff:'Personeel toewijzen',
+    delete:'Verwijderen',cancel:'Annuleren',save:'Opslaan',
+    no_reservations:'Geen reserveringen gevonden',no_party:'Geen aanvragen gevonden',
+    col_date:'Datum',col_time:'Tijd',col_name:'Naam',col_phone:'Telefoon',col_email:'E-mail',col_persons:'Personen',col_notes:'Notities',col_status:'Status',col_actions:'Acties',
+    col_type:'Type',col_guests:'Gasten',col_decor:'Aankleding',col_cake:'Taart',col_wishes:'Wensen',
+    add_staff:'+ Medewerker',add_staff_title:'Medewerker toevoegen',initials:'Initialen',color:'Kleur',
+    name_ph:'Volledige naam',initials_ph:'bijv. AK',hour_unit:'uur',
+    col_staff:'Medewerker',col_total:'Totaal',no_staff:'Geen medewerkers. Voeg er een toe.',
+    confirm_delete_res:'Reservering verwijderen?',confirm_delete_party:'Aanvraag verwijderen?',confirm_delete_staff:'Medewerker verwijderen?',
+    btn_confirm_res:'Bevestigen',btn_cancel_res:'Annuleren',confirm_cancel_res:'Reservering annuleren?',confirm_cancel_party:'Aanvraag annuleren?',
+    err:'Fout: ',time_required:'Tijd vereist',
+    haccp_title:'Registratie temperaturen',haccp_ok:'Binnen norm',haccp_nok:'Afwijking',
+    haccp_hint:'Klik op een cel om te bewerken',
+    haccp_notes_title:'Opmerkingen / corrigerende maatregelen',
+    haccp_notes_ph:'Notities...',haccp_paraaf:'Paraaf:',haccp_paraaf_ph:'Initialen...',
+    haccp_col_loc:'Locatie',haccp_col_norm:'Norm',
+    edit_staff_title:'Medewerker bewerken',
+    haccp_add_btn:'+ Locatie',haccp_add_title:'Locatie toevoegen',
+    haccp_lbl_nl:'Naam (NL)',haccp_lbl_tr:'Naam (TR)',haccp_lbl_norm:'Norm',haccp_lbl_type:'Type'
+  },
+  tr:{
+    login_subtitle:'Devam etmek için şifrenizi giriniz',password:'Şifre',login_btn:'Giriş Yap',login_error:'Geçersiz şifre',
+    logout:'Çıkış',
+    tab_reservations:'Rezervasyonlar',tab_party:'Etkinlik Talepleri',tab_shifts:'Vardiyalar',
+    filter_all:'Tümü',status_new:'Yeni',status_confirmed:'Onaylandı',status_cancelled:'İptal',
+    refresh:'Yenile',prev:'← Önceki',next:'Sonraki →',
+    date:'Tarih',start_time:'Başlangıç',end_time:'Bitiş',
+    delete:'Sil',cancel:'İptal',save:'Kaydet',
+    no_reservations:'Rezervasyon bulunamadı',no_party:'Talep bulunamadı',
+    col_date:'Tarih',col_time:'Saat',col_name:'Ad',col_phone:'Telefon',col_email:'E-posta',col_persons:'Kişi',col_notes:'Notlar',col_status:'Durum',col_actions:'İşlem',
+    col_type:'Tür',col_guests:'Misafir',col_decor:'Dekor',col_cake:'Pasta',col_wishes:'İstekler',
+    add_staff:'+ Personel',add_staff_title:'Personel ekle',initials:'Kısaltma',color:'Renk',
+    name_ph:'Tam adı',initials_ph:'örn. AK',hour_unit:'saat',
+    col_staff:'Personel',col_total:'Toplam',no_staff:'Personel yok. Yeni ekleyin.',
+    confirm_delete_res:'Rezervasyon silinsin mi?',confirm_delete_party:'Talep silinsin mi?',confirm_delete_staff:'Personel silinsin mi?',
+    btn_confirm_res:'Onayla',btn_cancel_res:'İptal Et',confirm_cancel_res:'Rezervasyon iptal edilsin mi?',confirm_cancel_party:'Talep iptal edilsin mi?',
+    err:'Hata: ',time_required:'Saat gerekli',
+    haccp_title:'Sıcaklık Kayıt Formu',haccp_ok:'Norm dahilinde',haccp_nok:'Sapma',
+    haccp_hint:'Düzenlemek için bir hücreye tıklayın',
+    haccp_notes_title:'Açıklamalar / düzeltici tedbirler',
+    haccp_notes_ph:'Notlar...',haccp_paraaf:'İmza:',haccp_paraaf_ph:'Baş harfler...',
+    haccp_col_loc:'Lokasyon',haccp_col_norm:'Norm',
+    edit_staff_title:'Personel düzenle',
+    haccp_add_btn:'+ Parça ekle',haccp_add_title:'Parça ekle',
+    haccp_lbl_nl:'Ad (NL)',haccp_lbl_tr:'Ad (TR)',haccp_lbl_norm:'Norm',haccp_lbl_type:'Tür'
+  }
+};
+
+let currentLang=localStorage.getItem('masalAdminLang')||'nl';
+function t(k){return (I18N[currentLang]&&I18N[currentLang][k])||k}
+function DAY_NAMES(){return currentLang==='tr'?DAY_NAMES_TR:DAY_NAMES_NL}
+
+function setLang(lang){
+  currentLang=lang;
+  localStorage.setItem('masalAdminLang',lang);
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const k=el.getAttribute('data-i18n');
+    if(I18N[lang]&&I18N[lang][k])el.textContent=I18N[lang][k];
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{
+    const k=el.getAttribute('data-i18n-ph');
+    if(I18N[lang]&&I18N[lang][k])el.placeholder=I18N[lang][k];
+  });
+  ['langNL','langTR','langNL2','langTR2'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.classList.toggle('active',id.toLowerCase().includes(lang));
+  });
+  document.documentElement.lang=lang;
+  // Reload current view to refresh dynamic content
+  if(document.getElementById('app').style.display!=='none'){
+    const active=document.querySelector('.tab.active');
+    if(active)switchTab(active.dataset.tab);
+  }
+}
+
+let currentWeek=null;
+let profiles=[];
+let selectedStaff=new Set();
+
+// === AUTH ===
+function login(e){
+  e.preventDefault();
+  const pw=document.getElementById('pw').value;
+  if(pw===ADMIN_PASSWORD){
+    sessionStorage.setItem('masalAdmin','1');
+    showApp();
+  }else{
+    document.getElementById('loginErr').textContent=t('login_error');
+  }
+}
+
+function logout(){
+  sessionStorage.removeItem('masalAdmin');
+  location.reload();
+}
+
+async function showApp(){
+  document.getElementById('loginWrap').style.display='none';
+  document.getElementById('app').style.display='block';
+  // Load admin profile name
+  const {data}=await sb.from('profiles').select('name').eq('role','admin').limit(1);
+  if(data&&data[0])document.getElementById('userName').textContent=data[0].name;
+  // Load all profiles for staff assignment
+  const {data:p}=await sb.from('profiles').select('*').order('name');
+  profiles=p||[];
+  // Default tab
+  loadReservations();
+  // Init shifts week to current Monday
+  currentWeek=mondayOf(new Date());
+  updateWeekLabel();
+  // Init HACCP week
+  haccpCurrentWeek=mondayOf(new Date());
+  // Realtime: auto-reload shifts and reservations on changes
+  sb.channel('admin-rt')
+    .on('postgres_changes',{event:'*',schema:'public',table:'shifts'},()=>{
+      if(document.querySelector('.tab.active')?.dataset.tab==='shifts')loadShifts();
+    })
+    .on('postgres_changes',{event:'*',schema:'public',table:'shift_assignments'},()=>{
+      if(document.querySelector('.tab.active')?.dataset.tab==='shifts')loadShifts();
+    })
+    .on('postgres_changes',{event:'*',schema:'public',table:'reservations'},()=>{
+      if(document.querySelector('.tab.active')?.dataset.tab==='reservations')loadReservations();
+    })
+    .subscribe();
+}
+
+if(sessionStorage.getItem('masalAdmin')==='1'){showApp()}
+
+// === TABS ===
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===name));
+  document.querySelectorAll('.section').forEach(s=>s.classList.toggle('active',s.id==='sec-'+name));
+  if(name==='reservations')loadReservations();
+  if(name==='party')loadParty();
+  if(name==='shifts')loadShifts();
+  if(name==='haccp')loadHaccp();
+}
+
+// === RESERVATIONS ===
+async function loadReservations(){
+  const filter=document.getElementById('resFilter').value;
+  let q=sb.from('reservations').select('*').order('date',{ascending:false}).order('time',{ascending:false});
+  if(filter!=='all')q=q.eq('status',filter);
+  const {data,error}=await q;
+  const c=document.getElementById('resContainer');
+  if(error){c.innerHTML=`<div class="empty">${t('err')}${error.message}</div>`;return}
+  if(!data||!data.length){c.innerHTML=`<div class="empty">${t('no_reservations')}</div>`;return}
+  c.innerHTML=`<table>
+    <thead><tr><th>${t('col_date')}</th><th>${t('col_time')}</th><th>${t('col_name')}</th><th>${t('col_phone')}</th><th>${t('col_email')}</th><th>${t('col_persons')}</th><th>${t('col_notes')}</th><th>${t('col_status')}</th><th>${t('col_actions')}</th></tr></thead>
+    <tbody>${data.map(r=>`
+      <tr${r.status==='cancelled'?' class="cancelled-row"':''}>
+        <td>${r.date||''}</td>
+        <td>${r.time||''}</td>
+        <td>${esc(r.name)}</td>
+        <td><a href="tel:${esc(r.phone)}">${esc(r.phone)}</a></td>
+        <td><a href="mailto:${esc(r.email||'')}">${esc(r.email||'')}</a></td>
+        <td>${esc(String(r.persons||''))}</td>
+        <td>${esc(r.notes||'')}</td>
+        <td><span class="badge ${r.status||'new'}">${t('status_'+(r.status||'new'))}</span></td>
+        <td style="display:flex;gap:.4rem;align-items:center">
+          ${(r.status||'new')==='new'?`<button class="btn small" style="background:#4CAF50;color:#fff" onclick="updateRes('${r.id}','confirmed')">${t('btn_confirm_res')}</button>`:''}
+          <button class="btn small danger" onclick="deleteRes('${r.id}')">×</button>
+        </td>
+      </tr>`).join('')}</tbody></table>`;
+}
+async function updateRes(id,status){
+  if(!status)return;
+  await sb.from('reservations').update({status}).eq('id',id);
+  loadReservations();
+}
+async function cancelRes(id){
+  if(!confirm(t('confirm_cancel_res')))return;
+  await sb.from('reservations').update({status:'cancelled'}).eq('id',id);
+  loadReservations();
+}
+async function deleteRes(id){
+  if(!confirm(t('confirm_delete_res')))return;
+  await sb.from('reservations').delete().eq('id',id);
+  loadReservations();
+}
+
+// === PARTY REQUESTS ===
+async function loadParty(){
+  const {data,error}=await sb.from('party_requests').select('*').order('created_at',{ascending:false});
+  const c=document.getElementById('partyContainer');
+  if(error){c.innerHTML=`<div class="empty">${t('err')}${error.message}</div>`;return}
+  if(!data||!data.length){c.innerHTML=`<div class="empty">${t('no_party')}</div>`;return}
+  c.innerHTML=`<table>
+    <thead><tr><th>${t('col_date')}</th><th>${t('col_type')}</th><th>${t('col_name')}</th><th>${t('col_phone')}</th><th>${t('col_email')}</th><th>${t('col_guests')}</th><th>${t('col_decor')}</th><th>${t('col_cake')}</th><th>${t('col_wishes')}</th><th>${t('col_actions')}</th></tr></thead>
+    <tbody>${data.map(r=>`
+      <tr>
+        <td>${r.event_date||''}</td>
+        <td>${esc(r.event_type||'')}</td>
+        <td>${esc(r.name)}</td>
+        <td><a href="tel:${esc(r.phone)}">${esc(r.phone)}</a></td>
+        <td><a href="mailto:${esc(r.email||'')}">${esc(r.email||'')}</a></td>
+        <td>${esc(String(r.guests||''))}</td>
+        <td>${esc(r.decoration||'')}</td>
+        <td>${esc(r.cake||'')}</td>
+        <td>${esc(r.wishes||'')}</td>
+        <td style="display:flex;gap:.4rem;align-items:center">
+          ${r.status!=='cancelled'?`<button class="btn small" style="background:#e67e22;color:#fff" onclick="cancelParty('${r.id}')">${t('btn_cancel_res')}</button>`:''}
+          <button class="btn small danger" onclick="deleteParty('${r.id}')">×</button>
+        </td>
+      </tr>`).join('')}</tbody></table>`;
+}
+async function cancelParty(id){
+  if(!confirm(t('confirm_cancel_party')))return;
+  await sb.from('party_requests').update({status:'cancelled'}).eq('id',id);
+  loadParty();
+}
+async function deleteParty(id){
+  if(!confirm(t('confirm_delete_party')))return;
+  await sb.from('party_requests').delete().eq('id',id);
+  loadParty();
+}
+
+// === SHIFTS ===
+let cellState={};
+
+function mondayOf(d){const x=new Date(d);const day=(x.getDay()+6)%7;x.setDate(x.getDate()-day);x.setHours(0,0,0,0);return x}
+function fmtDate(d){const pad=n=>String(n).padStart(2,'0');return`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`}
+function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x}
+
+function updateWeekLabel(){
+  const end=addDays(currentWeek,6);
+  const MO=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+  const s=currentWeek.getDate()+' '+MO[currentWeek.getMonth()];
+  const e=end.getDate()+' '+MO[end.getMonth()]+' '+end.getFullYear();
+  document.getElementById('weekLabel').textContent=s+' – '+e;
+  document.getElementById('weekPicker').value=fmtDate(currentWeek);
+}
+function onWeekChange(){const v=document.getElementById('weekPicker').value;if(!v)return;currentWeek=mondayOf(new Date(v+'T12:00:00'));updateWeekLabel();loadShifts()}
+function prevWeek(){currentWeek=addDays(currentWeek,-7);updateWeekLabel();loadShifts()}
+function nextWeek(){currentWeek=addDays(currentWeek,7);updateWeekLabel();loadShifts()}
+
+function hrsNum(s,e){const[sh,sm]=s.split(':').map(Number);const[eh,em]=e.split(':').map(Number);return((eh*60+em)-(sh*60+sm))/60}
+function hrsLabel(n){const u=t('hour_unit');return n<=0?'':n%1===0?n+' '+u:n.toFixed(1)+' '+u}
+function hexTint(hex,a){if(!hex||!hex.startsWith('#'))return '';const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return`rgba(${r},${g},${b},${a})`}
+
+async function loadShifts(){
+  if(!currentWeek)currentWeek=mondayOf(new Date());
+  updateWeekLabel();
+  const ws=fmtDate(currentWeek);
+  const{data:shifts=[]}=await sb.from('shifts').select('*').eq('week_start',ws);
+  const ids=(shifts||[]).map(s=>s.id);
+  let assigns=[];
+  if(ids.length){const{data}=await sb.from('shift_assignments').select('*').in('shift_id',ids);assigns=data||[];}
+
+  // matrix[staffId][dayIndex] = {shiftId, assignId, start, end}
+  const matrix={};
+  profiles.forEach(p=>{matrix[p.id]={}});
+  shifts.forEach(s=>{
+    assigns.filter(a=>a.shift_id===s.id).forEach(a=>{
+      if(matrix[a.staff_id]&&!matrix[a.staff_id][s.day_index])
+        matrix[a.staff_id][s.day_index]={shiftId:s.id,start:s.start_time,end:s.end_time};
+    });
+  });
+
+  const DN=currentLang==='tr'?['Pt','Sa','Ça','Pe','Cu','Ct','Pz']:['Ma','Di','Wo','Do','Vr','Za','Zo'];
+  const MO=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+
+  // Header
+  const thDays=DN.map((d,i)=>{
+    const dt=addDays(currentWeek,i);
+    const isWknd=i>=5;
+    return`<th class="sched-th${isWknd?' wknd':''}">${d}<br><small style="font-weight:400;font-size:.68rem">${dt.getDate()} ${MO[dt.getMonth()]}</small></th>`;
+  }).join('');
+
+  // Rows
+  const staff=profiles.filter(p=>p.role!=='admin'||profiles.length===1);
+  const rows=staff.length?staff.map(p=>{
+    let weekTotal=0;
+    const tint=hexTint(p.color,0.28);
+    const bg=tint?`style="background:${tint}"`:'';
+    const cells=DN.map((_,i)=>{
+      const cell=matrix[p.id]?.[i];
+      const isWknd=i>=5;
+      if(cell){
+        const h=hrsNum(cell.start,cell.end);weekTotal+=h;
+        const data=`'${p.id}',${i},'${cell.shiftId}','${cell.start}','${cell.end}'`;
+        return`<td class="sched-td${isWknd?' wknd':''}" ${bg}><div class="sched-cell filled" onclick="openCellModal(${data})"><span class="sv-time">${cell.start.slice(0,5)}–${cell.end.slice(0,5)}</span><span class="sv-hrs">${hrsLabel(h)}</span></div></td>`;
+      }else{
+        const data=`'${p.id}',${i},null,null,'09:00','17:00'`;
+        return`<td class="sched-td${isWknd?' wknd':''}" ${bg}><div class="sched-cell empty" onclick="openCellModal(${data})">+</div></td>`;
+      }
+    }).join('');
+    return`<tr class="sched-tr">
+      <td class="sched-td staff-td" ${bg}>
+        <span class="staff-dot" style="background:${p.color||'#aaa'}"></span>&nbsp;${esc(p.name||'?')}
+        <button class="del-staff-btn" onclick="openEditStaff('${p.id}',event)" title="Bewerken" style="color:#888">✎</button>
+        <button class="del-staff-btn" onclick="deleteStaff('${p.id}',event)" title="${t('confirm_delete_staff')}">✕</button>
+        ${p.department?`<span class="staff-dept">${esc(p.department)}</span>`:''}
+      </td>
+      ${cells}
+      <td class="sched-td total-td" ${bg}>${weekTotal>0?hrsLabel(weekTotal):'–'}</td>
+    </tr>`;
+  }).join(''):`<tr><td colspan="9" class="empty" style="padding:2rem">${t('no_staff')}</td></tr>`;
+
+  document.getElementById('schedTable').innerHTML=`
+    <thead><tr>
+      <th class="sched-th staff-th">${t('col_staff')}</th>
+      ${thDays}
+      <th class="sched-th total-th">${t('col_total')}</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>`;
+}
+
+// Cell modal
+function openCellModal(staffId,dayIndex,shiftId,start,end){
+  cellState={staffId,dayIndex,shiftId};
+  const p=profiles.find(x=>x.id===staffId);
+  const DN=currentLang==='tr'?['Pt','Sa','Ça','Pe','Cu','Ct','Pz']:['Ma','Di','Wo','Do','Vr','Za','Zo'];
+  const dt=addDays(currentWeek,dayIndex);
+  const MO=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+  document.getElementById('cellModalTitle').textContent=(p?.name||'?')+' · '+DN[dayIndex]+' '+dt.getDate()+' '+MO[dt.getMonth()];
+  document.getElementById('cellStart').value=start||'09:00';
+  document.getElementById('cellEnd').value=end||'17:00';
+  document.getElementById('cellDeleteBtn').style.display=shiftId?'inline-block':'none';
+  document.getElementById('cellModal').classList.add('open');
+}
+function closeCellModal(){document.getElementById('cellModal').classList.remove('open');cellState={}}
+
+async function saveCellShift(){
+  const{staffId,dayIndex,shiftId}=cellState;
+  const start_time=document.getElementById('cellStart').value;
+  const end_time=document.getElementById('cellEnd').value;
+  if(!start_time||!end_time){alert(t('time_required'));return}
+  if(shiftId){
+    await sb.from('shifts').update({start_time,end_time}).eq('id',shiftId);
+    sendShiftNotification(staffId,dayIndex,start_time,end_time,true);
+  }else{
+    const{data,error}=await sb.from('shifts').insert({week_start:fmtDate(currentWeek),day_index:dayIndex,start_time,end_time}).select().single();
+    if(error){alert(t('err')+error.message);return}
+    await sb.from('shift_assignments').insert({shift_id:data.id,staff_id:staffId});
+    sendShiftNotification(staffId,dayIndex,start_time,end_time,false);
+  }
+  closeCellModal();loadShifts();
+}
+
+async function sendShiftNotification(staffId,dayIndex,start,end,isUpdate){
+  try{
+    const{data:p}=await sb.from('profiles').select('push_token,name').eq('id',staffId).single();
+    if(!p?.push_token)return;
+    const DN=['Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag','Zondag'];
+    const day=DN[dayIndex];
+    const title=isUpdate?'Vardiya güncellendi 📅':'Yeni vardiya atandı 📅';
+    const body=`${day}: ${start.slice(0,5)} – ${end.slice(0,5)}`;
+    await fetch('https://exp.host/--/api/v2/push/send',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body:JSON.stringify({to:p.push_token,title,body,sound:'default'}),
+    });
+  }catch(e){/* bildirim hatası sessizce geç */}
+}
+
+async function deleteCellShift(){
+  const{shiftId,staffId}=cellState;
+  if(!shiftId)return;
+  await sb.from('shift_assignments').delete().eq('shift_id',shiftId).eq('staff_id',staffId);
+  const{count}=await sb.from('shift_assignments').select('*',{count:'exact',head:true}).eq('shift_id',shiftId);
+  if(!count)await sb.from('shifts').delete().eq('id',shiftId);
+  closeCellModal();loadShifts();
+}
+
+// Staff management
+function openEditStaff(id,e){
+  e.stopPropagation();
+  const p=profiles.find(x=>x.id===id);
+  if(!p)return;
+  document.getElementById('editStaffId').value=id;
+  document.getElementById('editStaffDept').value=p.department||'';
+  document.getElementById('editStaffPass').value='';
+  document.getElementById('editStaffColor').value=p.color||'#c6a55c';
+  document.getElementById('editStaffModal').style.display='flex';
+}
+function closeEditStaff(){document.getElementById('editStaffModal').style.display='none';}
+async function saveEditStaff(){
+  const id=document.getElementById('editStaffId').value;
+  const department=document.getElementById('editStaffDept').value.trim()||null;
+  const password=document.getElementById('editStaffPass').value||null;
+  const color=document.getElementById('editStaffColor').value;
+  const btn=document.querySelector('#editStaffModal .btn:not(.ghost)');
+  btn.disabled=true;
+  const res=await fetch(`${SUPABASE_URL}/functions/v1/update-staff`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_ANON},
+    body:JSON.stringify({userId:id,department,color,...(password?{password}:{})})
+  });
+  const json=await res.json();
+  btn.disabled=false;
+  if(!res.ok){alert(t('err')+(json.error||'Onbekende fout'));return}
+  const{data:p}=await sb.from('profiles').select('*').order('name');
+  profiles=p||[];
+  closeEditStaff();loadShifts();
+}
+
+function openAddStaff(){document.getElementById('newStaffName').value='';document.getElementById('newStaffDept').value='';document.getElementById('newStaffPass').value='';document.getElementById('newStaffColor').value='#c6a55c';document.getElementById('addStaffModal').classList.add('open')}
+function closeAddStaff(){document.getElementById('addStaffModal').classList.remove('open')}
+
+async function saveStaff(){
+  const name=document.getElementById('newStaffName').value.trim();
+  const color=document.getElementById('newStaffColor').value;
+  const department=document.getElementById('newStaffDept').value.trim()||null;
+  const password=document.getElementById('newStaffPass').value;
+  if(!name){alert(t('err')+'Naam vereist');return}
+  if(!password){alert(t('err')+'Şifre vereist');return}
+  const btn=document.querySelector('#addStaffModal .btn:not(.ghost)');
+  btn.disabled=true;
+  const res=await fetch(`${SUPABASE_URL}/functions/v1/create-staff`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_ANON},
+    body:JSON.stringify({name,password,color,department})
+  });
+  const json=await res.json();
+  btn.disabled=false;
+  if(!res.ok){alert(t('err')+(json.error||'Onbekende fout'));return}
+  const{data:p}=await sb.from('profiles').select('*').order('name');
+  profiles=p||[];
+  closeAddStaff();loadShifts();
+}
+
+async function deleteStaff(id,e){
+  e.stopPropagation();
+  if(!confirm(t('confirm_delete_staff')))return;
+  await sb.from('shift_assignments').delete().eq('staff_id',id);
+  const res=await fetch(`${SUPABASE_URL}/functions/v1/delete-staff`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_ANON},
+    body:JSON.stringify({userId:id})
+  });
+  if(!res.ok){const j=await res.json();alert(t('err')+(j.error||'Onbekende fout'));return}
+  profiles=profiles.filter(p=>p.id!==id);
+  loadShifts();
+}
+
+// === HACCP TEMPERATURE REGISTRATION ===
+const HACCP_LOCS=[
+  {key:'koelvriesruimte',label:'Koelvriesruimte',labelTR:'Soğuk depo',norm:'Max. 7°C',type:'temp',maxVal:7},
+  {key:'koelcel_1',label:'Koelcel',labelTR:'Soğuk hücre',norm:'Max. 7°C',type:'temp',maxVal:7},
+  {key:'koelcel_2',label:'Koelcel',labelTR:'Soğuk hücre',norm:'< -18°C',type:'temp_min',maxVal:-18},
+  {key:'vriezer_1',label:'Vriezer',labelTR:'Dondurucu',norm:'< -18°C',type:'temp_min',maxVal:-18},
+  {key:'vriezer_2',label:'Vriezer',labelTR:'Dondurucu',norm:'< -18°C',type:'temp_min',maxVal:-18},
+  {key:'vriezer_ijs',label:'Vriezer ijs',labelTR:'Buz dondurucusu',norm:'Max. 7°C',type:'temp',maxVal:7},
+  {key:'koelwerkbank_1',label:'Koelwerkbank',labelTR:'Soğutmalı tezgah',norm:'Max. 7°C',type:'temp',maxVal:7},
+  {key:'koelwerkbank_2',label:'Koelwerkbank',labelTR:'Soğutmalı tezgah',norm:'Max. 7°C',type:'temp',maxVal:7},
+  {key:'koelwerkbank_3',label:'Koelwerkbank',labelTR:'Soğutmalı tezgah',norm:'Max. 7°C',type:'temp',maxVal:7},
+  {key:'saladiere_1',label:'Saladiere',labelTR:'Salata ünitesi',norm:'Zie instr.',type:'text'},
+  {key:'saladiere_2',label:'Saladiere',labelTR:'Salata ünitesi',norm:'Zie instr.',type:'text'},
+  {key:'tht_fifo',label:'THT, FiFo, juiste scheiding',labelTR:'THT, FiFo, doğru ayrım',norm:'Zie schema',type:'check'},
+  {key:'afgedekt',label:'Afgedekt, codering',labelTR:'Kapalı, kodlama',norm:'> 60°C',type:'temp_hot',minVal:60},
+  {key:'reiniging',label:'Juiste reiniging en desinfectie',labelTR:'Temizlik ve dezenfeksiyon',norm:'> 80°C',type:'temp_hot',minVal:80},
+  {key:'vaatwasser',label:'Vaatwasser wastemperatuur (display)',labelTR:'Bulaşık makinesi sıcaklığı (ekran)',norm:'Zie instr.',type:'text'},
+  {key:'naspoeltemp',label:'Naspoeltemperatuur (display)',labelTR:'Son durulama sıcaklığı (ekran)',norm:'—',type:'text'},
+  {key:'softijs',label:'Softijsmachine pasteurisatie',labelTR:'Soft dondurma makinesi pastörizasyonu',norm:'Ja/Nee',type:'check'},
+];
+const HACCP_DAYS=['mon','tue','wed','thu','fri','sat','sun'];
+const HACCP_DAY_NL=['Ma','Di','Wo','Do','Vr','Za','Zo'];
+const HACCP_DAY_TR=['Pt','Sa','Ça','Pe','Cu','Ct','Pz'];
+function haccpDayLabels(){return currentLang==='tr'?HACCP_DAY_TR:HACCP_DAY_NL;}
+function haccpLocLabel(loc){return currentLang==='tr'?(loc.labelTR||loc.label):loc.label;}
+let haccpCurrentWeek=null;
+let haccpData={};
+let haccpNotesData={notes:'',paraaf:''};
+
+// Custom HACCP locations (stored in localStorage)
+let customHaccpLocs=JSON.parse(localStorage.getItem('haccp_custom_locs')||'[]');
+function saveCustomHaccpLocs(){localStorage.setItem('haccp_custom_locs',JSON.stringify(customHaccpLocs));}
+
+function openAddHaccpLoc(){
+  document.getElementById('haccpLocNL').value='';
+  document.getElementById('haccpLocTR').value='';
+  document.getElementById('haccpLocNorm').value='';
+  document.getElementById('haccpLocType').value='temp';
+  document.getElementById('haccpLocThreshold').value='';
+  haccpTypeChange();
+  document.getElementById('addHaccpLocModal').style.display='flex';
+}
+function closeAddHaccpLoc(){document.getElementById('addHaccpLocModal').style.display='none';}
+function haccpTypeChange(){
+  const type=document.getElementById('haccpLocType').value;
+  const wrap=document.getElementById('haccpThresholdWrap');
+  const lbl=document.getElementById('haccpThresholdLabel');
+  if(type==='temp'||type==='temp_min'){wrap.style.display='';lbl.textContent='Max waarde (°C)';}
+  else if(type==='temp_hot'){wrap.style.display='';lbl.textContent='Min waarde (°C)';}
+  else{wrap.style.display='none';}
+}
+function saveHaccpLoc(){
+  const label=document.getElementById('haccpLocNL').value.trim();
+  const labelTR=document.getElementById('haccpLocTR').value.trim();
+  const norm=document.getElementById('haccpLocNorm').value.trim();
+  const type=document.getElementById('haccpLocType').value;
+  const threshold=parseFloat(document.getElementById('haccpLocThreshold').value);
+  if(!label){alert('Naam (NL) is verplicht');return;}
+  const key='custom_'+Date.now();
+  const loc={key,label,labelTR:labelTR||label,norm:norm||'—',type,custom:true};
+  if(type==='temp'||type==='temp_min')loc.maxVal=isNaN(threshold)?7:threshold;
+  if(type==='temp_hot')loc.minVal=isNaN(threshold)?60:threshold;
+  customHaccpLocs.push(loc);
+  saveCustomHaccpLocs();
+  closeAddHaccpLoc();
+  renderHaccpTable();
+}
+function deleteHaccpLoc(key){
+  if(!confirm('Verwijderen?'))return;
+  customHaccpLocs=customHaccpLocs.filter(l=>l.key!==key);
+  saveCustomHaccpLocs();
+  renderHaccpTable();
+}
+
+function haccpRandVal(loc){
+  const r=(min,max)=>Math.round((min+(Math.random()*(max-min)))*10)/10;
+  if(loc.type==='check')return'ja';
+  if(loc.type==='text')return null;
+  if(loc.type==='temp'&&loc.maxVal!=null)return String(r(Math.max(0,loc.maxVal-5),loc.maxVal));
+  if(loc.type==='temp_min'&&loc.maxVal!=null)return String(r(loc.maxVal-8,loc.maxVal));
+  if(loc.type==='temp_hot'&&loc.minVal!=null)return String(r(loc.minVal,loc.minVal+15));
+  return null;
+}
+async function haccpAutoFill(){
+  const confirmMsg=currentLang==='tr'
+    ?'Boş hücreler otomatik doldurulsun mu? (Mevcut değerler değişmez)'
+    :'Lege cellen automatisch invullen met geldige waarden? (Bestaande waarden blijven ongewijzigd)';
+  if(!confirm(confirmMsg))return;
+  const{week,year}=getISOWeekNum(haccpCurrentWeek);
+  const allLocs=[...HACCP_LOCS,...customHaccpLocs];
+  const upserts=[];
+  for(const loc of allLocs){
+    if(loc.type==='text')continue;
+    const existing=haccpData[loc.key]||{};
+    const row={week_number:week,year,location_key:loc.key};
+    let changed=false;
+    for(const day of HACCP_DAYS){
+      const cur=existing[day];
+      const isEmpty=cur===null||cur===undefined||cur==='';
+      if(isEmpty){
+        const val=haccpRandVal(loc);
+        if(val!==null){row[day]=val;changed=true;}
+        else row[day]=cur??null;
+      }else{
+        row[day]=cur;
+      }
+    }
+    if(changed)upserts.push(row);
+  }
+  if(!upserts.length)return;
+  const{error}=await sb.from('temp_registrations')
+    .upsert(upserts,{onConflict:'week_number,year,location_key'});
+  if(error){alert('Fout: '+error.message);return;}
+  upserts.forEach(row=>{
+    const{week_number,year,location_key,...days}=row;
+    haccpData[location_key]={...( haccpData[location_key]||{}),...days};
+  });
+  renderHaccpTable();
+}
+
+function getISOWeekNum(date){
+  const d=new Date(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate()));
+  const dayNum=d.getUTCDay()||7;
+  d.setUTCDate(d.getUTCDate()+4-dayNum);
+  const yearStart=new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  return{week:Math.ceil((((d-yearStart)/86400000)+1)/7),year:d.getUTCFullYear()};
+}
+function isTempCellOk(loc,value){
+  if(value===''||value===null||value===undefined)return null;
+  if(loc.type==='check')return value==='ja';
+  if(loc.type==='text')return null;
+  const num=parseFloat(value);
+  if(isNaN(num))return null;
+  if((loc.type==='temp'||loc.type==='temp_min')&&loc.maxVal!==undefined)return num<=loc.maxVal;
+  if(loc.type==='temp_hot'&&loc.minVal!==undefined)return num>=loc.minVal;
+  return null;
+}
+function haccpPrevWeek(){haccpCurrentWeek=addDays(haccpCurrentWeek,-7);loadHaccp()}
+function haccpNextWeek(){haccpCurrentWeek=addDays(haccpCurrentWeek,7);loadHaccp()}
+function updateHaccpWeekLabel(){
+  const{week,year}=getISOWeekNum(haccpCurrentWeek);
+  const end=addDays(haccpCurrentWeek,6);
+  const MO_NL=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+  const MO_TR=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+  const MO=currentLang==='tr'?MO_TR:MO_NL;
+  const s=haccpCurrentWeek.getDate()+' '+MO[haccpCurrentWeek.getMonth()];
+  const e=end.getDate()+' '+MO[end.getMonth()]+' '+end.getFullYear();
+  const weekWord=currentLang==='tr'?'Hafta':'Week';
+  document.getElementById('haccpWeekLabel').textContent=`${weekWord} ${week} · ${s} – ${e}`;
+}
+async function loadHaccp(){
+  if(!haccpCurrentWeek)haccpCurrentWeek=mondayOf(new Date());
+  updateHaccpWeekLabel();
+  const{week,year}=getISOWeekNum(haccpCurrentWeek);
+  const[regRes,notesRes]=await Promise.all([
+    sb.from('temp_registrations').select('*').eq('week_number',week).eq('year',year),
+    sb.from('temp_week_notes').select('*').eq('week_number',week).eq('year',year).maybeSingle(),
+  ]);
+  haccpData={};
+  (regRes.data||[]).forEach(row=>{
+    haccpData[row.location_key]={mon:row.mon,tue:row.tue,wed:row.wed,thu:row.thu,fri:row.fri,sat:row.sat,sun:row.sun};
+  });
+  haccpNotesData=notesRes.data||{notes:'',paraaf:''};
+  renderHaccpTable();
+}
+function renderHaccpTable(){
+  const header=document.getElementById('haccpHeader');
+  const body=document.getElementById('haccpBody');
+  if(!header||!body)return;
+  const MO_NL=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+  const MO_TR=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+  const MO=currentLang==='tr'?MO_TR:MO_NL;
+  const dayLabels=haccpDayLabels();
+  header.innerHTML=
+    `<th class="haccp-th loc-th">${t('haccp_col_loc')}</th>`+
+    `<th class="haccp-th norm-th">${t('haccp_col_norm')}</th>`+
+    dayLabels.map((d,i)=>{
+      const dt=addDays(haccpCurrentWeek,i);
+      return`<th class="haccp-th${i>=5?' wknd':''}">${d}<br><small style="font-weight:400;font-size:.65rem">${dt.getDate()} ${MO[dt.getMonth()]}</small></th>`;
+    }).join('');
+  const allLocs=[...HACCP_LOCS,...customHaccpLocs];
+  body.innerHTML=allLocs.map(loc=>{
+    const cells=HACCP_DAYS.map((day,di)=>{
+      const val=haccpData[loc.key]?.[day];
+      const hasVal=val!==null&&val!==undefined&&val!=='';
+      const ok=isTempCellOk(loc,val);
+      const isWknd=di>=5;
+      let cls='haccp-cell';
+      let display='—';
+      if(hasVal){
+        display=loc.type==='check'?(val==='ja'?'✓':'✗'):val;
+        if(ok===true)cls+=' ok';
+        else if(ok===false)cls+=' nok';
+      }else{cls+=' empty'}
+      const wkndStyle=isWknd&&!hasVal?'background:#fffcf5;':'';
+      return`<td class="haccp-td" style="${wkndStyle}"><div class="${cls}" onclick="haccpEditCell('${loc.key}','${day}')">${esc(String(display))}</div></td>`;
+    }).join('');
+    const isCustom=customHaccpLocs.some(c=>c.key===loc.key);
+    const locLabel=`${esc(haccpLocLabel(loc))}${isCustom?`<button onclick="deleteHaccpLoc('${loc.key}')" style="float:right;background:none;border:none;color:#ccc;cursor:pointer;font-size:.8rem;padding:0 0 0 .4rem" title="Verwijderen">✕</button>`:''}`;
+    return`<tr><td class="haccp-td loc-td">${locLabel}</td><td class="haccp-td norm-td">${esc(loc.norm)}</td>${cells}</tr>`;
+  }).join('');
+  document.getElementById('haccpNotes').value=haccpNotesData.notes||'';
+  document.getElementById('haccpParaaf').value=haccpNotesData.paraaf||'';
+}
+function haccpEditCell(locKey,day){
+  const loc=HACCP_LOCS.find(l=>l.key===locKey);
+  if(!loc)return;
+  const existing=haccpData[locKey]?.[day];
+  const dayLabels=haccpDayLabels();
+  const dayLabel=dayLabels[HACCP_DAYS.indexOf(day)];
+  const locLabel=haccpLocLabel(loc);
+  let newVal;
+  if(loc.type==='check'){
+    if(existing==='ja')newVal='nee';
+    else if(existing==='nee')newVal='';
+    else newVal='ja';
+  }else{
+    const curLabel=currentLang==='tr'?'Mevcut değer':'Huidige waarde';
+    const newLabel=currentLang==='tr'?'Yeni değer (boş = sil)':'Nieuwe waarde (leeg = wissen)';
+    const emptyLabel=currentLang==='tr'?'(boş)':'(leeg)';
+    const input=prompt(`${locLabel} — ${dayLabel}\nNorm: ${loc.norm}\n\n${curLabel}: ${existing||emptyLabel}\n${newLabel}:`,existing||'');
+    if(input===null)return;
+    newVal=input.trim();
+  }
+  saveTempCell(locKey,day,newVal||null);
+}
+async function saveTempCell(locKey,day,value){
+  const{week,year}=getISOWeekNum(haccpCurrentWeek);
+  const existing=haccpData[locKey]||{};
+  const newRow={...existing,[day]:value};
+  const{error}=await sb.from('temp_registrations')
+    .upsert({week_number:week,year,location_key:locKey,...newRow},{onConflict:'week_number,year,location_key'});
+  if(!error){haccpData[locKey]=newRow;renderHaccpTable();}
+  else alert('Fout: '+error.message);
+}
+async function saveHaccpNotes(){
+  const{week,year}=getISOWeekNum(haccpCurrentWeek);
+  const notes=document.getElementById('haccpNotes').value;
+  const paraaf=document.getElementById('haccpParaaf').value;
+  const{error}=await sb.from('temp_week_notes')
+    .upsert({week_number:week,year,notes:notes||null,paraaf:paraaf||null},{onConflict:'week_number,year'});
+  if(error)alert('Fout: '+error.message);
+  else haccpNotesData={notes,paraaf};
+}
+
+function printHaccp(){
+  const {week,year}=getISOWeekNum(haccpCurrentWeek);
+  const printWin=window.open('','_blank','width=900,height=700');
+  const MO_NL=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+  const MO_TR=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+  const MO=currentLang==='tr'?MO_TR:MO_NL;
+  const end=addDays(haccpCurrentWeek,6);
+  const weekLabel=`Week ${week} · ${haccpCurrentWeek.getDate()} ${MO[haccpCurrentWeek.getMonth()]} – ${end.getDate()} ${MO[end.getMonth()]} ${year}`;
+  const dayLabels=currentLang==='tr'?HACCP_DAY_TR:HACCP_DAY_NL;
+  const rows=HACCP_LOCS.map(loc=>{
+    const cells=HACCP_DAYS.map((day,di)=>{
+      const val=haccpData[loc.key]?.[day];
+      const hasVal=val!==null&&val!==undefined&&val!=='';
+      const ok=isTempCellOk(loc,val);
+      let bg='',color='';
+      if(hasVal&&ok===true){bg='#d4edda';color='#155724';}
+      else if(hasVal&&ok===false){bg='#f8d7da';color='#721c24';}
+      let display='';
+      if(hasVal){display=loc.type==='check'?(val==='ja'?'✓':'✗'):val;}
+      return`<td style="border:1px solid #ccc;text-align:center;padding:4px 6px;font-size:11px;background:${bg};color:${color};min-width:38px">${esc(String(display))}</td>`;
+    }).join('');
+    const locLabel=currentLang==='tr'?(loc.labelTR||loc.label):loc.label;
+    return`<tr><td style="border:1px solid #ccc;padding:4px 8px;font-size:11px;white-space:nowrap">${esc(locLabel)}</td><td style="border:1px solid #ccc;padding:4px 8px;font-size:10px;color:#666;white-space:nowrap">${esc(loc.norm)}</td>${cells}</tr>`;
+  }).join('');
+  const dayHeaders=dayLabels.map((d,i)=>{
+    const dt=addDays(haccpCurrentWeek,i);
+    return`<th style="border:1px solid #ccc;padding:4px;font-size:10px;text-align:center;background:#f0f0f0;min-width:38px">${d}<br><span style="font-weight:400;font-size:9px">${dt.getDate()} ${MO[dt.getMonth()]}</span></th>`;
+  }).join('');
+  const notes=haccpNotesData.notes||'';
+  const paraaf=haccpNotesData.paraaf||'';
+  printWin.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <title>HACCP ${weekLabel}</title>
+    <style>body{font-family:Arial,sans-serif;padding:20px}h1{font-size:16px;margin-bottom:4px}h2{font-size:12px;color:#666;margin-bottom:12px}table{border-collapse:collapse;width:100%}@media print{button{display:none}}</style>
+  </head><body>
+    <h1>Registratie temperaturen</h1>
+    <h2>${weekLabel}</h2>
+    <table>
+      <thead><tr>
+        <th style="border:1px solid #ccc;padding:4px 8px;font-size:10px;text-align:left;background:#f0f0f0;min-width:160px">Locatie</th>
+        <th style="border:1px solid #ccc;padding:4px 8px;font-size:10px;background:#f0f0f0;min-width:70px">Norm</th>
+        ${dayHeaders}
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div style="margin-top:16px;border:1px solid #ccc;padding:12px;border-radius:4px">
+      <p style="font-size:11px;font-weight:bold;margin-bottom:6px">Opmerkingen / corrigerende maatregelen:</p>
+      <p style="font-size:11px;min-height:40px">${esc(notes)}</p>
+      <p style="font-size:11px;margin-top:8px"><strong>Paraaf:</strong> ${esc(paraaf)}</p>
+    </div>
+    <div style="margin-top:12px;text-align:center">
+      <button onclick="window.print()" style="padding:8px 20px;background:#c6a55c;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:13px">🖨 Afdrukken</button>
+    </div>
+  </body></html>`);
+  printWin.document.close();
+}
+
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+</script>
+</body>
+</html>

@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Masal Restaurant — Turks Sprookje in Tilburg</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --cream:#F5F0E8;--dark:#0D0D0D;--gold:#C6A55C;--gold-light:#D4BA7A;
+  --gold-dark:#A8873D;--warm-bg:#EDE6D8;--text-dark:#1A1A1A;--text-muted:#6B6358;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Jost',sans-serif;background:var(--cream);color:var(--text-dark);overflow-x:hidden}
+img{max-width:100%;display:block}
+
+/* NAVBAR */
+.navbar{position:fixed;top:0;left:0;width:100%;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1.1rem 3.5rem;background:rgba(13,13,13,0.85);backdrop-filter:blur(14px);border-bottom:1px solid rgba(198,165,92,0.15);transition:background .4s}
+.navbar.scrolled{background:rgba(13,13,13,0.96)}
+.nav-left{display:flex;align-items:center;gap:2rem}
+.nav-brand{display:flex;align-items:center;text-decoration:none}
+.nav-brand img{height:38px;width:auto;filter:brightness(0) invert(1)}
+.nav-links{display:flex;gap:2rem;list-style:none;align-items:center}
+.nav-links a{color:rgba(255,255,255,.78);text-decoration:none;font-size:.85rem;font-weight:400;letter-spacing:1.5px;text-transform:uppercase;transition:color .3s;position:relative}
+.nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:1px;background:var(--gold);transition:width .35s ease}
+.nav-links a:hover{color:#fff}
+.nav-links a:hover::after{width:100%}
+.nav-cta{padding:.55rem 1.4rem;border:1px solid var(--gold);color:var(--gold)!important;font-size:.8rem!important;letter-spacing:2px!important;transition:all .35s!important}
+.nav-cta:hover{background:var(--gold);color:var(--dark)!important}
+.nav-cta::after{display:none!important}
+.nav-right{display:flex;align-items:center;gap:.5rem}
+
+/* LANG SWITCHER */
+.lang-switcher{display:flex;gap:2px;background:rgba(255,255,255,.08);border-radius:6px;padding:2px;border:1px solid rgba(198,165,92,.15)}
+.lang-btn{padding:.35rem .65rem;font-size:.72rem;font-family:'Jost',sans-serif;letter-spacing:1px;font-weight:500;border:none;background:transparent;color:rgba(255,255,255,.5);cursor:pointer;border-radius:4px;transition:all .25s;text-transform:uppercase}
+.lang-btn.active{background:var(--gold);color:var(--dark)}
+.lang-btn:hover:not(.active){color:#fff}
+
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;z-index:101}
+.hamburger span{width:26px;height:2px;background:#fff;transition:.3s}
+
+/* HERO */
+.hero{position:relative;height:100vh;min-height:650px;display:flex;align-items:center;justify-content:center;text-align:center;overflow:hidden}
+.hero-bg{position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1600&q=80') center/cover no-repeat}
+.hero-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(13,13,13,.6) 0%,rgba(13,13,13,.35) 40%,rgba(13,13,13,.7) 100%)}
+.hero-content{position:relative;z-index:2;max-width:800px;padding:0 2rem}
+.hero-label{font-size:.82rem;letter-spacing:4px;text-transform:uppercase;color:var(--gold);margin-bottom:1.5rem;opacity:0;animation:fadeUp .8s .3s forwards}
+.hero h1{font-family:'Playfair Display',serif;font-size:clamp(2.8rem,6.5vw,5.2rem);font-weight:500;color:#fff;line-height:1.12;margin-bottom:1.3rem;opacity:0;animation:fadeUp .9s .5s forwards}
+.hero h1 em{font-style:italic;color:var(--gold)}
+.hero p{font-family:'Cormorant Garamond',serif;font-size:1.15rem;color:rgba(255,255,255,.72);line-height:1.7;max-width:560px;margin:0 auto 2.2rem;opacity:0;animation:fadeUp .9s .7s forwards}
+.btn-primary{display:inline-block;padding:.85rem 2.8rem;border:1px solid var(--gold);color:var(--gold);font-family:'Jost',sans-serif;font-size:.85rem;letter-spacing:2.5px;text-transform:uppercase;text-decoration:none;transition:all .4s ease;cursor:pointer;background:transparent;opacity:0;animation:fadeUp .9s .9s forwards}
+.btn-primary:hover{background:var(--gold);color:var(--dark)}
+.scroll-hint{position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);z-index:2;display:flex;flex-direction:column;align-items:center;gap:.5rem}
+.scroll-hint span{font-size:.7rem;letter-spacing:3px;color:rgba(255,255,255,.4);text-transform:uppercase}
+.scroll-line{width:1px;height:40px;background:rgba(198,165,92,.4);position:relative;overflow:hidden}
+.scroll-line::after{content:'';position:absolute;top:-100%;left:0;width:100%;height:100%;background:var(--gold);animation:scrollDown 1.8s infinite}
+
+/* SECTIONS */
+section{padding:7rem 3.5rem}
+.section-label{font-size:.78rem;letter-spacing:4px;text-transform:uppercase;color:var(--gold);margin-bottom:1rem}
+.section-title{font-family:'Playfair Display',serif;font-size:clamp(2rem,4vw,3.2rem);font-weight:500;line-height:1.2;margin-bottom:1.2rem}
+
+/* ABOUT */
+.about-section{max-width:900px;margin:0 auto;text-align:center}
+.about-section p{font-family:'Cormorant Garamond',serif;font-size:1.15rem;color:var(--text-muted);line-height:1.8;margin-top:.5rem}
+
+/* MENU CARDS */
+.menu-section{position:relative;overflow:hidden;padding:7rem 3.5rem}
+.menu-section::before{content:'';position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1600&q=60') center/cover no-repeat;filter:blur(3px) brightness(.25)}
+.menu-section::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(198,165,92,.08),transparent 70%)}
+.menu-header{position:relative;z-index:2;text-align:center;margin-bottom:3.5rem}
+.menu-header .section-label{color:var(--gold-light)}
+.menu-header .section-title{color:#fff}
+.menu-cards{position:relative;z-index:2;display:grid;grid-template-columns:repeat(3,1fr);gap:2.2rem;max-width:1200px;margin:0 auto}
+.menu-card{background:rgba(255,255,255,.97);border-radius:14px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.2);transition:transform .45s cubic-bezier(.25,.46,.45,.94),box-shadow .4s;display:flex;flex-direction:column}
+.menu-card:hover{transform:translateY(-8px);box-shadow:0 30px 60px rgba(0,0,0,.25)}
+.menu-card-img{width:100%;height:240px;overflow:hidden}
+.menu-card-img img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .6s ease}
+.menu-card:hover .menu-card-img img{transform:scale(1.06)}
+.menu-card-body{padding:1.8rem 1.5rem 2rem;text-align:center;flex:1;display:flex;flex-direction:column;align-items:center}
+.menu-card-body h3{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:1rem;color:var(--text-dark)}
+.menu-card-body p{font-family:'Cormorant Garamond',serif;font-size:1.05rem;color:var(--text-muted);line-height:1.7;flex:1}
+.menu-card-btn{display:inline-block;margin-top:1.5rem;padding:.7rem 2rem;background:var(--gold);color:var(--dark);font-family:'Jost',sans-serif;font-size:.8rem;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border-radius:6px;transition:all .35s;font-weight:500}
+.menu-card-btn:hover{background:var(--gold-dark);color:#fff;transform:translateY(-2px)}
+
+/* EXPERIENCE */
+.experience{position:relative;min-height:480px;display:flex;align-items:flex-end;padding:4rem 3.5rem;overflow:hidden;margin:0;border-radius:0}
+.experience-bg{position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1600&q=80') center/cover no-repeat}
+.experience-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(13,13,13,.75) 0%,rgba(13,13,13,.25) 100%)}
+.experience-content{position:relative;z-index:2;max-width:600px}
+.experience-content .section-label{color:var(--gold-light)}
+.experience-content .section-title{color:#fff;font-size:clamp(2rem,4vw,3rem)}
+.experience-content .section-title em{font-style:italic;color:var(--gold)}
+.experience-content p{font-family:'Cormorant Garamond',serif;font-size:1.05rem;color:rgba(255,255,255,.7);line-height:1.7;margin-top:.8rem}
+
+/* GOOGLE REVIEWS */
+.reviews-section{background:var(--dark);padding:6rem 3.5rem;position:relative;overflow:hidden}
+.reviews-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 80%,rgba(198,165,92,.05) 0%,transparent 65%)}
+.reviews-header{max-width:1100px;margin:0 auto 3rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1.5rem;position:relative;z-index:1}
+.reviews-badge{display:flex;align-items:center;gap:1.2rem}
+.reviews-badge svg{width:28px;height:28px;flex-shrink:0}
+.reviews-score{display:flex;flex-direction:column}
+.reviews-score strong{font-family:'Playfair Display',serif;font-size:2rem;color:#fff;line-height:1}
+.reviews-score span{font-size:.75rem;color:var(--gold);letter-spacing:1px;margin-top:.2rem}
+.reviews-stars{display:flex;gap:2px;margin-top:.3rem}
+.reviews-stars svg{color:var(--gold)}
+.reviews-google-link{display:flex;align-items:center;gap:.5rem;color:rgba(255,255,255,.45);font-size:.75rem;letter-spacing:1px;text-transform:uppercase;text-decoration:none;transition:color .2s;border:1px solid rgba(255,255,255,.1);padding:.5rem 1rem;border-radius:6px}
+.reviews-google-link:hover{color:var(--gold);border-color:var(--gold)}
+.reviews-grid{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;position:relative;z-index:1}
+.review-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:1.6rem;display:flex;flex-direction:column;gap:1rem;transition:border-color .25s}
+.review-card:hover{border-color:rgba(198,165,92,.25)}
+.review-top{display:flex;align-items:center;gap:.9rem}
+.review-avatar{width:44px;height:44px;border-radius:50%;overflow:hidden;flex-shrink:0;background:var(--card2)}
+.review-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.review-meta{flex:1;min-width:0}
+.review-name{font-size:.9rem;font-weight:500;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.review-date{font-size:.72rem;color:var(--muted2,#666);margin-top:.1rem}
+.review-stars{display:flex;gap:2px}
+.review-stars svg{width:13px;height:13px;fill:var(--gold);stroke:none}
+.review-text{font-family:'Cormorant Garamond',serif;font-size:1rem;color:rgba(255,255,255,.6);line-height:1.75;flex:1}
+.review-google-icon{align-self:flex-end;opacity:.35}
+
+/* HOURS */
+.hours-section{background:var(--dark);color:#fff;text-align:center;padding:5rem 3.5rem;position:relative;overflow:hidden}
+.hours-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(198,165,92,.06) 0%,transparent 70%)}
+.hours-section .section-label{color:var(--gold)}
+.hours-section .section-title{color:#fff}
+.hours-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:2.5rem;max-width:550px;margin:2.5rem auto 0;position:relative;z-index:1}
+.hours-item h4{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:400;margin-bottom:.4rem;color:var(--gold-light)}
+.hours-item p{font-size:.95rem;color:rgba(255,255,255,.6);line-height:1.6}
+
+/* FAQ */
+.faq-outer{max-width:1200px;margin:0 auto}
+.faq-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem 3rem}
+.faq-topic{margin-bottom:.5rem}
+.faq-topic-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:500;color:var(--gold-dark);margin-bottom:.6rem;padding-bottom:.4rem;border-bottom:2px solid var(--gold);display:inline-block}
+.faq-item{border-bottom:1px solid rgba(0,0,0,.06);padding:.7rem 0}
+.faq-q{display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-family:'Jost',sans-serif;font-size:.88rem;font-weight:400;gap:.8rem}
+.faq-q .icon{width:22px;height:22px;min-width:22px;border-radius:50%;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:.85rem;color:var(--gold);transition:transform .3s;flex-shrink:0}
+.faq-item.open .faq-q .icon{transform:rotate(45deg)}
+.faq-item.open .faq-q{color:var(--gold-dark);font-weight:500}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .4s ease,padding .3s;font-family:'Cormorant Garamond',serif;font-size:.95rem;color:var(--text-muted);line-height:1.6}
+.faq-item.open .faq-a{max-height:300px;padding-top:.5rem}
+
+/* RESERVATION */
+.reservation{background:var(--dark);padding:6rem 3.5rem;position:relative;overflow:hidden}
+.reservation::before{content:'';position:absolute;top:-50%;right:-20%;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(198,165,92,.07) 0%,transparent 70%)}
+.res-wrapper{max-width:900px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:start;position:relative;z-index:1}
+.res-info .section-label{color:var(--gold)}
+.res-info .section-title{color:#fff}
+.res-info p{font-family:'Cormorant Garamond',serif;font-size:1.05rem;color:rgba(255,255,255,.55);line-height:1.7;margin-top:.5rem}
+.res-contact{margin-top:2rem;display:flex;flex-direction:column;gap:.8rem}
+.res-contact a{color:var(--gold-light);text-decoration:none;font-size:.92rem;display:flex;align-items:center;gap:.6rem;transition:color .3s}
+.res-contact a:hover{color:#fff}
+.res-contact svg{flex-shrink:0}
+.res-form{display:flex;flex-direction:column;gap:1.1rem}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.form-group{display:flex;flex-direction:column;gap:.4rem}
+.form-group label{font-size:.75rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold)}
+.form-group input,.form-group select,.form-group textarea{background:rgba(255,255,255,.06);border:1px solid rgba(198,165,92,.2);padding:.75rem 1rem;color:#fff;font-family:'Jost',sans-serif;font-size:.92rem;border-radius:6px;transition:border-color .3s;outline:none}
+.form-group input::placeholder,.form-group textarea::placeholder{color:rgba(255,255,255,.3)}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--gold)}
+.form-group select{appearance:none;cursor:pointer}
+.form-group select option{background:var(--dark);color:#fff}
+.form-group textarea{resize:vertical;min-height:80px}
+.btn-gold{padding:.85rem 2.5rem;background:var(--gold);border:none;color:var(--dark);font-family:'Jost',sans-serif;font-size:.85rem;letter-spacing:2.5px;text-transform:uppercase;cursor:pointer;border-radius:6px;transition:all .35s;font-weight:500;margin-top:.5rem}
+.btn-gold:hover{background:var(--gold-light);transform:translateY(-2px)}
+
+/* CONTACT */
+.contact-strip{display:grid;grid-template-columns:repeat(4,1fr);background:var(--warm-bg);text-align:center}
+.contact-box{padding:3rem 1.5rem;border-right:1px solid rgba(0,0,0,.06)}
+.contact-box:last-child{border-right:none}
+.contact-box h4{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:500;margin-bottom:.5rem}
+.contact-box p{font-size:.88rem;color:var(--text-muted);line-height:1.6}
+.contact-box a{color:var(--gold-dark);text-decoration:none}
+
+/* FOOTER */
+footer{background:var(--dark);padding:3rem 3.5rem 2rem;text-align:center;color:rgba(255,255,255,.4);font-size:.82rem}
+footer .footer-brand{margin-bottom:.8rem}
+footer .footer-brand img{height:50px;width:auto;filter:brightness(0) invert(1)}
+footer p{line-height:1.7}
+.footer-line{width:60px;height:1px;background:var(--gold);margin:1.5rem auto;opacity:.4}
+.footer-socials{display:flex;justify-content:center;gap:1.5rem;margin-bottom:1.2rem}
+.footer-socials a{color:rgba(255,255,255,.5);transition:color .3s;text-decoration:none;display:flex;align-items:center;gap:.4rem;font-size:.85rem}
+.footer-socials a:hover{color:var(--gold)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes scrollDown{0%{top:-100%}100%{top:100%}}
+.reveal{opacity:1;transform:none;transition:opacity .8s ease,transform .8s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+@media(max-width:1024px){.menu-cards{gap:1.5rem}.contact-strip{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:768px){
+  .navbar{padding:1rem 1.5rem}
+  .nav-links{position:fixed;top:0;right:-100%;width:280px;height:100vh;flex-direction:column;background:var(--dark);padding:5rem 2rem;gap:1.8rem;transition:right .4s;border-left:1px solid rgba(198,165,92,.15)}
+  .nav-links.open{right:0}
+  .hamburger{display:flex}
+  section{padding:4rem 1.5rem}
+  .menu-section{padding:4rem 1.5rem}
+  .menu-cards{grid-template-columns:1fr;max-width:420px;margin:0 auto}
+  .faq-grid{grid-template-columns:1fr}
+  .experience{margin:0 1.5rem}
+  .hours-grid{grid-template-columns:1fr}
+  .reviews-grid{grid-template-columns:1fr}
+  .reviews-section{padding:4rem 1.5rem}
+  .reviews-header{flex-direction:column;align-items:flex-start}
+  .res-wrapper{grid-template-columns:1fr;gap:2.5rem}
+  .form-row,.pf-row{grid-template-columns:1fr}
+  .contact-strip{grid-template-columns:1fr}
+  .contact-box{border-right:none;border-bottom:1px solid rgba(0,0,0,.06)}
+}
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar" id="navbar">
+  <div class="nav-left">
+    <a href="#" class="nav-brand"><img src="https://i0.wp.com/masalrestaurant.nl/wp-content/uploads/2021/11/Masal_Logo_DEF.png?fit=600%2C304&ssl=1" alt="Masal Restaurant"></a>
+  </div>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#menu" data-i18n="nav_menu">Menu</a></li>
+    <li><a href="#faq" data-i18n="nav_faq">FAQ</a></li>
+    <li><a href="reserveren.html#party" data-i18n="nav_party">Feesten & Partijen</a></li>
+    <li><a href="#hours" data-i18n="nav_hours">Openingstijden</a></li>
+    <li><a href="#contact" data-i18n="nav_contact">Contact</a></li>
+    <li><a href="reserveren.html" class="nav-cta" data-i18n="nav_reserve">Reserveren</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="lang-switcher">
+      <button class="lang-btn active" onclick="setLang('nl')">NL</button>
+      <button class="lang-btn" onclick="setLang('en')">EN</button>
+      <button class="lang-btn" onclick="setLang('tr')">TR</button>
+    </div>
+    <div class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <p class="hero-label" data-i18n="hero_label">Hoşgeldiniz — Welkom</p>
+    <h1 data-i18n="hero_title">Een Turks <em>sprookje</em> in het hart van Tilburg</h1>
+    <p data-i18n="hero_desc">Onze keuken is geïnspireerd door de rijke culinaire tradities van Turkije. We streven ernaar om onze gasten een authentieke en onvergetelijke eetervaring te bieden.</p>
+    <a href="reserveren.html" class="btn-primary" data-i18n="hero_cta">Reserveer een tafel</a>
+  </div>
+  <div class="scroll-hint"><span>Scroll</span><div class="scroll-line"></div></div>
+</section>
+
+<!-- ABOUT -->
+<section>
+  <div class="about-section reveal">
+    <p class="section-label" data-i18n="about_label">Ons Verhaal</p>
+    <h2 class="section-title" data-i18n="about_title">Lekker lunchen, dineren of een feestje?</h2>
+    <p data-i18n="about_desc">Bij ons kunt u dagelijks genieten van een smakelijke lunch of een heerlijk diner. In het weekend bent u van harte welkom voor een ontbijt! Onze gerechten zijn uiteraard 100% halal. Onze locatie is ook perfect geschikt voor feesten en partijen.</p>
+  </div>
+</section>
+
+<!-- MENU -->
+<section class="menu-section" id="menu">
+  <div class="menu-header">
+    <p class="section-label" data-i18n="menu_label">Menukaarten</p>
+    <h2 class="section-title" data-i18n="menu_title">Ontdek Onze Gerechten</h2>
+  </div>
+  <div class="menu-cards">
+    <div class="menu-card reveal">
+      <div class="menu-card-img"><img src="https://i0.wp.com/masalrestaurant.nl/wp-content/uploads/2021/11/Ontbijtpng.png?resize=800%2C800&ssl=1" alt="Ontbijtbuffet"></div>
+      <div class="menu-card-body">
+        <h3 data-i18n="menu_breakfast_title">Ontbijtbuffet</h3>
+        <p data-i18n="menu_breakfast_desc">Elke zaterdag en zondag hebben wij een uitgebreid ontbijtbuffet van 10:00 tot 14:00 uur. Maximale tijdslimiet: 2 uur.</p>
+      </div>
+    </div>
+    <div class="menu-card reveal">
+      <div class="menu-card-img"><img src="https://i0.wp.com/masalrestaurant.nl/wp-content/uploads/2021/11/Lunch.png?resize=800%2C800&ssl=1" alt="Lunch"></div>
+      <div class="menu-card-body">
+        <h3 data-i18n="menu_lunch_title">Lunch</h3>
+        <p data-i18n="menu_lunch_desc">Van maandag tot vrijdag kunt u van 11:00 tot 14:00 uur lekker komen lunchen. Wij hebben een uitgebreide lunchkaart!</p>
+        <a href="https://masalrestaurant.nl/wp-content/uploads/2024/07/Lunchkaart_11_2023_V01.pdf" class="menu-card-btn" target="_blank" data-i18n="menu_lunch_btn">Lunchkaart</a>
+      </div>
+    </div>
+    <div class="menu-card reveal">
+      <div class="menu-card-img"><img src="https://i0.wp.com/masalrestaurant.nl/wp-content/uploads/2021/11/Diner.png?resize=800%2C800&ssl=1" alt="Diner"></div>
+      <div class="menu-card-body">
+        <h3 data-i18n="menu_dinner_title">Diner</h3>
+        <p data-i18n="menu_dinner_desc">Dineren kunt u 7 dagen per week vanaf 14:00 uur. Of u nou kiest voor vlees, vis of vegetarisch, alle gerechten zijn onovertreffelijk.</p>
+        <a href="https://masalrestaurant.nl/wp-content/uploads/2025/11/Web_Dinerkaart_NL_september_2025.pdf" class="menu-card-btn" target="_blank" data-i18n="menu_dinner_btn">Dinerkaart</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<div class="experience reveal">
+  <div class="experience-bg"></div>
+  <div class="experience-content">
+    <p class="section-label" data-i18n="exp_label">Beleving</p>
+    <h2 class="section-title" data-i18n="exp_title">Ervaar <em>Luxe</em> Dineren</h2>
+    <p data-i18n="exp_desc">Ontdek een wereld waar elk gerecht een meesterwerk is, zorgvuldig bereid met de fijnste ingrediënten en generaties culinaire wijsheid uit Anatolië.</p>
+  </div>
+</div>
+
+<!-- HOURS -->
+<section class="hours-section" id="hours">
+  <p class="section-label" data-i18n="hours_label">Bezoek Ons</p>
+  <h2 class="section-title" data-i18n="hours_title">Openingstijden</h2>
+  <div class="hours-grid">
+    <div class="hours-item reveal"><h4 data-i18n="hours_weekday">Maandag – Vrijdag</h4><p>11:00 – 22:00</p></div>
+    <div class="hours-item reveal"><h4 data-i18n="hours_weekend">Zaterdag & Zondag</h4><p>10:00 – 22:00</p></div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="faq-outer">
+    <p class="section-label" style="text-align:center" data-i18n="faq_label">Veelgestelde Vragen</p>
+    <h2 class="section-title" style="text-align:center;margin-bottom:2.5rem" data-i18n="faq_title">FAQ</h2>
+
+    <div class="faq-grid">
+    <!-- ALGEMENE INFORMATIE -->
+    <div class="faq-topic reveal">
+      <div class="faq-topic-title" data-i18n="faq_cat1">Algemene Informatie</div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_q1">Wat zijn de openingstijden van het restaurant?</span><span class="icon">+</span></div><div class="faq-a" data-i18n="faq_a1">Restaurant Masal is 365 dagen per jaar geopend. Maandag t/m vrijdag: 11:00 – 22:00 uur. Zaterdag en zondag: 10:00 – 22:00 uur.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_q2">Waar is het restaurant gevestigd?</span><span class="icon">+</span></div><div class="faq-a" data-i18n="faq_a2">Talent Square 333, 5038 LX Tilburg.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_q3">Hoe kan ik contact opnemen?</span><span class="icon">+</span></div><div class="faq-a" data-i18n="faq_a3">U kunt ons bereiken via telefoon op 013 203 53 99, e-mail op <a href="mailto:info@masalrestaurant.nl">info@masalrestaurant.nl</a>, of via ons contactformulier.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_q4">Is er parkeergelegenheid?</span><span class="icon">+</span></div><div class="faq-a" data-i18n="faq_a4">U kunt niet direct voor de deur parkeren (behalve met mindervalidekaart). Wij verwijzen u naar Parkeergarage Knegtel (Gasthuisring 60) of AH XL (Jan Heijnstraat 10).</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_q5">Is er een bidruimte aanwezig?</span><span class="icon">+</span></div><div class="faq-a" data-i18n="faq_a5">Ja, wij hebben een bidruimte beschikbaar voor gasten die willen bidden tijdens hun bezoek.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_q6">Kan er shisha gerookt worden?</span><span class="icon">+</span></div><div class="faq-a" data-i18n="faq_a6">Nee, shisha roken is niet toegestaan in ons restaurant.</div></div>
+    </div>
+
+    <!-- ETEN EN DRINKEN -->
+    <div class="faq-topic reveal">
+      <div class="faq-topic-title" data-i18n="faq_cat2">Eten en Drinken</div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_q7">Is het eten halal?</span><span class="icon">+</span></div><div class="faq-a" data-i18n="faq_a7">Ja, al onze dagverse gerechten zijn 100% halal.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_q8">Zijn er vegetarische en veganistische opties?</span><span class="icon">+</span></div><div class="faq-a" data-i18n="faq_a8">Ja, we hebben diverse vegetarische en veganistische gerechten. Geef uw dieetwensen aan bij het bestellen.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_q9">Zijn er glutenvrije opties?</span><span class="icon">+</span></div><div class="faq-a" data-i18n="faq_a9">Ja, wij bieden verschillende glutenvrije gerechten. Informeer bij uw bestelling.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_q10">Is er een kindermenu?</span><span class="icon">+</span></div><div class="faq-a" data-i18n="faq_a10">Ja, we hebben een speciaal kindermenu met kindvriendelijke gerechten.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_q11">Tot hoe laat kan er geluncht worden?</span><span class="icon">+</span></div><div class="faq-a" data-i18n="faq_a11">Tot 14:00 uur kunt u ontbijten en lunchen. Na 14:00 uur serveren wij gerechten uit onze dinerkaart.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_q12">Hoe lang mag ik gebruikmaken van het ontbijtbuffet?</span><span class="icon">+</span></div><div class="faq-a" data-i18n="faq_a12">In de weekenden geldt een maximale tijdslimiet van 2 uur voor het ontbijtbuffet.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_q13">Is er doordeweeks ook ontbijtbuffet?</span><span class="icon">+</span></div><div class="faq-a" data-i18n="faq_a13">Nee, het ontbijtbuffet is alleen in het weekend beschikbaar. Doordeweeks kunt u ontbijt bestellen van de menukaart.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_q14">Kan ik gerechten afhalen?</span><span class="icon">+</span></div><div class="faq-a" data-i18n="faq_a14">Ja, u kunt gerechten afhalen. Plaats uw bestelling telefonisch via 013 203 53 99.</div></div>
+    </div>
+
+    <!-- DIENSTEN EN FACILITEITEN -->
+    <div class="faq-topic reveal">
+      <div class="faq-topic-title" data-i18n="faq_cat3">Diensten en Faciliteiten</div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_q15">Zijn er kinderstoelen en een speelhoek?</span><span class="icon">+</span></div><div class="faq-a" data-i18n="faq_a15">Ja, we hebben kinderstoelen en een speelhoek voor onze jonge gasten.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_q16">Hebben jullie een terras?</span><span class="icon">+</span></div><div class="faq-a" data-i18n="faq_a16">Ja, we hebben een terras waar u kunt genieten van uw maaltijd in de buitenlucht, afhankelijk van het seizoen.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_q17">Is het restaurant rolstoeltoegankelijk?</span><span class="icon">+</span></div><div class="faq-a" data-i18n="faq_a17">Ja, het restaurant is rolstoeltoegankelijk. Let op: de toiletten zijn niet bereikbaar met een rolstoel (trap, geen traplift).</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_q18">Zijn huisdieren toegestaan?</span><span class="icon">+</span></div><div class="faq-a" data-i18n="faq_a18">Huisdieren zijn niet toegestaan, met uitzondering van hulphonden.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_q19">Biedt het restaurant bezorgservice?</span><span class="icon">+</span></div><div class="faq-a" data-i18n="faq_a19">Nee, wij bieden geen bezorgservice. U kunt wel eten afhalen bij ons restaurant.</div></div>
+    </div>
+
+    <!-- BETALINGEN -->
+    <div class="faq-topic reveal">
+      <div class="faq-topic-title" data-i18n="faq_cat4">Betalingen</div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_q20">Welke betaalmethoden accepteren jullie?</span><span class="icon">+</span></div><div class="faq-a" data-i18n="faq_a20">We accepteren contant geld, creditcards, pinpassen en mobiele betalingen (Apple Pay, Google Pay).</div></div>
+    </div>
+
+    <!-- EVENEMENTEN -->
+    <div class="faq-topic reveal">
+      <div class="faq-topic-title" data-i18n="faq_cat5">Evenementen</div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_q21">Kan ik het restaurant afhuren voor een privé-evenement?</span><span class="icon">+</span></div><div class="faq-a" data-i18n="faq_a21">Ja, u kunt ons restaurant reserveren voor privé-evenementen. Neem contact op via onze feesten en partijen pagina.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_q22">Kan ik een eigen taart meenemen?</span><span class="icon">+</span></div><div class="faq-a" data-i18n="faq_a22">Ja, u kunt een eigen taart meenemen. Hiervoor brengen wij servicekosten van €15 in rekening.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_q23">Bieden jullie cadeaubonnen aan?</span><span class="icon">+</span></div><div class="faq-a" data-i18n="faq_a23">Ja, wij bieden cadeaubonnen aan, verkrijgbaar in ons restaurant. Perfect voor verjaardagen en speciale gelegenheden.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_q24">Biedt het restaurant catering?</span><span class="icon">+</span></div><div class="faq-a" data-i18n="faq_a24">Ja, wij bieden cateringdiensten voor diverse evenementen. Neem contact op voor informatie en offertes.</div></div>
+    </div>
+
+    <!-- RESERVERINGEN -->
+    <div class="faq-topic reveal">
+      <div class="faq-topic-title" data-i18n="faq_cat6">Reserveringen</div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_q25">Hoe kan ik een tafel reserveren?</span><span class="icon">+</span></div><div class="faq-a" data-i18n="faq_a25">Via ons reserveringssysteem op de website kunt u eenvoudig een tafel reserveren. U ontvangt een bevestiging per e-mail.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_q26">Is reserveren verplicht?</span><span class="icon">+</span></div><div class="faq-a" data-i18n="faq_a26">Nee, maar we raden het aan, vooral tijdens drukke periodes en weekends.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_q27">Kan ik reserveren voor grote groepen?</span><span class="icon">+</span></div><div class="faq-a" data-i18n="faq_a27">Ja, wij accommoderen groepen tot 350 personen zittend en 500 personen staand. Neem contact op via onze feesten en partijen pagina.</div></div>
+    </div>
+    </div>
+  </div>
+</section>
+<!-- GOOGLE REVIEWS -->
+<section class="reviews-section" id="reviews">
+  <div class="reviews-header">
+    <div class="reviews-badge">
+      <!-- Google G icon -->
+      <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.97 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+      </svg>
+      <div class="reviews-score">
+        <strong>4.4</strong>
+        <div class="reviews-stars">
+          <svg width="16" height="16" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="var(--gold)" stroke="none"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="var(--gold)" stroke="none"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="var(--gold)" stroke="none"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="var(--gold)" stroke="none"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="var(--gold)" stroke="none" opacity=".45"/></svg>
+        </div>
+        <span data-i18n="reviews_count">1.628 Google-beoordelingen</span>
+      </div>
+    </div>
+    <a class="reviews-google-link" href="https://www.google.com/maps/place/Masal+Restaurant/@51.5605993,5.0763486,17z/data=!3m1!4b1!4m8!3m7!1s0x47c6be3a619a7935:0x8d002d7c7ca90684!8m2!3d51.5605993!4d5.0763486!9m1!1b1!16s%2Fg%2F11dfj04mz7?entry=ttu&g_ep=EgoyMDI2MDQwNi4wIKXMDSoASAFQAw%3D%3D" target="_blank">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      <span data-i18n="reviews_link">Alle beoordelingen</span>
+    </a>
+  </div>
+
+  <div class="reviews-grid">
+
+    <div class="review-card reveal">
+      <div class="review-top">
+        <div class="review-avatar"><img src="https://api.dicebear.com/9.x/lorelei/svg?seed=FarhanTahir&backgroundColor=c6a55c" alt="Farhan Tahir"></div>
+        <div class="review-meta">
+          <div class="review-name">Farhan Tahir</div>
+          <div class="review-date">Maart 2026</div>
+        </div>
+      </div>
+      <div class="review-stars">
+        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      </div>
+      <p class="review-text">"The food was outstanding — authentic Turkish flavors, perfectly prepared. The staff were highly professional, attentive, and genuinely welcoming. An exceptional dining experience."</p>
+    </div>
+
+    <div class="review-card reveal">
+      <div class="review-top">
+        <div class="review-avatar"><img src="https://api.dicebear.com/9.x/lorelei/svg?seed=JoJanssen&backgroundColor=8b6914" alt="Jo Janssen"></div>
+        <div class="review-meta">
+          <div class="review-name">Jo Janssen</div>
+          <div class="review-date">Maart 2026</div>
+        </div>
+      </div>
+      <div class="review-stars">
+        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      </div>
+      <p class="review-text">"Na 6 jaar weer terug — en nog steeds onvoorstelbaar lekker! Grote porties van uitstekende kwaliteit, heerlijke desserts. Dit restaurant overtreft verwachtingen keer op keer."</p>
+    </div>
+
+    <div class="review-card reveal">
+      <div class="review-top">
+        <div class="review-avatar"><img src="https://api.dicebear.com/9.x/lorelei/svg?seed=CloudyNies&backgroundColor=3d6b4f" alt="Cloudy Nies"></div>
+        <div class="review-meta">
+          <div class="review-name">Cloudy Nies</div>
+          <div class="review-date">Maart 2026</div>
+        </div>
+      </div>
+      <div class="review-stars">
+        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      </div>
+      <p class="review-text">"Mooi en warm restaurant met een perfecte linzensoep en vriendelijk personeel. Snelle bediening, sfeervolle ambiance — precies wat je verwacht van een toprestaurant."</p>
+    </div>
+
+    <div class="review-card reveal">
+      <div class="review-top">
+        <div class="review-avatar"><img src="https://api.dicebear.com/9.x/lorelei/svg?seed=TomaszKrolikowski&backgroundColor=2d4a7a" alt="Tomasz Królikowski"></div>
+        <div class="review-meta">
+          <div class="review-name">Tomasz Królikowski</div>
+          <div class="review-date">Maart 2026</div>
+        </div>
+      </div>
+      <div class="review-stars">
+        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      </div>
+      <p class="review-text">"Zelden zulke hartelijk vriendelijke service meegemaakt. Het personeel maakt je bezoek echt bijzonder — gastvrijheid op zijn best. Absoluut een aanrader voor iedereen."</p>
+    </div>
+
+    <div class="review-card reveal">
+      <div class="review-top">
+        <div class="review-avatar"><img src="https://api.dicebear.com/9.x/lorelei/svg?seed=RamonaRaaijmakers&backgroundColor=7a2d4a" alt="Ramona Raaijmakers"></div>
+        <div class="review-meta">
+          <div class="review-name">Ramona Raaijmakers</div>
+          <div class="review-date">Maart 2026</div>
+        </div>
+      </div>
+      <div class="review-stars">
+        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      </div>
+      <p class="review-text">"Prachtig restaurant, heerlijk eten, snelle en vriendelijke service — en voor een zeer scherpe prijs. Wij komen hier zeker vaker terug. Een van de beste restaurants van Tilburg!"</p>
+    </div>
+
+    <div class="review-card reveal">
+      <div class="review-top">
+        <div class="review-avatar"><img src="https://api.dicebear.com/9.x/lorelei/svg?seed=AyseYildiz&backgroundColor=7a4a2d" alt="Ayşe Yıldız"></div>
+        <div class="review-meta">
+          <div class="review-name">Ayşe Yıldız</div>
+          <div class="review-date">Februari 2026</div>
+        </div>
+      </div>
+      <div class="review-stars">
+        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      </div>
+      <p class="review-text">"Doğumgünü akşam yemeğimizi burada kutladık ve harikaydı. Personel çok ilgili, yemekler nefis ve atmosfer büyüleyici. Masal gerçekten bir masal gibi! Kesinlikle tekrar geleceğiz."</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- CONTACT -->
+<div class="contact-strip" id="contact">
+  <div class="contact-box"><h4 data-i18n="c_address">Adres</h4><p>Talent Square 333<br>5038 LX Tilburg</p></div>
+  <div class="contact-box"><h4 data-i18n="c_phone">Telefoon</h4><p><a href="tel:0132035399">013 203 53 99</a></p></div>
+  <div class="contact-box"><h4>E-mail</h4><p><a href="mailto:info@masalrestaurant.nl">info@masalrestaurant.nl</a></p></div>
+  <div class="contact-box"><h4 data-i18n="c_parking">Parkeren</h4><p><a href="https://www.p1.nl/parkeren/tilburg/parkeergarage-knegtel" target="_blank">Parkeergarage Knegtel</a><br>of AH XL (Jan Heijnstraat 10)</p></div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-brand"><img src="https://i0.wp.com/masalrestaurant.nl/wp-content/uploads/2021/11/Masal_Logo_DEF.png?fit=600%2C304&ssl=1" alt="Masal Restaurant"></div>
+  <p data-i18n="footer_tagline">Een Turks Sprookje in het Hart van Tilburg</p>
+  <div class="footer-line"></div>
+  <div class="footer-socials">
+    <a href="https://www.facebook.com/restaurantmasal" target="_blank"><svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>Facebook</a>
+    <a href="https://www.instagram.com/restaurantmasal" target="_blank"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/></svg>Instagram</a>
+    <a href="https://www.tiktok.com/@restaurantmasal" target="_blank"><svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1 0-5.78c.29 0 .57.04.84.12v-3.5a6.37 6.37 0 0 0-.84-.05A6.34 6.34 0 0 0 3.15 15.3 6.34 6.34 0 0 0 9.49 21.64a6.34 6.34 0 0 0 6.34-6.34V9.41a8.16 8.16 0 0 0 4.76 1.52v-3.4a4.85 4.85 0 0 1-1-.44z"/></svg>TikTok</a>
+  </div>
+  <p>&copy; 2017 – 2026 Restaurant Masal | <a href="https://masalrestaurant.nl" style="color:var(--gold);text-decoration:none">masalrestaurant.nl</a></p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL='https://mytqxxdzfrropqcrhipv.supabase.co';
+const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15dHF4eGR6ZnJyb3BxY3JoaXB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MjgwMTUsImV4cCI6MjA5MTAwNDAxNX0.eKAts80PGm6TTYSllnYq79UaG0_ERJi7FBLnh2GgG4I';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
+</script>
+<script>
+// === TRANSLATIONS ===
+const T={
+nl:{
+  nav_menu:"Menu",nav_faq:"FAQ",nav_party:"Feesten & Partijen",nav_hours:"Openingstijden",nav_contact:"Contact",nav_reserve:"Reserveren",
+  hero_label:"Welkom",hero_title:'Een Turks <em>sprookje</em> in het hart van Tilburg',hero_desc:"Onze keuken is geïnspireerd door de rijke culinaire tradities van Turkije. We streven ernaar om onze gasten een authentieke en onvergetelijke eetervaring te bieden.",hero_cta:"Reserveer een tafel",
+  about_label:"Ons Verhaal",about_title:"Lekker lunchen, dineren of een feestje?",about_desc:"Bij ons kunt u dagelijks genieten van een smakelijke lunch of een heerlijk diner. In het weekend bent u van harte welkom voor een ontbijt! Onze gerechten zijn uiteraard 100% halal. Onze locatie is ook perfect geschikt voor feesten en partijen.",
+  menu_label:"Menukaarten",menu_title:"Ontdek Onze Gerechten",menu_breakfast_title:"Ontbijtbuffet",menu_breakfast_desc:"Elke zaterdag en zondag hebben wij een uitgebreid ontbijtbuffet van 10:00 tot 14:00 uur. Maximale tijdslimiet: 2 uur.",menu_lunch_title:"Lunch",menu_lunch_desc:"Van maandag tot vrijdag kunt u van 11:00 tot 14:00 uur lekker komen lunchen. Wij hebben een uitgebreide lunchkaart!",menu_lunch_btn:"Lunchkaart",menu_dinner_title:"Diner",menu_dinner_desc:"Dineren kunt u 7 dagen per week vanaf 14:00 uur. Of u nou kiest voor vlees, vis of vegetarisch, alle gerechten zijn onovertreffelijk.",menu_dinner_btn:"Dinerkaart",
+  exp_label:"Beleving",exp_title:'Ervaar <em>Luxe</em> Dineren',exp_desc:"Ontdek een wereld waar elk gerecht een meesterwerk is, zorgvuldig bereid met de fijnste ingrediënten en generaties culinaire wijsheid uit Anatolië.",
+  party_label:"Evenementen",party_title:"Feesten & Partijen",party_desc1:"Bent u op zoek naar de perfecte locatie voor een groot evenement? Restaurant Masal biedt uitgebreide mogelijkheden voor groepen vanaf 25 personen. Wij kunnen tot 350 personen zittend en 500 personen staand accommoderen.",party_desc2:"Onze culinaire experts hebben een uitgebreid menu samengesteld dat aangepast kan worden aan uw specifieke wensen. Plaats uw reservering minimaal twee weken van tevoren via ons formulier.",party_tag1:"Bruiloft",party_tag2:"Babyshower",party_tag3:"Verjaardag",party_tag4:"Bedrijfsfeest",party_tag5:"Jubileum",party_tag6:"Catering",party_form_title:"Aanvraagformulier",party_submit:"Aanvraag Versturen",
+  hours_label:"Bezoek Ons",hours_title:"Openingstijden",hours_weekday:"Maandag – Vrijdag",hours_weekend:"Zaterdag & Zondag",
+  faq_label:"Veelgestelde Vragen",faq_title:"FAQ",
+  faq_cat1:"Algemene Informatie",faq_cat2:"Eten en Drinken",faq_cat3:"Diensten en Faciliteiten",faq_cat4:"Betalingen",faq_cat5:"Evenementen",faq_cat6:"Reserveringen",
+  faq_q1:"Wat zijn de openingstijden van het restaurant?",faq_a1:"Restaurant Masal is 365 dagen per jaar geopend. Maandag t/m vrijdag: 11:00 – 22:00 uur. Zaterdag en zondag: 10:00 – 22:00 uur.",
+  faq_q2:"Waar is het restaurant gevestigd?",faq_a2:"Talent Square 333, 5038 LX Tilburg.",
+  faq_q3:"Hoe kan ik contact opnemen?",faq_a3:"U kunt ons bereiken via telefoon op 013 203 53 99, e-mail op info@masalrestaurant.nl, of via ons contactformulier.",
+  faq_q4:"Is er parkeergelegenheid?",faq_a4:"U kunt niet direct voor de deur parkeren (behalve met mindervalidekaart). Wij verwijzen u naar Parkeergarage Knegtel (Gasthuisring 60) of AH XL (Jan Heijnstraat 10).",
+  faq_q5:"Is er een bidruimte aanwezig?",faq_a5:"Ja, wij hebben een bidruimte beschikbaar voor gasten die willen bidden tijdens hun bezoek.",
+  faq_q6:"Kan er shisha gerookt worden?",faq_a6:"Nee, shisha roken is niet toegestaan in ons restaurant.",
+  faq_q7:"Is het eten halal?",faq_a7:"Ja, al onze dagverse gerechten zijn 100% halal.",
+  faq_q8:"Zijn er vegetarische en veganistische opties?",faq_a8:"Ja, we hebben diverse vegetarische en veganistische gerechten. Geef uw dieetwensen aan bij het bestellen.",
+  faq_q9:"Zijn er glutenvrije opties?",faq_a9:"Ja, wij bieden verschillende glutenvrije gerechten. Informeer bij uw bestelling.",
+  faq_q10:"Is er een kindermenu?",faq_a10:"Ja, we hebben een speciaal kindermenu met kindvriendelijke gerechten.",
+  faq_q11:"Tot hoe laat kan er geluncht worden?",faq_a11:"Tot 14:00 uur kunt u ontbijten en lunchen. Na 14:00 uur serveren wij gerechten uit onze dinerkaart.",
+  faq_q12:"Hoe lang mag ik gebruikmaken van het ontbijtbuffet?",faq_a12:"In de weekenden geldt een maximale tijdslimiet van 2 uur voor het ontbijtbuffet.",
+  faq_q13:"Is er doordeweeks ook ontbijtbuffet?",faq_a13:"Nee, het ontbijtbuffet is alleen in het weekend beschikbaar. Doordeweeks kunt u ontbijt bestellen van de menukaart.",
+  faq_q14:"Kan ik gerechten afhalen?",faq_a14:"Ja, u kunt gerechten afhalen. Plaats uw bestelling telefonisch via 013 203 53 99.",
+  faq_q15:"Zijn er kinderstoelen en een speelhoek?",faq_a15:"Ja, we hebben kinderstoelen en een speelhoek voor onze jonge gasten.",
+  faq_q16:"Hebben jullie een terras?",faq_a16:"Ja, we hebben een terras waar u kunt genieten van uw maaltijd in de buitenlucht, afhankelijk van het seizoen.",
+  faq_q17:"Is het restaurant rolstoeltoegankelijk?",faq_a17:"Ja, het restaurant is rolstoeltoegankelijk. Let op: de toiletten zijn niet bereikbaar met een rolstoel (trap, geen traplift).",
+  faq_q18:"Zijn huisdieren toegestaan?",faq_a18:"Huisdieren zijn niet toegestaan, met uitzondering van hulphonden.",
+  faq_q19:"Biedt het restaurant bezorgservice?",faq_a19:"Nee, wij bieden geen bezorgservice. U kunt wel eten afhalen bij ons restaurant.",
+  faq_q20:"Welke betaalmethoden accepteren jullie?",faq_a20:"We accepteren contant geld, creditcards, pinpassen en mobiele betalingen (Apple Pay, Google Pay).",
+  faq_q21:"Kan ik het restaurant afhuren voor een privé-evenement?",faq_a21:"Ja, u kunt ons restaurant reserveren voor privé-evenementen. Neem contact op via onze feesten en partijen pagina.",
+  faq_q22:"Kan ik een eigen taart meenemen?",faq_a22:"Ja, u kunt een eigen taart meenemen. Hiervoor brengen wij servicekosten van €15 in rekening.",
+  faq_q23:"Bieden jullie cadeaubonnen aan?",faq_a23:"Ja, wij bieden cadeaubonnen aan, verkrijgbaar in ons restaurant. Perfect voor verjaardagen en speciale gelegenheden.",
+  faq_q24:"Biedt het restaurant catering?",faq_a24:"Ja, wij bieden cateringdiensten voor diverse evenementen. Neem contact op voor informatie en offertes.",
+  faq_q25:"Hoe kan ik een tafel reserveren?",faq_a25:"Via ons reserveringssysteem op de website kunt u eenvoudig een tafel reserveren. U ontvangt een bevestiging per e-mail.",
+  faq_q26:"Is reserveren verplicht?",faq_a26:"Nee, maar we raden het aan, vooral tijdens drukke periodes en weekends.",
+  faq_q27:"Kan ik reserveren voor grote groepen?",faq_a27:"Ja, wij accommoderen groepen tot 350 personen zittend en 500 personen staand. Neem contact op via onze feesten en partijen pagina.",
+  res_label:"Reserveren",res_title:'Boek Uw <em style="color:var(--gold);font-style:italic">Tafel</em>',res_desc:"Reserveer eenvoudig en snel online een tafel. Vergeet niet uw e-mailadres correct in te voeren, u ontvangt een bevestiging!",res_submit:"Reservering Maken",
+  f_name:"Naam",f_phone:"Telefoon",f_date:"Datum",f_time:"Tijd",f_persons:"Aantal personen",f_notes:"Bijzonderheden",f_guests:"Aantal gasten",f_event_type:"Soort feest",f_select:"Selecteer...",f_select_time:"Kies tijd",f_select_persons:"Personen",f_other:"Anders",f_decor:"Aankleding",f_no_decor:"Geen aankleding",f_own_decor:"Eigen aankleding",f_cake:"Taart",f_no_cake:"Geen taart",f_masal_cake:"Standaard gebak Masal",f_own_cake:"Eigen taart (€15 service)",f_wishes:"Overige wensen",
+  c_address:"Adres",c_phone:"Telefoon",c_parking:"Parkeren",footer_tagline:"Een Turks Sprookje in het Hart van Tilburg",
+  reviews_count:"1.628 Google-beoordelingen",reviews_link:"Alle beoordelingen",
+  confirm_res:"Reservering Bevestigd!",confirm_party:"Aanvraag Verstuurd!"
+},
+en:{
+  nav_menu:"Menu",nav_faq:"FAQ",nav_party:"Events & Parties",nav_hours:"Opening Hours",nav_contact:"Contact",nav_reserve:"Reserve",
+  hero_label:"Welcome",hero_title:'A Turkish <em>fairy tale</em> in the heart of Tilburg',hero_desc:"Our kitchen is inspired by the rich culinary traditions of Turkey. We strive to offer our guests an authentic and unforgettable dining experience.",hero_cta:"Reserve a table",
+  about_label:"Our Story",about_title:"Lunch, dinner or a party?",about_desc:"Enjoy a delicious lunch or dinner with us daily. On weekends, you're welcome for breakfast! All our dishes are 100% halal. Our venue is also perfect for events and parties.",
+  menu_label:"Menus",menu_title:"Discover Our Dishes",menu_breakfast_title:"Breakfast Buffet",menu_breakfast_desc:"Every Saturday and Sunday we offer an extensive breakfast buffet from 10:00 to 14:00. Maximum time limit: 2 hours.",menu_lunch_title:"Lunch",menu_lunch_desc:"Monday to Friday, enjoy lunch from 11:00 to 14:00. We have an extensive lunch menu!",menu_lunch_btn:"Lunch Menu",menu_dinner_title:"Dinner",menu_dinner_desc:"Dinner is available 7 days a week from 14:00. Whether you choose meat, fish, or vegetarian — every dish is outstanding.",menu_dinner_btn:"Dinner Menu",
+  exp_label:"Experience",exp_title:'Experience <em>Luxury</em> Dining',exp_desc:"Discover a world where every dish is a masterpiece, carefully prepared with the finest ingredients and generations of culinary wisdom from Anatolia.",
+  party_label:"Events",party_title:"Events & Parties",party_desc1:"Looking for the perfect venue for a large event? Restaurant Masal offers extensive options for groups of 25+ guests. We can accommodate up to 350 seated and 500 standing guests.",party_desc2:"Our culinary experts have composed an extensive menu that can be tailored to your specific wishes. Please submit your request at least two weeks in advance.",party_tag1:"Wedding",party_tag2:"Baby Shower",party_tag3:"Birthday",party_tag4:"Corporate Event",party_tag5:"Anniversary",party_tag6:"Catering",party_form_title:"Request Form",party_submit:"Submit Request",
+  hours_label:"Visit Us",hours_title:"Opening Hours",hours_weekday:"Monday – Friday",hours_weekend:"Saturday & Sunday",
+  faq_label:"Frequently Asked Questions",faq_title:"FAQ",
+  faq_cat1:"General Information",faq_cat2:"Food & Drinks",faq_cat3:"Services & Facilities",faq_cat4:"Payments",faq_cat5:"Events",faq_cat6:"Reservations",
+  faq_q1:"What are the opening hours?",faq_a1:"Restaurant Masal is open 365 days a year. Mon–Fri: 11:00–22:00. Sat & Sun: 10:00–22:00.",
+  faq_q2:"Where is the restaurant located?",faq_a2:"Talent Square 333, 5038 LX Tilburg.",
+  faq_q3:"How can I contact you?",faq_a3:"You can reach us by phone at 013 203 53 99, email at info@masalrestaurant.nl, or through our contact form.",
+  faq_q4:"Is there parking available?",faq_a4:"You cannot park directly at the door (except with a disability pass). We recommend Parkeergarage Knegtel (Gasthuisring 60) or AH XL (Jan Heijnstraat 10).",
+  faq_q5:"Is there a prayer room?",faq_a5:"Yes, we have a prayer room available for guests.",
+  faq_q6:"Is shisha/hookah allowed?",faq_a6:"No, shisha is not permitted in our restaurant.",
+  faq_q7:"Is the food halal?",faq_a7:"Yes, all our fresh dishes are 100% halal.",
+  faq_q8:"Are there vegetarian and vegan options?",faq_a8:"Yes, we have various vegetarian and vegan dishes. Please indicate your dietary preferences when ordering.",
+  faq_q9:"Are there gluten-free options?",faq_a9:"Yes, we offer several gluten-free dishes. Ask when ordering.",
+  faq_q10:"Is there a kids menu?",faq_a10:"Yes, we have a special kids menu with child-friendly dishes.",
+  faq_q11:"Until what time can I have lunch?",faq_a11:"Breakfast and lunch are served until 14:00. After 14:00, we serve from our dinner menu.",
+  faq_q12:"How long can I use the breakfast buffet?",faq_a12:"On weekends, the maximum time limit is 2 hours for the breakfast buffet.",
+  faq_q13:"Is there a weekday breakfast buffet?",faq_a13:"No, the buffet is only available on weekends. On weekdays, you can order breakfast from the menu.",
+  faq_q14:"Can I order takeaway?",faq_a14:"Yes, takeaway is available. Place your order by phone at 013 203 53 99.",
+  faq_q15:"Are there high chairs and a play area?",faq_a15:"Yes, we have high chairs and a play area for our young guests.",
+  faq_q16:"Do you have a terrace?",faq_a16:"Yes, we have a terrace where you can enjoy your meal outdoors, depending on the season.",
+  faq_q17:"Is the restaurant wheelchair accessible?",faq_a17:"Yes, the restaurant is wheelchair accessible. Note: the toilets are not accessible by wheelchair (stairs, no stairlift).",
+  faq_q18:"Are pets allowed?",faq_a18:"Pets are not allowed, except for service dogs.",
+  faq_q19:"Do you offer delivery?",faq_a19:"No, we don't offer delivery. You can pick up food at our restaurant.",
+  faq_q20:"What payment methods do you accept?",faq_a20:"We accept cash, credit cards, debit cards and mobile payments (Apple Pay, Google Pay).",
+  faq_q21:"Can I rent the restaurant for a private event?",faq_a21:"Yes, you can reserve our restaurant for private events. Contact us via our events page.",
+  faq_q22:"Can I bring my own cake?",faq_a22:"Yes, you can bring your own cake. We charge a service fee of €15.",
+  faq_q23:"Do you offer gift vouchers?",faq_a23:"Yes, gift vouchers are available at our restaurant. Perfect for birthdays and special occasions.",
+  faq_q24:"Do you offer catering?",faq_a24:"Yes, we offer catering services. Contact us for information and quotes.",
+  faq_q25:"How can I reserve a table?",faq_a25:"You can easily reserve a table through our online reservation system. You'll receive a confirmation by email.",
+  faq_q26:"Is a reservation required?",faq_a26:"No, but we recommend it, especially during busy periods and weekends.",
+  faq_q27:"Can I reserve for large groups?",faq_a27:"Yes, we accommodate groups up to 350 seated and 500 standing. Contact us via our events page.",
+  res_label:"Reserve",res_title:'Book Your <em style="color:var(--gold);font-style:italic">Table</em>',res_desc:"Easily reserve a table online. Don't forget to enter your email correctly — you'll receive a confirmation!",res_submit:"Make Reservation",
+  f_name:"Name",f_phone:"Phone",f_date:"Date",f_time:"Time",f_persons:"Number of guests",f_notes:"Special requests",f_guests:"Number of guests",f_event_type:"Event type",f_select:"Select...",f_select_time:"Choose time",f_select_persons:"Guests",f_other:"Other",f_decor:"Decoration",f_no_decor:"No decoration",f_own_decor:"Own decoration",f_cake:"Cake",f_no_cake:"No cake",f_masal_cake:"Standard Masal pastry",f_own_cake:"Own cake (€15 service)",f_wishes:"Other wishes",
+  c_address:"Address",c_phone:"Phone",c_parking:"Parking",footer_tagline:"A Turkish Fairy Tale in the Heart of Tilburg",
+  reviews_count:"1,628 Google reviews",reviews_link:"All reviews",
+  confirm_res:"Reservation Confirmed!",confirm_party:"Request Submitted!"
+},
+tr:{
+  nav_menu:"Menü",nav_faq:"SSS",nav_party:"Özel Etkinlikler",nav_hours:"Çalışma Saatleri",nav_contact:"İletişim",nav_reserve:"Rezervasyon",
+  hero_label:"Hoşgeldiniz",hero_title:'Tilburg\'un kalbinde bir Türk <em>masalı</em>',hero_desc:"Mutfağımız Türkiye'nin zengin yemek geleneklerinden ilham almaktadır. Misafirlerimize otantik ve unutulmaz bir yemek deneyimi sunmayı hedefliyoruz.",hero_cta:"Masa Ayırtın",
+  about_label:"Hikayemiz",about_title:"Öğle yemeği, akşam yemeği veya parti?",about_desc:"Her gün lezzetli bir öğle veya akşam yemeğinin tadını çıkarabilirsiniz. Hafta sonları kahvaltıya davetlisiniz! Tüm yemeklerimiz %100 helaldir. Mekanımız parti ve etkinlikler için de mükemmeldir.",
+  menu_label:"Menüler",menu_title:"Lezzetlerimizi Keşfedin",menu_breakfast_title:"Açık Büfe Kahvaltı",menu_breakfast_desc:"Her cumartesi ve pazar 10:00-14:00 arası zengin açık büfe kahvaltımız mevcuttur. Maksimum süre: 2 saat.",menu_lunch_title:"Öğle Yemeği",menu_lunch_desc:"Pazartesiden cumaya, 11:00-14:00 arası öğle yemeğinin tadını çıkarabilirsiniz. Geniş bir öğle yemeği menümüz var!",menu_lunch_btn:"Öğle Menüsü",menu_dinner_title:"Akşam Yemeği",menu_dinner_desc:"Haftanın 7 günü 14:00'ten itibaren akşam yemeği yiyebilirsiniz. Et, balık veya vejetaryen — tüm yemeklerimiz eşsizdir.",menu_dinner_btn:"Akşam Menüsü",
+  exp_label:"Deneyim",exp_title:'<em>Lüks</em> Yemek Deneyimi',exp_desc:"Her yemeğin bir şaheser olduğu, Anadolu'nun nesiller boyu süren mutfak bilgeliğiyle özenle hazırlandığı bir dünyayı keşfedin.",
+  party_label:"Etkinlikler",party_title:"Özel Etkinlikler",party_desc1:"Büyük bir etkinlik için mükemmel mekan mı arıyorsunuz? Restaurant Masal, 25+ kişilik gruplar için kapsamlı imkanlar sunmaktadır. 350 kişi oturarak, 500 kişi ayakta ağırlanabilir.",party_desc2:"Mutfak uzmanlarımız, isteklerinize göre özelleştirilebilecek kapsamlı bir menü hazırlamıştır. Lütfen talebinizi en az iki hafta önceden iletin.",party_tag1:"Düğün",party_tag2:"Baby Shower",party_tag3:"Doğum Günü",party_tag4:"Şirket Etkinliği",party_tag5:"Yıl Dönümü",party_tag6:"Catering",party_form_title:"Başvuru Formu",party_submit:"Başvuru Gönder",
+  hours_label:"Bizi Ziyaret Edin",hours_title:"Çalışma Saatleri",hours_weekday:"Pazartesi – Cuma",hours_weekend:"Cumartesi & Pazar",
+  faq_label:"Sık Sorulan Sorular",faq_title:"SSS",
+  faq_cat1:"Genel Bilgi",faq_cat2:"Yiyecek ve İçecek",faq_cat3:"Hizmetler ve Olanaklar",faq_cat4:"Ödeme",faq_cat5:"Etkinlikler",faq_cat6:"Rezervasyonlar",
+  faq_q1:"Çalışma saatleri nedir?",faq_a1:"Restaurant Masal yılın 365 günü açıktır. Pzt-Cum: 11:00-22:00. Cmt-Paz: 10:00-22:00.",
+  faq_q2:"Restoran nerede?",faq_a2:"Talent Square 333, 5038 LX Tilburg.",
+  faq_q3:"Nasıl iletişime geçebilirim?",faq_a3:"Telefon: 013 203 53 99, e-posta: info@masalrestaurant.nl veya iletişim formu ile ulaşabilirsiniz.",
+  faq_q4:"Otopark var mı?",faq_a4:"Kapının önüne park edemezsiniz (engelli kartı hariç). Parkeergarage Knegtel (Gasthuisring 60) veya AH XL (Jan Heijnstraat 10) önerilir.",
+  faq_q5:"Mescit var mı?",faq_a5:"Evet, misafirlerimiz için bir mescidimiz mevcuttur.",
+  faq_q6:"Nargile içilebilir mi?",faq_a6:"Hayır, restoranımızda nargile içmek yasaktır.",
+  faq_q7:"Yemekler helal mi?",faq_a7:"Evet, tüm taze yemeklerimiz %100 helaldir.",
+  faq_q8:"Vejetaryen ve vegan seçenekler var mı?",faq_a8:"Evet, çeşitli vejetaryen ve vegan yemeklerimiz mevcuttur. Sipariş verirken diyet tercihlerinizi belirtiniz.",
+  faq_q9:"Glutensiz seçenekler var mı?",faq_a9:"Evet, çeşitli glutensiz yemekler sunuyoruz. Sipariş verirken sorunuz.",
+  faq_q10:"Çocuk menüsü var mı?",faq_a10:"Evet, çocuk dostu yemeklerden oluşan özel bir çocuk menümüz var.",
+  faq_q11:"Öğle yemeği saat kaça kadar?",faq_a11:"14:00'e kadar kahvaltı ve öğle yemeği sunulmaktadır. 14:00'den sonra akşam menüsünden servis yapılır.",
+  faq_q12:"Açık büfe kahvaltı ne kadar süre kullanılabilir?",faq_a12:"Hafta sonlarında açık büfe için maksimum süre 2 saattir.",
+  faq_q13:"Hafta içi açık büfe kahvaltı var mı?",faq_a13:"Hayır, açık büfe sadece hafta sonları mevcuttur. Hafta içi menüden kahvaltı sipariş edebilirsiniz.",
+  faq_q14:"Paket servis var mı?",faq_a14:"Evet, yemekleri alabilirsiniz. Telefonla sipariş verin: 013 203 53 99.",
+  faq_q15:"Mama sandalyesi ve oyun alanı var mı?",faq_a15:"Evet, küçük misafirlerimiz için mama sandalyeleri ve oyun alanımız mevcuttur.",
+  faq_q16:"Teras var mı?",faq_a16:"Evet, mevsime bağlı olarak açık havada yemek yiyebileceğiniz bir terasımız var.",
+  faq_q17:"Restoran tekerlekli sandalye erişimine uygun mu?",faq_a17:"Evet, restoran erişilebilirdir. Not: tuvaletler tekerlekli sandalye ile erişilemez (merdiven, asansör yok).",
+  faq_q18:"Evcil hayvanlar kabul ediliyor mu?",faq_a18:"Rehber köpekler hariç evcil hayvanlar kabul edilmemektedir.",
+  faq_q19:"Teslimat hizmeti var mı?",faq_a19:"Hayır, teslimat hizmeti sunmuyoruz. Restorandan paket alabilirsiniz.",
+  faq_q20:"Hangi ödeme yöntemleri kabul ediliyor?",faq_a20:"Nakit, kredi kartı, banka kartı ve mobil ödeme (Apple Pay, Google Pay) kabul ediyoruz.",
+  faq_q21:"Restoranı özel etkinlik için kiralayabilir miyim?",faq_a21:"Evet, özel etkinlikler için restoranımızı rezerve edebilirsiniz. Etkinlikler sayfamızdan iletişime geçin.",
+  faq_q22:"Kendi pastamı getirebilir miyim?",faq_a22:"Evet, kendi pastanızı getirebilirsiniz. Bunun için €15 servis ücreti alınmaktadır.",
+  faq_q23:"Hediye çeki var mı?",faq_a23:"Evet, restoranımızda hediye çekleri mevcuttur. Doğum günleri ve özel günler için idealdir.",
+  faq_q24:"Catering hizmeti sunuyor musunuz?",faq_a24:"Evet, çeşitli etkinlikler için catering hizmeti sunuyoruz. Bilgi ve teklif için iletişime geçin.",
+  faq_q25:"Nasıl masa ayırtabilirim?",faq_a25:"Web sitemizdeki online rezervasyon sistemi ile kolayca masa ayırtabilirsiniz. E-posta ile onay alacaksınız.",
+  faq_q26:"Rezervasyon zorunlu mu?",faq_a26:"Hayır, ancak özellikle yoğun dönemlerde ve hafta sonlarında tavsiye ediyoruz.",
+  faq_q27:"Büyük gruplar için rezervasyon yapabilir miyim?",faq_a27:"Evet, 350 kişi oturarak ve 500 kişi ayakta ağırlayabiliyoruz. Etkinlikler sayfamızdan iletişime geçin.",
+  res_label:"Rezervasyon",res_title:'Masanızı <em style="color:var(--gold);font-style:italic">Ayırtın</em>',res_desc:"Kolayca online masa ayırtın. E-posta adresinizi doğru girmeyi unutmayın — onay alacaksınız!",res_submit:"Rezervasyon Yap",
+  f_name:"Ad Soyad",f_phone:"Telefon",f_date:"Tarih",f_time:"Saat",f_persons:"Kişi sayısı",f_notes:"Özel istekler",f_guests:"Misafir sayısı",f_event_type:"Etkinlik türü",f_select:"Seçiniz...",f_select_time:"Saat seçin",f_select_persons:"Kişi",f_other:"Diğer",f_decor:"Dekorasyon",f_no_decor:"Dekorasyon yok",f_own_decor:"Kendi dekorasyonunuz",f_cake:"Pasta",f_no_cake:"Pasta yok",f_masal_cake:"Standart Masal tatlısı",f_own_cake:"Kendi pastanız (€15 servis)",f_wishes:"Diğer istekler",
+  c_address:"Adres",c_phone:"Telefon",c_parking:"Otopark",footer_tagline:"Tilburg'un Kalbinde Bir Türk Masalı",
+  reviews_count:"1.628 Google yorumu",reviews_link:"Tüm yorumlar",
+  confirm_res:"Rezervasyon Onaylandı!",confirm_party:"Başvuru Gönderildi!"
+}
+};
+
+let currentLang='nl';
+
+function setLang(lang){
+  currentLang=lang;
+  document.querySelectorAll('.lang-btn').forEach(b=>{b.classList.toggle('active',b.textContent.trim()===lang.toUpperCase())});
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const key=el.getAttribute('data-i18n');
+    if(T[lang]&&T[lang][key]){
+      if(T[lang][key].includes('<em')||T[lang][key].includes('<br')){el.innerHTML=T[lang][key]}
+      else{el.textContent=T[lang][key]}
+    }
+  });
+  document.documentElement.lang=lang==='tr'?'tr':lang==='en'?'en':'nl';
+}
+
+// Navbar scroll
+window.addEventListener('scroll',()=>{document.getElementById('navbar').classList.toggle('scrolled',window.scrollY>60)});
+
+// Reveal
+const obs=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting){x.target.classList.add('visible');obs.unobserve(x.target)}})},{threshold:0,rootMargin:'0px 0px -10% 0px'});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+// FAQ
+function toggleFaq(el){const i=el.parentElement;const o=i.classList.contains('open');i.parentElement.querySelectorAll('.faq-item').forEach(x=>x.classList.remove('open'));if(!o)i.classList.add('open')}
+
+// Reservation
+async function handleRes(e){
+  e.preventDefault();
+  const f=e.target;const b=f.querySelector('.btn-gold');
+  const fd=new FormData(f);
+  const payload={name:fd.get('name'),phone:fd.get('phone'),email:fd.get('email'),date:fd.get('date'),time:fd.get('time'),persons:fd.get('persons'),notes:fd.get('notes')};
+  b.disabled=true;
+  const {error}=await sb.from('reservations').insert(payload);
+  b.disabled=false;
+  if(error){b.textContent='Fout: '+error.message;b.style.background='#c0392b';setTimeout(()=>{b.textContent=T[currentLang].res_submit;b.style.background=''},4000);return}
+  b.textContent=T[currentLang].confirm_res;b.style.background='#4CAF50';
+  setTimeout(()=>{b.textContent=T[currentLang].res_submit;b.style.background='';f.reset()},3000);
+}
+
+async function handleParty(e){
+  e.preventDefault();
+  const f=e.target;const b=f.querySelector('.btn-gold-solid');
+  const fd=new FormData(f);
+  const payload={name:fd.get('name'),phone:fd.get('phone'),email:fd.get('email'),guests:parseInt(fd.get('guests'),10),event_date:fd.get('event_date'),event_type:fd.get('event_type'),decoration:fd.get('decoration'),cake:fd.get('cake'),wishes:fd.get('wishes')};
+  b.disabled=true;
+  const {error}=await sb.from('party_requests').insert(payload);
+  b.disabled=false;
+  if(error){b.textContent='Fout: '+error.message;b.style.background='#c0392b';setTimeout(()=>{b.textContent=T[currentLang].party_submit;b.style.background=''},4000);return}
+  b.textContent=T[currentLang].confirm_party;b.style.background='#4CAF50';
+  setTimeout(()=>{b.textContent=T[currentLang].party_submit;b.style.background='';f.reset()},3000);
+}
+
+// Init
+setLang('nl');
+</script>
+</body>
+</html>

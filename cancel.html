@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Masal — Reservering Annuleren</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Jost:wght@300;400;500&display=swap');
+:root{--gold:#c6a55c;--bg:#111;--card:#1e1e1e;--border:rgba(198,165,92,.15)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:#fff;font-family:'Jost',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem}
+.logo{height:52px;margin-bottom:2.5rem;filter:brightness(0) invert(1)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:2.5rem 2rem;max-width:420px;width:100%;text-align:center}
+.icon{font-size:3rem;margin-bottom:1rem}
+h2{font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--gold);margin-bottom:.75rem}
+p{color:rgba(255,255,255,.6);font-size:.9rem;line-height:1.7}
+.btn{display:inline-block;margin-top:1.8rem;padding:.7rem 2rem;border-radius:7px;background:var(--gold);color:#111;font-family:'Jost',sans-serif;font-size:.85rem;font-weight:600;letter-spacing:.5px;text-decoration:none;cursor:pointer;border:none}
+.btn.ghost{background:transparent;border:1px solid var(--border);color:rgba(255,255,255,.5);margin-left:.5rem}
+.err{color:#e74c3c}
+</style>
+</head>
+<body>
+<img class="logo" src="https://i0.wp.com/masalrestaurant.nl/wp-content/uploads/2021/11/Masal_Logo_DEF.png?fit=600%2C304&ssl=1" alt="Masal">
+<div class="card" id="card">
+  <div class="icon">⏳</div>
+  <h2 id="title">—</h2>
+  <p id="msg">—</p>
+  <div id="actions"></div>
+</div>
+
+<script>
+const SUPABASE_URL='https://mytqxxdzfrropqcrhipv.supabase.co';
+const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15dHF4eGR6ZnJyb3BxY3JoaXB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MjgwMTUsImV4cCI6MjA5MTAwNDAxNX0.eKAts80PGm6TTYSllnYq79UaG0_ERJi7FBLnh2GgG4I';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
+
+const T={
+  nl:{
+    loading:'Bezig...',
+    confirm_title:'Weet u het zeker?',
+    confirm_msg:'U staat op het punt uw reservering te annuleren.',
+    btn_yes:'Ja, annuleren',btn_no:'Nee, terug',
+    done_title:'Reservering geannuleerd',
+    done_msg:'Uw reservering is succesvol geannuleerd. We hopen u een andere keer te mogen ontvangen.',
+    already_title:'Al geannuleerd',
+    already_msg:'Deze reservering is al eerder geannuleerd.',
+    err_title:'Niet gevonden',
+    err_msg:'We konden geen reservering vinden met dit link. Controleer of u de juiste link gebruikt.',
+    back:'Terug naar website'
+  },
+  en:{
+    loading:'Loading...',
+    confirm_title:'Are you sure?',
+    confirm_msg:'You are about to cancel your reservation.',
+    btn_yes:'Yes, cancel it',btn_no:'No, go back',
+    done_title:'Reservation cancelled',
+    done_msg:'Your reservation has been successfully cancelled. We hope to welcome you another time.',
+    already_title:'Already cancelled',
+    already_msg:'This reservation has already been cancelled.',
+    err_title:'Not found',
+    err_msg:'We could not find a reservation with this link. Please check that you are using the correct link.',
+    back:'Back to website'
+  },
+  tr:{
+    loading:'Yükleniyor...',
+    confirm_title:'Emin misiniz?',
+    confirm_msg:'Rezervasyonunuzu iptal etmek üzeresiniz.',
+    btn_yes:'Evet, iptal et',btn_no:'Hayır, geri dön',
+    done_title:'Rezervasyon iptal edildi',
+    done_msg:'Rezervasyonunuz başarıyla iptal edildi. Sizi başka bir zaman ağırlamayı umuyoruz.',
+    already_title:'Zaten iptal edildi',
+    already_msg:'Bu rezervasyon daha önce iptal edilmiş.',
+    err_title:'Bulunamadı',
+    err_msg:'Bu bağlantıya ait bir rezervasyon bulunamadı. Doğru bağlantıyı kullandığınızdan emin olun.',
+    back:'Siteye dön'
+  }
+};
+
+const lang=(localStorage.getItem('masalLang')||navigator.language||'nl').slice(0,2);
+const L=T[lang]||T['nl'];
+
+const id=new URLSearchParams(location.search).get('id');
+
+function show(icon,title,msg,actionsHtml=''){
+  document.querySelector('.icon').textContent=icon;
+  document.getElementById('title').textContent=title;
+  document.getElementById('msg').textContent=msg;
+  document.getElementById('actions').innerHTML=actionsHtml;
+}
+
+async function doCancel(){
+  show('⏳',L.loading,'');
+  const{error}=await sb.from('reservations').update({status:'cancelled'}).eq('id',id);
+  if(error){show('❌',L.err_title,L.err_msg,`<a href="index.html" class="btn ghost">${L.back}</a>`);return}
+  show('✅',L.done_title,L.done_msg,`<a href="index.html" class="btn">${L.back}</a>`);
+}
+
+async function init(){
+  if(!id){show('❌',L.err_title,L.err_msg,`<a href="index.html" class="btn ghost">${L.back}</a>`);return}
+  show('⏳',L.loading,'');
+  const{data,error}=await sb.from('reservations').select('status,name,date,time').eq('id',id).single();
+  if(error||!data){show('❌',L.err_title,L.err_msg,`<a href="index.html" class="btn ghost">${L.back}</a>`);return}
+  if(data.status==='cancelled'){show('ℹ️',L.already_title,L.already_msg,`<a href="index.html" class="btn ghost">${L.back}</a>`);return}
+  show('🗓️',L.confirm_title,L.confirm_msg,
+    `<button class="btn" onclick="doCancel()">${L.btn_yes}</button><a href="index.html" class="btn ghost">${L.btn_no}</a>`);
+}
+
+init();
+</script>
+</body>
+</html>
