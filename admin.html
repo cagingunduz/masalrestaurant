@@ -312,6 +312,8 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
     <h3 data-i18n="add_staff_title">Medewerker toevoegen</h3>
     <label data-i18n="f_name">Naam</label>
     <input type="text" id="newStaffName" class="input" style="width:100%" data-i18n-ph="name_ph" placeholder="Volledige naam">
+    <label>E-mail</label>
+    <input type="email" id="newStaffEmail" class="input" style="width:100%" placeholder="naam@email.com">
     <label data-i18n="staff_dept">Afdeling / Bölüm</label>
     <input type="text" id="newStaffDept" class="input" style="width:100%" placeholder="bijv. Keuken, Bar, Bediening...">
     <label data-i18n="staff_pass">Şifre</label>
@@ -704,21 +706,28 @@ async function deleteCellShift(){
 }
 
 // Staff management
-function openAddStaff(){document.getElementById('newStaffName').value='';document.getElementById('newStaffDept').value='';document.getElementById('newStaffPass').value='';document.getElementById('newStaffColor').value='#c6a55c';document.getElementById('addStaffModal').classList.add('open')}
+function openAddStaff(){document.getElementById('newStaffName').value='';document.getElementById('newStaffEmail').value='';document.getElementById('newStaffDept').value='';document.getElementById('newStaffPass').value='';document.getElementById('newStaffColor').value='#c6a55c';document.getElementById('addStaffModal').classList.add('open')}
 function closeAddStaff(){document.getElementById('addStaffModal').classList.remove('open')}
 
 async function saveStaff(){
   const name=document.getElementById('newStaffName').value.trim();
   const color=document.getElementById('newStaffColor').value;
   const department=document.getElementById('newStaffDept').value.trim()||null;
-  const password=document.getElementById('newStaffPass').value||null;
+  const email=document.getElementById('newStaffEmail').value.trim();
+  const password=document.getElementById('newStaffPass').value;
   if(!name){alert(t('err')+'Naam vereist');return}
-  const words=name.trim().split(/\s+/);
-  const initials=words.map(w=>w[0]).join('').toUpperCase().slice(0,3);
-  const id=crypto.randomUUID();
-  const{error}=await sb.from('profiles').insert({id,name,initials,color,role:'staff',department,password});
-  if(error){alert(t('err')+error.message);return}
-  // Reload profiles
+  if(!email){alert(t('err')+'E-mail vereist');return}
+  if(!password){alert(t('err')+'Şifre vereist');return}
+  const btn=document.querySelector('#addStaffModal .btn:not(.ghost)');
+  btn.disabled=true;
+  const res=await fetch(`${SUPABASE_URL}/functions/v1/create-staff`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_ANON},
+    body:JSON.stringify({name,email,password,color,department})
+  });
+  const json=await res.json();
+  btn.disabled=false;
+  if(!res.ok){alert(t('err')+(json.error||'Onbekende fout'));return}
   const{data:p}=await sb.from('profiles').select('*').order('name');
   profiles=p||[];
   closeAddStaff();loadShifts();
@@ -728,7 +737,12 @@ async function deleteStaff(id,e){
   e.stopPropagation();
   if(!confirm(t('confirm_delete_staff')))return;
   await sb.from('shift_assignments').delete().eq('staff_id',id);
-  await sb.from('profiles').delete().eq('id',id);
+  const res=await fetch(`${SUPABASE_URL}/functions/v1/delete-staff`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_ANON},
+    body:JSON.stringify({userId:id})
+  });
+  if(!res.ok){const j=await res.json();alert(t('err')+(j.error||'Onbekende fout'));return}
   profiles=profiles.filter(p=>p.id!==id);
   loadShifts();
 }
