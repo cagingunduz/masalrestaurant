@@ -72,7 +72,8 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
 .sched-th.wknd{background:#fff9ef}
 .sched-tr:hover .sched-td:not([style*="background"]){background:#fcfbf7}
 .sched-td{padding:0;border-bottom:1px solid #f0ece4;border-right:1px solid #f0ece4;position:relative}
-.sched-td.staff-td{padding:.55rem 1rem;background:#fafafa;border-right:2px solid #e0dbd0;white-space:nowrap;font-size:.85rem;font-weight:500;vertical-align:middle}
+.sched-td.staff-td{padding:.45rem 1rem;background:#fafafa;border-right:2px solid #e0dbd0;white-space:nowrap;font-size:.85rem;font-weight:500;vertical-align:middle}
+.staff-dept{display:block;font-size:.7rem;font-weight:400;color:#aaa;margin-top:.1rem;letter-spacing:.3px}
 .sched-td.total-td{text-align:center;background:#fdf9f4;border-left:2px solid #e0dbd0;border-right:none;padding:.4rem .3rem;font-size:.8rem;font-weight:600;color:var(--gold-dark);vertical-align:middle}
 .sched-td.wknd{background:#fffcf5}
 .sched-cell{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:54px;cursor:pointer;padding:.35rem .25rem;transition:background .12s;text-align:center;gap:2px}
@@ -313,6 +314,8 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
     <input type="text" id="newStaffName" class="input" style="width:100%" data-i18n-ph="name_ph" placeholder="Volledige naam">
     <label data-i18n="initials">Initialen</label>
     <input type="text" id="newStaffInitials" class="input" maxlength="3" style="width:100%" data-i18n-ph="initials_ph" placeholder="bijv. AK">
+    <label data-i18n="staff_dept">Afdeling / Bölüm</label>
+    <input type="text" id="newStaffDept" class="input" style="width:100%" placeholder="bijv. Keuken, Bar, Bediening...">
     <label data-i18n="color">Kleur</label><br>
     <input type="color" id="newStaffColor" value="#c6a55c" style="margin-top:.3rem;height:38px;width:60px;border:1px solid #ddd;border-radius:6px;cursor:pointer;padding:2px">
     <div class="modal-actions">
@@ -627,6 +630,7 @@ async function loadShifts(){
       <td class="sched-td staff-td" ${bg}>
         <span class="staff-dot" style="background:${p.color||'#aaa'}"></span>&nbsp;${esc(p.name||'?')}
         <button class="del-staff-btn" onclick="deleteStaff('${p.id}',event)" title="${t('confirm_delete_staff')}">✕</button>
+        ${p.department?`<span class="staff-dept">${esc(p.department)}</span>`:''}
       </td>
       ${cells}
       <td class="sched-td total-td" ${bg}>${weekTotal>0?hrsLabel(weekTotal):'–'}</td>
@@ -700,16 +704,17 @@ async function deleteCellShift(){
 }
 
 // Staff management
-function openAddStaff(){document.getElementById('newStaffName').value='';document.getElementById('newStaffInitials').value='';document.getElementById('newStaffColor').value='#c6a55c';document.getElementById('addStaffModal').classList.add('open')}
+function openAddStaff(){document.getElementById('newStaffName').value='';document.getElementById('newStaffInitials').value='';document.getElementById('newStaffDept').value='';document.getElementById('newStaffColor').value='#c6a55c';document.getElementById('addStaffModal').classList.add('open')}
 function closeAddStaff(){document.getElementById('addStaffModal').classList.remove('open')}
 
 async function saveStaff(){
   const name=document.getElementById('newStaffName').value.trim();
   const initials=document.getElementById('newStaffInitials').value.trim().toUpperCase();
   const color=document.getElementById('newStaffColor').value;
+  const department=document.getElementById('newStaffDept').value.trim()||null;
   if(!name){alert(t('err')+'Naam vereist');return}
   const id=crypto.randomUUID();
-  const{error}=await sb.from('profiles').insert({id,name,initials:initials||name.substring(0,2).toUpperCase(),color,role:'staff'});
+  const{error}=await sb.from('profiles').insert({id,name,initials:initials||name.substring(0,2).toUpperCase(),color,role:'staff',department});
   if(error){alert(t('err')+error.message);return}
   // Reload profiles
   const{data:p}=await sb.from('profiles').select('*').order('name');
