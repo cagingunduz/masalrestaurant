@@ -55,6 +55,7 @@ main{flex:1;padding:2rem 2.5rem;overflow:auto}
 .status-dot.new{background:var(--gold)}
 .status-dot.confirmed{background:#4CAF50}
 .status-dot.cancelled{background:#c0392b}
+.status-dot.arrived{background:#2196F3}
 
 .persons-badge{display:inline-flex;align-items:center;gap:.35rem;color:var(--muted);font-size:.85rem;white-space:nowrap}
 .name-cell{font-weight:500}
@@ -124,7 +125,7 @@ const T={
     col_time:'Tijd',col_name:'Naam',col_type:'Type',col_persons:'Personen',col_phone:'Telefoon',col_status:'Status',col_notes:'Notities',col_action:'',
     status_new:'Nieuw',status_confirmed:'Bevestigd',status_cancelled:'Geannuleerd',
     type_res:'Reservering',type_party:'Feest/Parti',
-    btn_confirm:'Bevestigen',btn_confirmed:'✓ Bevestigd',
+    btn_confirm:'Bevestigen',btn_confirmed:'✓ Bevestigd',status_arrived:'Aanwezig',btn_arrived:'Aanwezig',
     empty_today:'Geen reserveringen voor vandaag',empty_upcoming:'Geen reserveringen',
     refresh_label:'Automatisch vernieuwen over',
     days:['Zondag','Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag'],
@@ -136,7 +137,7 @@ const T={
     col_time:'Time',col_name:'Name',col_type:'Type',col_persons:'Persons',col_phone:'Phone',col_status:'Status',col_notes:'Notes',col_action:'',
     status_new:'New',status_confirmed:'Confirmed',status_cancelled:'Cancelled',
     type_res:'Reservation',type_party:'Party',
-    btn_confirm:'Confirm',btn_confirmed:'✓ Confirmed',
+    btn_confirm:'Confirm',btn_confirmed:'✓ Confirmed',status_arrived:'Arrived',btn_arrived:'Arrived',
     empty_today:'No reservations for today',empty_upcoming:'No reservations found',
     refresh_label:'Auto refresh in',
     days:['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
@@ -148,7 +149,7 @@ const T={
     col_time:'Saat',col_name:'Ad',col_type:'Tür',col_persons:'Kişi',col_phone:'Telefon',col_status:'Durum',col_notes:'Not',col_action:'',
     status_new:'Yeni',status_confirmed:'Onaylandı',status_cancelled:'İptal',
     type_res:'Rezervasyon',type_party:'Parti / Etkinlik',
-    btn_confirm:'Onayla',btn_confirmed:'✓ Onaylandı',
+    btn_confirm:'Onayla',btn_confirmed:'✓ Onaylandı',status_arrived:'Geldi',btn_arrived:'Geldi',
     empty_today:'Bugün rezervasyon yok',empty_upcoming:'Rezervasyon bulunamadı',
     refresh_label:'Otomatik yenileme',
     days:['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'],
@@ -221,6 +222,17 @@ async function confirmRow(id,type){
   if(lbl){lbl.textContent=t('status_confirmed')}
 }
 
+async function arrivedRow(id,type){
+  const table=type==='party'?'party_requests':'reservations';
+  await sb.from(table).update({status:'arrived'}).eq('id',id);
+  const btn=document.getElementById('ab-'+id);
+  if(btn){btn.remove()}
+  const dot=document.getElementById('dot-'+id);
+  if(dot){dot.className='status-dot arrived'}
+  const lbl=document.getElementById('lbl-'+id);
+  if(lbl){lbl.textContent=t('status_arrived')}
+}
+
 // === TODAY ===
 async function loadToday(){
   const td=todayStr();
@@ -249,12 +261,12 @@ async function loadToday(){
   c.innerHTML=renderTable(allRows,true);
 }
 
-// === UPCOMING (all future, no limit) ===
+// === UPCOMING (today + all future) ===
 async function loadUpcoming(){
   const td=todayStr();
   const [{data:res,error:e1},{data:party,error:e2}]=await Promise.all([
-    sb.from('reservations').select('*').gt('date',td).order('date').order('time'),
-    sb.from('party_requests').select('*').gt('event_date',td).order('event_date')
+    sb.from('reservations').select('*').gte('date',td).order('date').order('time'),
+    sb.from('party_requests').select('*').gte('event_date',td).order('event_date')
   ]);
   const c=document.getElementById('upcomingContent');
   if(e1){c.innerHTML=`<div class="empty"><p>${esc(e1.message)}</p></div>`;return}
@@ -298,7 +310,7 @@ function renderTable(rows,showTime){
         <td><span class="type-badge ${isParty?'party':'res'}">${t(isParty?'type_party':'type_res')}</span></td>
         <td>${persons}</td>
         <td>${esc(r.phone||'')}</td>
-        <td><div class="status-cell"><span id="dot-${r.id}" class="status-dot ${r.status||'new'}"></span><span id="lbl-${r.id}">${t('status_'+(r.status||'new'))}</span>${(r.status||'new')==='new'?`<button id="cb-${r.id}" class="btn-confirm" onclick="confirmRow('${r.id}','${r._type==='party'?'party':'res'}')">${t('btn_confirm')}</button>`:''}</div></td>
+        <td><div class="status-cell"><span id="dot-${r.id}" class="status-dot ${r.status||'new'}"></span><span id="lbl-${r.id}">${t('status_'+(r.status||'new'))}</span>${(r.status||'new')==='new'?`<button id="cb-${r.id}" class="btn-confirm" onclick="confirmRow('${r.id}','${r._type==='party'?'party':'res'}')">${t('btn_confirm')}</button>`:''}${r.status==='confirmed'?`<button id="ab-${r.id}" class="btn-confirm" style="background:#2196F3" onclick="arrivedRow('${r.id}','${r._type==='party'?'party':'res'}')">${t('btn_arrived')}</button>`:''}</div></td>
         <td><div class="notes-cell">${esc(notes||'—')}</div></td>
       </tr>`;
     }).join('')}</tbody></table>`;
