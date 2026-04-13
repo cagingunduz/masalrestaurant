@@ -24,13 +24,12 @@ Deno.serve(async (req) => {
     })
   }
 
-  // Delete profile first (FK constraint)
+  // Delete profile (ignore error if already gone)
   await supabase.from('profiles').delete().eq('id', userId)
 
-  // Delete Auth user
+  // Delete Auth user — ignore "User not found" for legacy staff without Auth accounts
   const { error } = await supabase.auth.admin.deleteUser(userId)
-
-  if (error) {
+  if (error && !error.message.includes('User not found')) {
     return new Response(JSON.stringify({ error: error.message }), {
       status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })

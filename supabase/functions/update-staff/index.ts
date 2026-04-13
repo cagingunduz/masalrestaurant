@@ -24,10 +24,10 @@ Deno.serve(async (req) => {
     })
   }
 
-  // Update Auth password if provided
+  // Update Auth password if provided — skip silently if no Auth account exists yet
   if (password) {
     const { error: authError } = await supabase.auth.admin.updateUserById(userId, { password })
-    if (authError) {
+    if (authError && !authError.message.includes('User not found')) {
       return new Response(JSON.stringify({ error: authError.message }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
   }
 
   // Build profile update object
-  const updates: Record<string, string> = {}
+  const updates: Record<string, unknown> = {}
   if (department !== undefined) updates.department = department
   if (color) updates.color = color
   if (password) updates.password = password
