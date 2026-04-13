@@ -306,6 +306,24 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
   </div>
 </div>
 
+<!-- EDIT STAFF MODAL -->
+<div class="modal-bg" id="editStaffModal">
+  <div class="modal" style="max-width:320px">
+    <h3 data-i18n="edit_staff_title">Medewerker bewerken</h3>
+    <input type="hidden" id="editStaffId">
+    <label data-i18n="staff_dept">Afdeling / Bölüm</label>
+    <input type="text" id="editStaffDept" class="input" style="width:100%" placeholder="bijv. Keuken, Bar...">
+    <label data-i18n="staff_pass">Nieuw wachtwoord</label>
+    <input type="password" id="editStaffPass" class="input" style="width:100%" placeholder="Leeg = ongewijzigd">
+    <label data-i18n="color">Kleur</label><br>
+    <input type="color" id="editStaffColor" style="margin-top:.3rem;height:38px;width:60px;border:1px solid #ddd;border-radius:6px;cursor:pointer;padding:2px">
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeEditStaff()" data-i18n="cancel">Annuleren</button>
+      <button class="btn" onclick="saveEditStaff()" data-i18n="save">Opslaan</button>
+    </div>
+  </div>
+</div>
+
 <!-- ADD STAFF MODAL -->
 <div class="modal-bg" id="addStaffModal">
   <div class="modal" style="max-width:320px">
@@ -358,6 +376,7 @@ const I18N={
     haccp_notes_title:'Opmerkingen / corrigerende maatregelen',
     haccp_notes_ph:'Notities...',haccp_paraaf:'Paraaf:',haccp_paraaf_ph:'Initialen...',
     haccp_col_loc:'Locatie',haccp_col_norm:'Norm',
+    edit_staff_title:'Medewerker bewerken',
     haccp_add_btn:'+ Locatie',haccp_add_title:'Locatie toevoegen',
     haccp_lbl_nl:'Naam (NL)',haccp_lbl_tr:'Naam (TR)',haccp_lbl_norm:'Norm',haccp_lbl_type:'Type'
   },
@@ -383,6 +402,7 @@ const I18N={
     haccp_notes_title:'Açıklamalar / düzeltici tedbirler',
     haccp_notes_ph:'Notlar...',haccp_paraaf:'İmza:',haccp_paraaf_ph:'Baş harfler...',
     haccp_col_loc:'Lokasyon',haccp_col_norm:'Norm',
+    edit_staff_title:'Personel düzenle',
     haccp_add_btn:'+ Parça ekle',haccp_add_title:'Parça ekle',
     haccp_lbl_nl:'Ad (NL)',haccp_lbl_tr:'Ad (TR)',haccp_lbl_norm:'Norm',haccp_lbl_type:'Tür'
   }
@@ -629,6 +649,7 @@ async function loadShifts(){
     return`<tr class="sched-tr">
       <td class="sched-td staff-td" ${bg}>
         <span class="staff-dot" style="background:${p.color||'#aaa'}"></span>&nbsp;${esc(p.name||'?')}
+        <button class="del-staff-btn" onclick="openEditStaff('${p.id}',event)" title="Bewerken" style="color:#888">✎</button>
         <button class="del-staff-btn" onclick="deleteStaff('${p.id}',event)" title="${t('confirm_delete_staff')}">✕</button>
         ${p.department?`<span class="staff-dept">${esc(p.department)}</span>`:''}
       </td>
@@ -704,6 +725,37 @@ async function deleteCellShift(){
 }
 
 // Staff management
+function openEditStaff(id,e){
+  e.stopPropagation();
+  const p=profiles.find(x=>x.id===id);
+  if(!p)return;
+  document.getElementById('editStaffId').value=id;
+  document.getElementById('editStaffDept').value=p.department||'';
+  document.getElementById('editStaffPass').value='';
+  document.getElementById('editStaffColor').value=p.color||'#c6a55c';
+  document.getElementById('editStaffModal').style.display='flex';
+}
+function closeEditStaff(){document.getElementById('editStaffModal').style.display='none';}
+async function saveEditStaff(){
+  const id=document.getElementById('editStaffId').value;
+  const department=document.getElementById('editStaffDept').value.trim()||null;
+  const password=document.getElementById('editStaffPass').value||null;
+  const color=document.getElementById('editStaffColor').value;
+  const btn=document.querySelector('#editStaffModal .btn:not(.ghost)');
+  btn.disabled=true;
+  const res=await fetch(`${SUPABASE_URL}/functions/v1/update-staff`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_ANON},
+    body:JSON.stringify({userId:id,department,color,...(password?{password}:{})})
+  });
+  const json=await res.json();
+  btn.disabled=false;
+  if(!res.ok){alert(t('err')+(json.error||'Onbekende fout'));return}
+  const{data:p}=await sb.from('profiles').select('*').order('name');
+  profiles=p||[];
+  closeEditStaff();loadShifts();
+}
+
 function openAddStaff(){document.getElementById('newStaffName').value='';document.getElementById('newStaffDept').value='';document.getElementById('newStaffPass').value='';document.getElementById('newStaffColor').value='#c6a55c';document.getElementById('addStaffModal').classList.add('open')}
 function closeAddStaff(){document.getElementById('addStaffModal').classList.remove('open')}
 
