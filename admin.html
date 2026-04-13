@@ -314,6 +314,8 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
     <input type="text" id="newStaffName" class="input" style="width:100%" data-i18n-ph="name_ph" placeholder="Volledige naam">
     <label data-i18n="staff_dept">Afdeling / Bölüm</label>
     <input type="text" id="newStaffDept" class="input" style="width:100%" placeholder="bijv. Keuken, Bar, Bediening...">
+    <label data-i18n="staff_pass">Şifre</label>
+    <input type="password" id="newStaffPass" class="input" style="width:100%" placeholder="••••••••">
     <label data-i18n="color">Kleur</label><br>
     <input type="color" id="newStaffColor" value="#c6a55c" style="margin-top:.3rem;height:38px;width:60px;border:1px solid #ddd;border-radius:6px;cursor:pointer;padding:2px">
     <div class="modal-actions">
@@ -702,18 +704,19 @@ async function deleteCellShift(){
 }
 
 // Staff management
-function openAddStaff(){document.getElementById('newStaffName').value='';document.getElementById('newStaffDept').value='';document.getElementById('newStaffColor').value='#c6a55c';document.getElementById('addStaffModal').classList.add('open')}
+function openAddStaff(){document.getElementById('newStaffName').value='';document.getElementById('newStaffDept').value='';document.getElementById('newStaffPass').value='';document.getElementById('newStaffColor').value='#c6a55c';document.getElementById('addStaffModal').classList.add('open')}
 function closeAddStaff(){document.getElementById('addStaffModal').classList.remove('open')}
 
 async function saveStaff(){
   const name=document.getElementById('newStaffName').value.trim();
   const color=document.getElementById('newStaffColor').value;
   const department=document.getElementById('newStaffDept').value.trim()||null;
+  const password=document.getElementById('newStaffPass').value||null;
   if(!name){alert(t('err')+'Naam vereist');return}
   const words=name.trim().split(/\s+/);
   const initials=words.map(w=>w[0]).join('').toUpperCase().slice(0,3);
   const id=crypto.randomUUID();
-  const{error}=await sb.from('profiles').insert({id,name,initials,color,role:'staff',department});
+  const{error}=await sb.from('profiles').insert({id,name,initials,color,role:'staff',department,password});
   if(error){alert(t('err')+error.message);return}
   // Reload profiles
   const{data:p}=await sb.from('profiles').select('*').order('name');
