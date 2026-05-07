@@ -201,7 +201,10 @@ footer p{line-height:1.7}
   .menu-section{padding:4rem 1.5rem}
   .menu-cards{grid-template-columns:1fr;max-width:420px;margin:0 auto}
   .faq-grid{grid-template-columns:1fr}
-  .experience{margin:0 1.5rem}
+  .experience{margin:0;min-height:unset;padding:2rem 1.5rem}
+  .experience-bg{background-size:contain;background-color:#000;background-position:center top}
+  .experience-bg::after{background:linear-gradient(0deg,rgba(0,0,0,.85) 0%,rgba(0,0,0,.2) 60%,transparent 100%)}
+  .experience-content{padding-top:55vw}
   .hours-grid{grid-template-columns:1fr}
   .reviews-grid{grid-template-columns:1fr}
   .reviews-section{padding:4rem 1.5rem}
