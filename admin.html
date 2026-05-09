@@ -120,6 +120,72 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
   th,td{padding:.6rem .5rem}
   .sched-wrap{border-radius:6px}
 }
+
+/* ── MOBILE ──────────────────────────────────────────── */
+@media(max-width:640px){
+  /* Header */
+  header{padding:.8rem 1rem;gap:.5rem}
+  header .logo{height:28px}
+  header .user{gap:.5rem;font-size:.8rem}
+  header .user span#userName{display:none}
+  header button{padding:.3rem .6rem;font-size:.72rem}
+  .lang-switch button{padding:.2rem .4rem;font-size:.7rem}
+
+  /* Tabs */
+  .tabs{padding:0 .5rem;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{padding:.75rem .9rem;font-size:.75rem;letter-spacing:.4px;white-space:nowrap;flex-shrink:0}
+
+  /* Main */
+  main{padding:1rem .75rem 3rem}
+
+  /* Toolbar */
+  .toolbar{flex-direction:column;align-items:flex-start;gap:.6rem}
+  .toolbar h2{font-size:1.1rem}
+  .toolbar .actions{width:100%;flex-wrap:wrap;gap:.4rem}
+  .toolbar .actions .btn,.toolbar .actions .select,.toolbar .actions .input{font-size:.78rem}
+  .toolbar .actions .input[type=date]{width:auto;flex:1;min-width:110px}
+  .week-label{font-size:.8rem;padding:.3rem .7rem}
+
+  /* Tables — card style on mobile */
+  table{display:block;background:transparent;box-shadow:none;border-radius:0}
+  thead{display:none}
+  tbody{display:flex;flex-direction:column;gap:.6rem}
+  tr{display:flex;flex-direction:column;background:#fff;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.06);padding:.8rem 1rem;border:1px solid #f0ece4}
+  tr.cancelled-row{background:linear-gradient(transparent calc(50% - 1px),#e74c3c calc(50% - 1px),#e74c3c calc(50% + 1px),transparent calc(50% + 1px))!important}
+  td{padding:.25rem 0;border:none;font-size:.85rem;display:flex;align-items:flex-start;gap:.4rem}
+  td:before{content:attr(data-label);font-size:.68rem;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);white-space:nowrap;min-width:80px;padding-top:.1rem}
+  td .btn{padding:.3rem .6rem;font-size:.73rem}
+
+  /* Swap cards */
+  #swapsContainer .card,
+  #swapsContainer > div{font-size:.85rem}
+
+  /* Schedule table stays scrollable */
+  .sched-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .sched-table{display:table!important;min-width:620px}
+  .sched-table thead{display:table-header-group!important}
+  .sched-table tbody{display:table-row-group!important;flex-direction:unset}
+  .sched-table tr{display:table-row!important;background:none;border-radius:0;box-shadow:none;padding:0;border:none}
+  .sched-table td,.sched-table th{display:table-cell!important;border:revert}
+
+  /* HACCP table stays scrollable */
+  #haccpTable{display:table!important;min-width:620px}
+  #haccpTable thead{display:table-header-group!important}
+  #haccpTable tbody{display:table-row-group!important;flex-direction:unset}
+  #haccpTable tr{display:table-row!important;background:none;border-radius:0;box-shadow:none;padding:0;border:none}
+  #haccpTable td,#haccpTable th{display:table-cell!important;border:revert}
+
+  /* Modals */
+  .modal-bg{align-items:flex-end;padding:0}
+  .modal{border-radius:16px 16px 0 0;max-width:100%!important;width:100%;padding:1.5rem 1.2rem;max-height:85vh}
+  .modal h3{font-size:1.1rem}
+  .modal-actions{flex-wrap:wrap}
+  .modal-actions .btn{flex:1;text-align:center}
+
+  /* Empty state */
+  .empty{padding:2rem 1rem;font-size:.85rem}
+}
 </style>
 </head>
 <body>
@@ -616,15 +682,15 @@ async function loadReservations(){
     <thead><tr><th>${t('col_date')}</th><th>${t('col_time')}</th><th>${t('col_name')}</th><th>${t('col_phone')}</th><th>${t('col_email')}</th><th>${t('col_persons')}</th><th>${t('col_notes')}</th><th>${t('col_status')}</th><th>${t('col_actions')}</th></tr></thead>
     <tbody>${data.map(r=>`
       <tr${r.status==='cancelled'?' class="cancelled-row"':''}>
-        <td>${r.date||''}</td>
-        <td>${r.time||''}</td>
-        <td>${esc(r.name)}</td>
-        <td><a href="tel:${esc(r.phone)}">${esc(r.phone)}</a></td>
-        <td><a href="mailto:${esc(r.email||'')}">${esc(r.email||'')}</a></td>
-        <td>${esc(String(r.persons||''))}</td>
-        <td>${esc(r.notes||'')}</td>
-        <td><span class="badge ${r.status||'new'}">${t('status_'+(r.status||'new'))}</span></td>
-        <td style="display:flex;gap:.4rem;align-items:center">
+        <td data-label="${t('col_date')}">${r.date||''}</td>
+        <td data-label="${t('col_time')}">${r.time||''}</td>
+        <td data-label="${t('col_name')}">${esc(r.name)}</td>
+        <td data-label="${t('col_phone')}"><a href="tel:${esc(r.phone)}">${esc(r.phone)}</a></td>
+        <td data-label="${t('col_email')}"><a href="mailto:${esc(r.email||'')}">${esc(r.email||'')}</a></td>
+        <td data-label="${t('col_persons')}">${esc(String(r.persons||''))}</td>
+        <td data-label="${t('col_notes')}">${esc(r.notes||'')}</td>
+        <td data-label="${t('col_status')}"><span class="badge ${r.status||'new'}">${t('status_'+(r.status||'new'))}</span></td>
+        <td data-label="" style="display:flex;gap:.4rem;align-items:center;flex-wrap:wrap">
           ${(r.status||'new')==='new'?`<button class="btn small" style="background:#4CAF50;color:#fff" onclick="updateRes('${r.id}','confirmed')">${t('btn_confirm_res')}</button>`:''}
           <button class="btn small danger" onclick="deleteRes('${r.id}')">×</button>
         </td>
@@ -656,16 +722,16 @@ async function loadParty(){
     <thead><tr><th>${t('col_date')}</th><th>${t('col_type')}</th><th>${t('col_name')}</th><th>${t('col_phone')}</th><th>${t('col_email')}</th><th>${t('col_guests')}</th><th>${t('col_decor')}</th><th>${t('col_cake')}</th><th>${t('col_wishes')}</th><th>${t('col_actions')}</th></tr></thead>
     <tbody>${data.map(r=>`
       <tr>
-        <td>${r.event_date||''}</td>
-        <td>${esc(r.event_type||'')}</td>
-        <td>${esc(r.name)}</td>
-        <td><a href="tel:${esc(r.phone)}">${esc(r.phone)}</a></td>
-        <td><a href="mailto:${esc(r.email||'')}">${esc(r.email||'')}</a></td>
-        <td>${esc(String(r.guests||''))}</td>
-        <td>${esc(r.decoration||'')}</td>
-        <td>${esc(r.cake||'')}</td>
-        <td>${esc(r.wishes||'')}</td>
-        <td style="display:flex;gap:.4rem;align-items:center">
+        <td data-label="${t('col_date')}">${r.event_date||''}</td>
+        <td data-label="${t('col_type')}">${esc(r.event_type||'')}</td>
+        <td data-label="${t('col_name')}">${esc(r.name)}</td>
+        <td data-label="${t('col_phone')}"><a href="tel:${esc(r.phone)}">${esc(r.phone)}</a></td>
+        <td data-label="${t('col_email')}"><a href="mailto:${esc(r.email||'')}">${esc(r.email||'')}</a></td>
+        <td data-label="${t('col_guests')}">${esc(String(r.guests||''))}</td>
+        <td data-label="${t('col_decor')}">${esc(r.decoration||'')}</td>
+        <td data-label="${t('col_cake')}">${esc(r.cake||'')}</td>
+        <td data-label="${t('col_wishes')}">${esc(r.wishes||'')}</td>
+        <td data-label="" style="display:flex;gap:.4rem;align-items:center;flex-wrap:wrap">
           ${r.status!=='cancelled'?`<button class="btn small" style="background:#e67e22;color:#fff" onclick="cancelParty('${r.id}')">${t('btn_cancel_res')}</button>`:''}
           <button class="btn small danger" onclick="deleteParty('${r.id}')">×</button>
         </td>
