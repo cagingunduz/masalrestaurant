@@ -323,6 +323,8 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
     <input type="hidden" id="editStaffId">
     <label data-i18n="staff_dept">Afdeling / Bölüm</label>
     <input type="text" id="editStaffDept" class="input" style="width:100%" placeholder="bijv. Keuken, Bar...">
+    <label>E-mail (bildirimler / meldingen)</label>
+    <input type="email" id="editStaffEmail" class="input" style="width:100%" placeholder="naam@email.com">
     <label data-i18n="staff_pass">Nieuw wachtwoord</label>
     <input type="password" id="editStaffPass" class="input" style="width:100%" placeholder="Leeg = ongewijzigd">
     <label data-i18n="color">Kleur</label><br>
@@ -582,8 +584,8 @@ async function respondSwap(id,approve,reqId,tgtId,reqShiftId,tgtShiftId){
     ?`Merhaba,\n\nYönetici vardiya değişiminizi onayladı.\n\n${reqP?.name} ⇄ ${tgtP?.name}\n\nVardiyalarınız güncellendi. Detaylar için: masalrestaurant.nl/staff`
     :`Merhaba,\n\nYönetici vardiya değişim talebini reddetti.\n\n${reqP?.name} ⇄ ${tgtP?.name}\n\nDetaylar için: masalrestaurant.nl/staff`;
   for(const p of [reqP,tgtP]){
-    if(p?.email&&!p.email.includes('.internal'))
-      await sendEmail(p.email,subject,body);
+    if(p?.contact_email)
+      await sendEmail(p.contact_email,subject,body);
   }
 
   loadSwaps();updateSwapBadge();
@@ -833,6 +835,7 @@ function openEditStaff(id,e){
   if(!p)return;
   document.getElementById('editStaffId').value=id;
   document.getElementById('editStaffDept').value=p.department||'';
+  document.getElementById('editStaffEmail').value=p.contact_email||'';
   document.getElementById('editStaffPass').value='';
   document.getElementById('editStaffColor').value=p.color||'#c6a55c';
   document.getElementById('editStaffModal').style.display='flex';
@@ -841,10 +844,13 @@ function closeEditStaff(){document.getElementById('editStaffModal').style.displa
 async function saveEditStaff(){
   const id=document.getElementById('editStaffId').value;
   const department=document.getElementById('editStaffDept').value.trim()||null;
+  const contact_email=document.getElementById('editStaffEmail').value.trim()||null;
   const password=document.getElementById('editStaffPass').value||null;
   const color=document.getElementById('editStaffColor').value;
   const btn=document.querySelector('#editStaffModal .btn:not(.ghost)');
   btn.disabled=true;
+  // Save contact_email directly to profiles
+  await sb.from('profiles').update({contact_email}).eq('id',id);
   const res=await fetch(`${SUPABASE_URL}/functions/v1/update-staff`,{
     method:'POST',
     headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_ANON},
