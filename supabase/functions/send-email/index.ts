@@ -1,3 +1,5 @@
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -8,7 +10,9 @@ Deno.serve(async (req) => {
 
   const RESEND_KEY = Deno.env.get('RESEND_API_KEY')
   const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL') || 'manager@masalrestaurant.nl'
-  const FROM_EMAIL = 'MasalShift <noreply@masalrestaurant.nl>'
+  const FROM_EMAIL = 'MasalShift <onboarding@resend.dev>'
+  const SUPABASE_URL = Deno.env.get('SUPABASE_URL') || ''
+  const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || ''
 
   if (!RESEND_KEY) {
     return new Response(JSON.stringify({ error: 'RESEND_API_KEY not set' }), {
@@ -16,16 +20,26 @@ Deno.serve(async (req) => {
     })
   }
 
-  const { to, subject, body } = await req.json()
+  const { to, userId, subject, body } = await req.json()
 
-  // "to" can be a profile object {email, name} or "admin"
   let toEmail: string
-  if (to === 'admin') {
+
+  // If userId provided, look up fresh contact_email from profiles table
+  if (userId) {
+    const supa = createClient(SUPABASE_URL, SERVICE_ROLE_KEY)
+    const { data: profile } = await supa.from('profiles').select('contact_email').eq('id', userId).single()
+    if (!profile?.contact_email) {
+      return new Response(JSON.stringify({ skipped: true, reason: 'no contact_email for user' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+    toEmail = profile.contact_email
+  } else if (to === 'admin') {
     toEmail = ADMIN_EMAIL
   } else if (typeof to === 'string') {
     toEmail = to
-  } else if (to?.email) {
-    toEmail = to.email
+  } else if (to?.contact_email) {
+    toEmail = to.contact_email
   } else {
     return new Response(JSON.stringify({ error: 'Invalid recipient' }), {
       status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }

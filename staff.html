@@ -668,7 +668,7 @@ async function sendSwapRequest(){
   const myShift=swapShiftsCache.find(s=>s.id===myShiftId);
   const tShift=swapShiftsCache.find(s=>s.id===targetShiftId);
   const D=L().days;
-  await sendEmail({to:target?.contact_email||target,subject:`Vardiya değişim talebi: ${me.name}`,
+  await sendEmail({userId:targetId,subject:`Vardiya değişim talebi: ${me.name}`,
     body:`Merhaba ${target?.name},\n\n${me.name} sizinle vardiya değiştirmek istiyor.\n\n${me.name}: ${D[myShift?.day_index]} ${myShift?.start_time?.slice(0,5)}–${myShift?.end_time?.slice(0,5)}\nSizin vardiya: ${D[tShift?.day_index]} ${tShift?.start_time?.slice(0,5)}–${tShift?.end_time?.slice(0,5)}\n\nYanıt için: masalrestaurant.nl/staff`});
   closeSwapModal();showToast(L().swapSentOk);loadNotif();updateNotifBadge();
 }
