@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-<title>Masal Personel</title>
+<title>Masal Staff</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{--gold:#c6a55c;--gold-dark:#9c7e3e;--dark:#1a1a1a;--bg:#f7f5f0;--muted:#888;--ok:#27ae60;--err:#c0392b}
@@ -14,12 +14,17 @@ body{font-family:-apple-system,system-ui,sans-serif;background:var(--bg);color:#
 .login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:1.5rem}
 .login-box{background:#fff;padding:2.5rem;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.12);max-width:360px;width:100%;text-align:center}
 .login-logo{height:56px;width:auto;margin-bottom:.5rem;filter:invert(72%) sepia(40%) saturate(400%) hue-rotate(5deg) brightness(95%)}
-.login-box p{color:var(--muted);font-size:.9rem;margin-bottom:1.8rem}
+.login-box p{color:var(--muted);font-size:.9rem;margin-bottom:1.4rem}
 .login-box input{width:100%;padding:.9rem 1rem;border:1px solid #ddd;border-radius:8px;font-size:1.05rem;margin-bottom:1rem;outline:none;text-align:center;letter-spacing:3px}
 .login-box input:focus{border-color:var(--gold)}
-.login-box button{width:100%;padding:.9rem;background:var(--gold);color:#fff;border:none;border-radius:8px;font-size:.95rem;font-weight:600;cursor:pointer;letter-spacing:1px;text-transform:uppercase}
-.login-box button:hover{background:var(--gold-dark)}
+.login-box .login-btn{width:100%;padding:.9rem;background:var(--gold);color:#fff;border:none;border-radius:8px;font-size:.95rem;font-weight:600;cursor:pointer;letter-spacing:1px;text-transform:uppercase}
+.login-box .login-btn:hover{background:var(--gold-dark)}
+.login-box .login-btn:disabled{opacity:.6;cursor:not-allowed}
 .login-error{color:var(--err);font-size:.85rem;margin-top:.6rem;min-height:1.2em}
+.lang-picker{display:flex;justify-content:center;gap:.5rem;margin-bottom:1.6rem}
+.lang-btn{background:#f7f5f0;border:1px solid #e0dbd0;color:#666;padding:.4rem .9rem;border-radius:20px;cursor:pointer;font-size:.82rem;font-weight:500;transition:all .15s}
+.lang-btn:hover{border-color:var(--gold);color:var(--gold-dark)}
+.lang-btn.active{background:var(--gold);color:#fff;border-color:var(--gold)}
 
 /* HEADER */
 header{background:var(--dark);color:#fff;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
@@ -40,8 +45,6 @@ header{background:var(--dark);color:#fff;padding:1rem 1.5rem;display:flex;align-
 /* SECTIONS */
 .section{display:none;padding:1.2rem 1rem 2rem}
 .section.active{display:block}
-.section-title{font-family:Georgia,serif;font-size:1.35rem;margin-bottom:.3rem}
-.section-sub{color:var(--muted);font-size:.85rem;margin-bottom:1.2rem}
 
 /* WEEK NAV */
 .week-nav{display:flex;align-items:center;gap:.6rem;margin-bottom:1.2rem;flex-wrap:wrap}
@@ -49,34 +52,33 @@ header{background:var(--dark);color:#fff;padding:1rem 1.5rem;display:flex;align-
 .week-btn:hover{border-color:var(--gold);color:var(--gold-dark)}
 .week-label{font-size:.88rem;font-weight:500;color:#444;background:#fff;padding:.4rem .9rem;border-radius:6px;border:1px solid #e5e1d8;white-space:nowrap}
 
-/* MY SHIFTS CARDS */
+/* MY SHIFTS */
 .shift-day-card{background:#fff;border-radius:12px;padding:1rem 1.1rem;margin-bottom:.7rem;border:1px solid #e5e1d8;display:flex;align-items:center;gap:1rem}
 .shift-day-card.has-shift{border-left:4px solid var(--gold)}
-.shift-day-card.no-shift{opacity:.55}
+.shift-day-card.no-shift{opacity:.5}
 .sdc-day{min-width:80px}
 .sdc-dayname{font-weight:600;font-size:.92rem;color:#222}
 .sdc-date{font-size:.75rem;color:var(--muted);margin-top:.1rem}
-.sdc-shift{display:flex;align-items:center;gap:.6rem}
 .sdc-time{font-size:1rem;font-weight:700;color:var(--gold-dark)}
-.sdc-hrs{font-size:.78rem;color:var(--muted);background:#f7f5f0;padding:.15rem .5rem;border-radius:10px}
+.sdc-hrs{font-size:.78rem;color:var(--muted);background:#f7f5f0;padding:.15rem .5rem;border-radius:10px;margin-left:.4rem}
 .sdc-empty{color:#ccc;font-size:.85rem}
 
 /* SCHEDULE TABLE */
 .sched-wrap{overflow-x:auto;border-radius:10px;box-shadow:0 2px 12px rgba(0,0,0,.05);background:#fff}
-.sched-table{width:100%;border-collapse:collapse;min-width:620px}
-.sched-th{background:#fafafa;text-align:center;padding:.55rem .35rem;font-size:.65rem;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);border-bottom:2px solid #eee;border-right:1px solid #eee;white-space:nowrap;min-width:88px}
-.sched-th.staff-th{text-align:left;min-width:130px;padding-left:.8rem;border-right:2px solid #e0dbd0}
+.sched-table{width:100%;border-collapse:collapse;min-width:560px}
+.sched-th{background:#fafafa;text-align:center;padding:.55rem .35rem;font-size:.65rem;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);border-bottom:2px solid #eee;border-right:1px solid #eee;white-space:nowrap;min-width:82px}
+.sched-th.staff-th{text-align:left;min-width:120px;padding-left:.8rem;border-right:2px solid #e0dbd0}
 .sched-th.wknd{background:#fff9ef}
 .sched-tr:hover .sched-td{background:#fcfbf7}
 .sched-td{padding:0;border-bottom:1px solid #f0ece4;border-right:1px solid #f0ece4}
-.sched-td.staff-td{padding:.4rem .8rem;background:#fafafa;border-right:2px solid #e0dbd0;font-size:.83rem;font-weight:500;vertical-align:middle;white-space:nowrap}
+.sched-td.staff-td{padding:.4rem .8rem;background:#fafafa;border-right:2px solid #e0dbd0;font-size:.82rem;font-weight:500;vertical-align:middle;white-space:nowrap}
 .sched-td.wknd{background:#fffcf5}
-.sched-cell{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:46px;padding:.3rem .2rem;text-align:center;gap:1px}
-.sv-time{font-size:.8rem;font-weight:600;color:#222}
-.sv-hrs{font-size:.65rem;color:var(--muted)}
-.sched-cell.empty{color:#ddd;font-size:1rem}
+.sched-cell{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:44px;padding:.3rem .2rem;text-align:center;gap:1px}
+.sv-time{font-size:.78rem;font-weight:600;color:#222}
+.sv-hrs{font-size:.63rem;color:var(--muted)}
+.sched-cell.empty{color:#ddd;font-size:.9rem}
 .staff-dot{width:7px;height:7px;border-radius:50%;display:inline-block;flex-shrink:0}
-.staff-dept{display:block;font-size:.68rem;color:#bbb;margin-top:.1rem}
+.staff-dept{display:block;font-size:.67rem;color:#bbb;margin-top:.1rem}
 .me-row .sched-td.staff-td{background:#fffbf3;border-left:3px solid var(--gold)}
 .me-row .sched-td{background:#fffdf8}
 
@@ -95,62 +97,53 @@ header{background:var(--dark);color:#fff;padding:1rem 1.5rem;display:flex;align-
 .avail-save:hover{background:var(--gold-dark)}
 .avail-save:disabled{opacity:.6;cursor:not-allowed}
 
-/* SWAP / NOTIF */
+/* NOTIFICATIONS */
 .notif-card{background:#fff;border-radius:12px;border:1px solid #e5e1d8;padding:1rem 1.1rem;margin-bottom:.8rem}
-.notif-card.pending-me{border-left:4px solid #e67e22}
-.notif-card.needs-action{border-left:4px solid var(--gold)}
-.notif-card.accepted{border-left:4px solid var(--ok);opacity:.7}
-.notif-card.rejected{border-left:4px solid var(--err);opacity:.6}
-.nc-top{display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem;margin-bottom:.6rem}
-.nc-label{font-size:.7rem;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);margin-bottom:.2rem}
-.nc-name{font-weight:600;font-size:.92rem}
-.nc-shift{font-size:.82rem;color:#555;margin-top:.15rem}
-.nc-arrow{font-size:1.2rem;color:var(--muted);align-self:center;padding:0 .4rem}
-.nc-badge{font-size:.7rem;padding:.2rem .6rem;border-radius:20px;font-weight:600;white-space:nowrap}
-.nc-badge.pending{background:#fef3e2;color:#e67e22}
-.nc-badge.staff_approved{background:#e8f5e9;color:#2e7d32}
+.notif-card.action-needed{border-left:4px solid var(--gold)}
+.notif-card.accepted{border-left:4px solid var(--ok)}
+.notif-card.rejected{border-left:4px solid var(--err);opacity:.65}
+.nc-who{display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem;flex-wrap:wrap}
+.nc-badge{display:inline-flex;align-items:center;gap:.3rem;font-size:.73rem;padding:.25rem .65rem;border-radius:20px;font-weight:600;white-space:nowrap}
+.nc-badge.waiting{background:#fff4d6;color:#9c7e3e}
 .nc-badge.accepted{background:#d4edda;color:#155724}
-.nc-badge.rejected,.nc-badge.admin_rejected{background:#f8d7da;color:#721c24}
-.nc-actions{display:flex;gap:.5rem;margin-top:.8rem}
+.nc-badge.rejected{background:#f8d7da;color:#721c24}
+.nc-badge.action{background:#fef3e2;color:#e67e22;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.7}}
+.nc-shifts{font-size:.82rem;color:#555;margin-bottom:.7rem;line-height:1.6}
+.nc-actions{display:flex;gap:.5rem}
 .nc-btn{flex:1;padding:.5rem;border-radius:7px;border:none;font-size:.82rem;font-weight:600;cursor:pointer}
-.nc-btn.accept{background:#27ae60;color:#fff}
-.nc-btn.accept:hover{background:#1e8449}
+.nc-btn.accept{background:var(--ok);color:#fff}
 .nc-btn.reject{background:#f8d7da;color:#721c24}
-.nc-btn.reject:hover{background:#e74c3c;color:#fff}
 
-/* NEW SWAP BUTTON */
-.swap-fab{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--gold);color:#fff;border:none;border-radius:50%;width:52px;height:52px;font-size:1.5rem;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.18);z-index:40;display:none}
+/* SWAP FAB */
+.swap-fab{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--gold);color:#fff;border:none;border-radius:50%;width:52px;height:52px;font-size:1.4rem;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.2);z-index:40;display:none}
 .swap-fab.visible{display:flex;align-items:center;justify-content:center}
 .swap-fab:hover{background:var(--gold-dark)}
 
 /* MODAL */
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:flex-end;justify-content:center;z-index:100;padding:0}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:flex-end;justify-content:center;z-index:100}
 .modal-bg.open{display:flex}
 @media(min-width:500px){.modal-bg{align-items:center;padding:1rem}}
 .modal{background:#fff;border-radius:16px 16px 0 0;width:100%;max-width:480px;padding:1.5rem;max-height:92vh;overflow-y:auto}
 @media(min-width:500px){.modal{border-radius:16px}}
 .modal-handle{width:36px;height:4px;background:#ddd;border-radius:2px;margin:0 auto 1.2rem}
-.modal h3{font-family:Georgia,serif;font-size:1.2rem;margin-bottom:.4rem}
-.modal p.sub{color:var(--muted);font-size:.85rem;margin-bottom:1rem}
-.modal label{display:block;font-size:.73rem;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin:.8rem 0 .3rem}
-.modal select,.modal input{width:100%;padding:.6rem .8rem;border:1px solid #ddd;border-radius:7px;font-size:.9rem;outline:none;background:#fff}
-.modal select:focus,.modal input:focus{border-color:var(--gold)}
+.modal h3{font-family:Georgia,serif;font-size:1.15rem;margin-bottom:.3rem}
+.modal p.sub{color:var(--muted);font-size:.84rem;margin-bottom:1rem}
+.modal label{display:block;font-size:.72rem;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin:.8rem 0 .3rem}
+.modal select{width:100%;padding:.6rem .8rem;border:1px solid #ddd;border-radius:7px;font-size:.9rem;outline:none;background:#fff}
+.modal select:focus{border-color:var(--gold)}
 .modal-actions{display:flex;gap:.6rem;margin-top:1.2rem}
 .modal-actions button{flex:1;padding:.65rem;border-radius:8px;font-size:.9rem;font-weight:600;cursor:pointer;border:none}
 .modal-actions .primary{background:var(--gold);color:#fff}
 .modal-actions .primary:hover{background:var(--gold-dark)}
+.modal-actions .primary:disabled{opacity:.6;cursor:not-allowed}
 .modal-actions .secondary{background:#f0ece4;color:#555}
 
-.spinner{display:flex;align-items:center;justify-content:center;padding:3rem;color:var(--muted);font-size:.9rem}
+.spinner{color:var(--muted);font-size:.9rem;padding:3rem;text-align:center}
 .empty-state{text-align:center;padding:3rem 1rem;color:var(--muted)}
 .empty-state .icon{font-size:2.5rem;margin-bottom:.8rem}
-.toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:.6rem 1.2rem;border-radius:8px;font-size:.85rem;z-index:200;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:.6rem 1.2rem;border-radius:8px;font-size:.85rem;z-index:200;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1}
-
-@media(max-width:400px){
-  .section{padding:.8rem .7rem 2rem}
-  .sdc-day{min-width:68px}
-}
 </style>
 </head>
 <body>
@@ -159,10 +152,15 @@ header{background:var(--dark);color:#fff;padding:1rem 1.5rem;display:flex;align-
 <div id="loginWrap" class="login-wrap">
   <div class="login-box">
     <img class="login-logo" src="https://i0.wp.com/masalrestaurant.nl/wp-content/uploads/2021/11/Masal_Logo_DEF.png?fit=600%2C304&ssl=1" alt="Masal">
-    <p>Şifrenizi girerek devam edin</p>
+    <div class="lang-picker">
+      <button class="lang-btn" onclick="setLang('nl')" id="lbNL">🇳🇱 NL</button>
+      <button class="lang-btn" onclick="setLang('en')" id="lbEN">🇬🇧 EN</button>
+      <button class="lang-btn active" onclick="setLang('tr')" id="lbTR">🇹🇷 TR</button>
+    </div>
+    <p id="loginSubtitle">Şifrenizi girerek devam edin</p>
     <form onsubmit="login(event)">
       <input type="password" id="loginPw" placeholder="••••••••" autocomplete="current-password" required>
-      <button type="submit" id="loginBtn">Giriş Yap</button>
+      <button type="submit" class="login-btn" id="loginBtn">Giriş Yap</button>
       <div class="login-error" id="loginErr"></div>
     </form>
   </div>
@@ -175,79 +173,71 @@ header{background:var(--dark);color:#fff;padding:1rem 1.5rem;display:flex;align-
     <div class="h-right">
       <span class="h-dept" id="hDept"></span>
       <span class="h-name" id="hName"></span>
-      <button class="h-logout" onclick="logout()">Çıkış</button>
+      <button class="h-logout" onclick="logout()" id="hLogout">Çıkış</button>
     </div>
   </header>
 
   <nav class="tabs">
-    <div class="tab active" data-tab="shifts" onclick="switchTab('shifts')">Vardiyam</div>
-    <div class="tab" data-tab="table" onclick="switchTab('table')">Tablo</div>
-    <div class="tab" data-tab="avail" onclick="switchTab('avail')">Müsaitlik</div>
-    <div class="tab" data-tab="notif" onclick="switchTab('notif')"><span id="notifTabLabel">Bildirimler</span></div>
+    <div class="tab active" data-tab="shifts" onclick="switchTab('shifts')" id="tabShifts">Vardiyam</div>
+    <div class="tab" data-tab="table" onclick="switchTab('table')" id="tabTable">Tablo</div>
+    <div class="tab" data-tab="avail" onclick="switchTab('avail')" id="tabAvail">Müsaitlik</div>
+    <div class="tab" data-tab="notif" onclick="switchTab('notif')" id="tabNotif">Bildirimler</div>
   </nav>
 
-  <!-- VARDIYAM -->
   <section class="section active" id="sec-shifts">
     <div class="week-nav">
-      <button class="week-btn" onclick="changeWeek(-1)">← Önceki</button>
+      <button class="week-btn" onclick="changeWeek(-1)" id="btnPrevShifts">← Önceki</button>
       <span class="week-label" id="weekLabel">—</span>
-      <button class="week-btn" onclick="changeWeek(1)">Sonraki →</button>
+      <button class="week-btn" onclick="changeWeek(1)" id="btnNextShifts">Sonraki →</button>
     </div>
-    <div id="shiftsContent"><div class="spinner">Yükleniyor…</div></div>
+    <div id="shiftsContent"><div class="spinner">…</div></div>
   </section>
 
-  <!-- TABLO -->
   <section class="section" id="sec-table">
     <div class="week-nav">
-      <button class="week-btn" onclick="changeWeekTable(-1)">← Önceki</button>
+      <button class="week-btn" onclick="changeWeekTable(-1)" id="btnPrevTable">← Önceki</button>
       <span class="week-label" id="weekLabelTable">—</span>
-      <button class="week-btn" onclick="changeWeekTable(1)">Sonraki →</button>
+      <button class="week-btn" onclick="changeWeekTable(1)" id="btnNextTable">Sonraki →</button>
     </div>
     <div class="sched-wrap">
-      <table class="sched-table" id="schedTable"><tbody><tr><td class="spinner">Yükleniyor…</td></tr></tbody></table>
+      <table class="sched-table" id="schedTable"><tbody><tr><td class="spinner">…</td></tr></tbody></table>
     </div>
   </section>
 
-  <!-- MÜSAİTLİK -->
   <section class="section" id="sec-avail">
     <div class="week-nav">
-      <button class="week-btn" onclick="changeWeekAvail(-1)">← Önceki</button>
+      <button class="week-btn" onclick="changeWeekAvail(-1)" id="btnPrevAvail">← Önceki</button>
       <span class="week-label" id="weekLabelAvail">—</span>
-      <button class="week-btn" onclick="changeWeekAvail(1)">Sonraki →</button>
+      <button class="week-btn" onclick="changeWeekAvail(1)" id="btnNextAvail">Sonraki →</button>
     </div>
     <div class="avail-grid" id="availGrid"></div>
     <button class="avail-save" id="availSaveBtn" onclick="saveAvail()">Kaydet</button>
   </section>
 
-  <!-- BİLDİRİMLER -->
   <section class="section" id="sec-notif">
-    <h2 class="section-title">Bildirimler</h2>
-    <p class="section-sub">Vardiya değişim talepleri</p>
-    <div id="notifContent"><div class="spinner">Yükleniyor…</div></div>
+    <div id="notifContent"><div class="spinner">…</div></div>
   </section>
 </div>
 
-<!-- SWAP MODAL -->
+<button class="swap-fab" id="swapFab" onclick="openSwapModal()">⇄</button>
+
 <div class="modal-bg" id="swapModal">
   <div class="modal">
     <div class="modal-handle"></div>
-    <h3>Vardiya Değişim Talebi</h3>
-    <p class="sub">Kendi vardiyandan birini seç, değiştirmek istediğin vardiyayı belirle.</p>
-    <label>Kendi Vardiyam</label>
+    <h3 id="swapModalTitle">Vardiya Değişim Talebi</h3>
+    <p class="sub" id="swapModalSub">Kendi vardiyandan birini seç.</p>
+    <label id="swapLblMine">Benim Vardiyam</label>
     <select id="swapMyShift"></select>
-    <label>Hangi Personel</label>
+    <label id="swapLblWho">Hangi Personel</label>
     <select id="swapTargetStaff" onchange="loadTargetShifts()"></select>
-    <label>O Kişinin Vardiyası</label>
+    <label id="swapLblTheirs">O Kişinin Vardiyası</label>
     <select id="swapTargetShift"></select>
     <div class="modal-actions">
-      <button class="secondary" onclick="closeSwapModal()">İptal</button>
-      <button class="primary" onclick="sendSwapRequest()">Talep Gönder</button>
+      <button class="secondary" onclick="closeSwapModal()" id="swapCancelBtn">İptal</button>
+      <button class="primary" onclick="sendSwapRequest()" id="swapSendBtn">Gönder</button>
     </div>
   </div>
 </div>
-
-<!-- SWAP FAB -->
-<button class="swap-fab" id="swapFab" onclick="openSwapModal()" title="Vardiya Değişimi İste">⇄</button>
 
 <div class="toast" id="toast"></div>
 
@@ -256,57 +246,152 @@ const SUPABASE_URL='https://mytqxxdzfrropqcrhipv.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15dHF4eGR6ZnJyb3BxY3JoaXB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MjgwMTUsImV4cCI6MjA5MTAwNDAxNX0.eKAts80PGm6TTYSllnYq79UaG0_ERJi7FBLnh2GgG4I';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
 
-const DAY_NAMES=['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
-const DAY_SHORT=['Pt','Sa','Ça','Pe','Cu','Ct','Pz'];
-const MONTHS=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+// ─── I18N ──────────────────────────────────────────────────────
+const I18N={
+  nl:{
+    loginSub:'Voer uw wachtwoord in',loginBtn:'Inloggen',loginErr:'Ongeldig wachtwoord',loginLoad:'Laden…',
+    logout:'Uitloggen',
+    tabShifts:'Mijn Rooster',tabTable:'Rooster',tabAvail:'Beschikbaarheid',tabNotif:'Meldingen',
+    prev:'← Vorige',next:'Volgende →',
+    noShift:'Geen dienst',weekTotal:'Totaal per week',
+    availAvail:'✓ Beschikbaar',availNot:'✗ Niet beschikbaar',availNone:'—',availSave:'Opslaan',availSaved:'Opgeslagen ✓',
+    notifEmpty:'Nog geen meldingen',notifTitle:'Meldingen',
+    swapWaiting:n=>`Wacht op ${n}`,swapAdminWaiting:'Wacht op manager',swapAccepted:'Goedgekeurd ✓',
+    swapRejected:'Afgewezen',swapAdminRejected:'Geweigerd door manager',swapActionNeeded:'Actie vereist',
+    swapSent:'Verzonden door jou',swapReceived:'Ontvangen',
+    swapAcceptBtn:'Accepteren',swapRejectBtn:'Afwijzen',
+    swapModalTitle:'Dienstruil verzoek',swapModalSub:'Kies jouw dienst die je wilt ruilen.',
+    swapLblMine:'Mijn dienst',swapLblWho:'Met wie',swapLblTheirs:'Hun dienst',
+    swapCancel:'Annuleren',swapSend:'Versturen',swapSending:'Versturen…',
+    swapSentOk:'Verzoek verzonden ✓',swapNoShifts:'Geen diensten deze week',
+    swapConfirmAccept:'Wisseling accepteren? Gaat naar manager voor goedkeuring.',
+    swapConfirmReject:'Verzoek afwijzen?',
+    acceptedToast:'Geaccepteerd, wacht op manager',rejectedToast:'Verzoek afgewezen',
+    days:['Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag','Zondag'],
+    daysShort:['Ma','Di','Wo','Do','Vr','Za','Zo'],
+    months:['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'],
+    hrs:'u',
+  },
+  en:{
+    loginSub:'Enter your password to continue',loginBtn:'Log In',loginErr:'Incorrect password',loginLoad:'Loading…',
+    logout:'Log Out',
+    tabShifts:'My Shifts',tabTable:'Schedule',tabAvail:'Availability',tabNotif:'Notifications',
+    prev:'← Previous',next:'Next →',
+    noShift:'No shift',weekTotal:'Weekly total',
+    availAvail:'✓ Available',availNot:'✗ Not available',availNone:'—',availSave:'Save',availSaved:'Saved ✓',
+    notifEmpty:'No notifications yet',notifTitle:'Notifications',
+    swapWaiting:n=>`Waiting for ${n}`,swapAdminWaiting:'Waiting for manager',swapAccepted:'Approved ✓',
+    swapRejected:'Declined',swapAdminRejected:'Declined by manager',swapActionNeeded:'Action needed',
+    swapSent:'Sent by you',swapReceived:'Received',
+    swapAcceptBtn:'Accept',swapRejectBtn:'Decline',
+    swapModalTitle:'Shift Swap Request',swapModalSub:'Select your shift to swap.',
+    swapLblMine:'My shift',swapLblWho:'With whom',swapLblTheirs:'Their shift',
+    swapCancel:'Cancel',swapSend:'Send',swapSending:'Sending…',
+    swapSentOk:'Request sent ✓',swapNoShifts:'No shifts this week',
+    swapConfirmAccept:'Accept swap? It will go to the manager for approval.',
+    swapConfirmReject:'Decline this request?',
+    acceptedToast:'Accepted, waiting for manager',rejectedToast:'Request declined',
+    days:['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'],
+    daysShort:['Mo','Tu','We','Th','Fr','Sa','Su'],
+    months:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+    hrs:'h',
+  },
+  tr:{
+    loginSub:'Şifrenizi girerek devam edin',loginBtn:'Giriş Yap',loginErr:'Şifre hatalı',loginLoad:'Yükleniyor…',
+    logout:'Çıkış',
+    tabShifts:'Vardiyam',tabTable:'Tablo',tabAvail:'Müsaitlik',tabNotif:'Bildirimler',
+    prev:'← Önceki',next:'Sonraki →',
+    noShift:'Vardiya yok',weekTotal:'Haftalık toplam',
+    availAvail:'✓ Müsait',availNot:'✗ Müsait Değil',availNone:'—',availSave:'Kaydet',availSaved:'Kaydedildi ✓',
+    notifEmpty:'Henüz bildirim yok',notifTitle:'Bildirimler',
+    swapWaiting:n=>`${n} bekleniyor`,swapAdminWaiting:'Yönetici bekleniyor',swapAccepted:'Onaylandı ✓',
+    swapRejected:'Reddedildi',swapAdminRejected:'Yönetici Reddetti',swapActionNeeded:'Yanıt gerekiyor',
+    swapSent:'Sizin gönderdiğiniz',swapReceived:'Size gelen',
+    swapAcceptBtn:'Kabul Et',swapRejectBtn:'Reddet',
+    swapModalTitle:'Vardiya Değişim Talebi',swapModalSub:'Değiştirmek istediğin vardiyayı seç.',
+    swapLblMine:'Benim Vardiyam',swapLblWho:'Hangi Personel',swapLblTheirs:'O Kişinin Vardiyası',
+    swapCancel:'İptal',swapSend:'Gönder',swapSending:'Gönderiliyor…',
+    swapSentOk:'Talep gönderildi ✓',swapNoShifts:'Bu hafta vardiya yok',
+    swapConfirmAccept:'Değişimi kabul ediyorsunuz. Yönetici onayına gidecek.',
+    swapConfirmReject:'Talebi reddetmek istiyor musunuz?',
+    acceptedToast:'Kabul edildi, yönetici bekleniyor',rejectedToast:'Talep reddedildi',
+    days:['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'],
+    daysShort:['Pt','Sa','Ça','Pe','Cu','Ct','Pz'],
+    months:['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'],
+    hrs:'s',
+  }
+};
 
-let me=null;         // logged-in profile
-let allProfiles=[];  // all staff
-let currentWeek=null;
-let tableWeek=null;
-let availWeek=null;
-let availState={};   // {dayIndex: true/false}
+let lang=localStorage.getItem('masalStaffLang')||'tr';
+const L=()=>I18N[lang];
+
+function setLang(l){
+  lang=l;
+  localStorage.setItem('masalStaffLang',l);
+  ['nl','en','tr'].forEach(x=>document.getElementById('lb'+x.toUpperCase()).classList.toggle('active',x===l));
+  document.getElementById('loginSubtitle').textContent=L().loginSub;
+  document.getElementById('loginBtn').textContent=L().loginBtn;
+  document.documentElement.lang=l;
+}
 
 // ─── HELPERS ───────────────────────────────────────────────────
 function mondayOf(d){const r=new Date(d);const day=r.getDay();r.setDate(r.getDate()-(day===0?6:day-1));r.setHours(0,0,0,0);return r}
 function addDays(d,n){const r=new Date(d);r.setDate(r.getDate()+n);return r}
-function fmtDate(d){const pad=n=>String(n).padStart(2,'0');return`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`}
+function fmtDate(d){const p=n=>String(n).padStart(2,'0');return`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`}
 function hrsNum(s,e){const[sh,sm]=s.split(':').map(Number);const[eh,em]=e.split(':').map(Number);return Math.round(((eh*60+em)-(sh*60+sm))/60*10)/10}
-function hrsLabel(h){return h+'u'}
-function weekLabel(monday){const fri=addDays(monday,6);return`${monday.getDate()} ${MONTHS[monday.getMonth()]} – ${fri.getDate()} ${MONTHS[fri.getMonth()]} ${fri.getFullYear()}`}
+function hrsLabel(h){return h+L().hrs}
+function weekLabel(monday){const fri=addDays(monday,6);const M=L().months;return`${monday.getDate()} ${M[monday.getMonth()]} – ${fri.getDate()} ${M[fri.getMonth()]} ${fri.getFullYear()}`}
 function hexTint(hex,a){if(!hex||!hex.startsWith('#'))return '';const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return`rgba(${r},${g},${b},${a})`}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
 function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML}
+function applyLangToUI(){
+  document.getElementById('hLogout').textContent=L().logout;
+  document.getElementById('tabShifts').textContent=L().tabShifts;
+  document.getElementById('tabTable').textContent=L().tabTable;
+  document.getElementById('tabAvail').textContent=L().tabAvail;
+  updateNotifTab(0);
+  document.getElementById('btnPrevShifts').textContent=L().prev;
+  document.getElementById('btnNextShifts').textContent=L().next;
+  document.getElementById('btnPrevTable').textContent=L().prev;
+  document.getElementById('btnNextTable').textContent=L().next;
+  document.getElementById('btnPrevAvail').textContent=L().prev;
+  document.getElementById('btnNextAvail').textContent=L().next;
+  document.getElementById('availSaveBtn').textContent=L().availSave;
+  document.getElementById('swapModalTitle').textContent=L().swapModalTitle;
+  document.getElementById('swapModalSub').textContent=L().swapModalSub;
+  document.getElementById('swapLblMine').textContent=L().swapLblMine;
+  document.getElementById('swapLblWho').textContent=L().swapLblWho;
+  document.getElementById('swapLblTheirs').textContent=L().swapLblTheirs;
+  document.getElementById('swapCancelBtn').textContent=L().swapCancel;
+  document.getElementById('swapSendBtn').textContent=L().swapSend;
+}
+function updateNotifTab(count){
+  document.getElementById('tabNotif').textContent=L().tabNotif+(count>0?` (${count})`:'');
+}
 
 // ─── AUTH ──────────────────────────────────────────────────────
+let me=null;
+let allProfiles=[];
+
 async function login(e){
   e.preventDefault();
   const pw=document.getElementById('loginPw').value.trim();
   const btn=document.getElementById('loginBtn');
-  btn.disabled=true; btn.textContent='Giriş yapılıyor…';
+  btn.disabled=true; btn.textContent=L().loginLoad;
   document.getElementById('loginErr').textContent='';
-
   const{data:profiles,error}=await sb.from('profiles').select('*');
-  if(error||!profiles?.length){
-    document.getElementById('loginErr').textContent='Bağlantı hatası';
-    btn.disabled=false; btn.textContent='Giriş Yap'; return;
-  }
+  if(error||!profiles?.length){document.getElementById('loginErr').textContent='Connection error';btn.disabled=false;btn.textContent=L().loginBtn;return}
   const match=profiles.find(p=>p.password===pw);
-  if(!match){
-    document.getElementById('loginErr').textContent='Şifre hatalı';
-    btn.disabled=false; btn.textContent='Giriş Yap'; return;
-  }
+  if(!match){document.getElementById('loginErr').textContent=L().loginErr;btn.disabled=false;btn.textContent=L().loginBtn;return}
   sessionStorage.setItem('masalStaffId',match.id);
   allProfiles=profiles;
   showApp(match);
 }
 
-function logout(){
-  sessionStorage.removeItem('masalStaffId');
-  location.reload();
-}
+function logout(){sessionStorage.removeItem('masalStaffId');location.reload()}
 
 async function initApp(){
+  setLang(lang); // apply lang on load
   const id=sessionStorage.getItem('masalStaffId');
   if(!id)return;
   const{data:profiles}=await sb.from('profiles').select('*');
@@ -323,24 +408,15 @@ function showApp(profile){
   document.getElementById('hName').textContent=me.name||'';
   document.getElementById('hDept').textContent=me.department||'';
   if(!me.department)document.getElementById('hDept').style.display='none';
-
+  applyLangToUI();
   currentWeek=mondayOf(new Date());
   tableWeek=mondayOf(new Date());
   availWeek=mondayOf(new Date());
-
   loadShifts();
   updateNotifBadge();
-
-  // Realtime updates
   sb.channel('staff-rt')
-    .on('postgres_changes',{event:'*',schema:'public',table:'swap_requests'},()=>{
-      updateNotifBadge();
-      if(document.getElementById('sec-notif').classList.contains('active'))loadNotif();
-    })
-    .on('postgres_changes',{event:'*',schema:'public',table:'shifts'},()=>{
-      if(document.getElementById('sec-shifts').classList.contains('active'))loadShifts();
-      if(document.getElementById('sec-table').classList.contains('active'))loadTable();
-    })
+    .on('postgres_changes',{event:'*',schema:'public',table:'swap_requests'},()=>{updateNotifBadge();if(document.getElementById('sec-notif').classList.contains('active'))loadNotif()})
+    .on('postgres_changes',{event:'*',schema:'public',table:'shifts'},()=>{if(document.getElementById('sec-shifts').classList.contains('active'))loadShifts();if(document.getElementById('sec-table').classList.contains('active'))loadTable()})
     .subscribe();
 }
 
@@ -356,6 +432,7 @@ function switchTab(name){
 }
 
 // ─── VARDIYAM ─────────────────────────────────────────────────
+let currentWeek=null;
 function changeWeek(dir){currentWeek=addDays(currentWeek,dir*7);loadShifts()}
 
 async function loadShifts(){
@@ -363,37 +440,23 @@ async function loadShifts(){
   const ws=fmtDate(currentWeek);
   const{data:shifts}=await sb.from('shifts').select('*,shift_assignments(staff_id)').eq('week_start',ws);
   const myShifts={};
-  (shifts||[]).forEach(s=>{
-    if(s.shift_assignments?.some(a=>a.staff_id===me.id))
-      myShifts[s.day_index]={start:s.start_time,end:s.end_time};
-  });
-
-  let html='';
-  let weekTotal=0;
+  (shifts||[]).forEach(s=>{if(s.shift_assignments?.some(a=>a.staff_id===me.id))myShifts[s.day_index]={start:s.start_time,end:s.end_time}});
+  const D=L().days; const M=L().months;
+  let html=''; let total=0;
   for(let i=0;i<7;i++){
-    const dt=addDays(currentWeek,i);
-    const sh=myShifts[i];
-    if(sh){
-      const h=hrsNum(sh.start,sh.end);weekTotal+=h;
-      html+=`<div class="shift-day-card has-shift">
-        <div class="sdc-day"><div class="sdc-dayname">${DAY_NAMES[i]}</div><div class="sdc-date">${dt.getDate()} ${MONTHS[dt.getMonth()]}</div></div>
-        <div class="sdc-shift">
-          <span class="sdc-time">${sh.start.slice(0,5)} – ${sh.end.slice(0,5)}</span>
-          <span class="sdc-hrs">${hrsLabel(h)}</span>
-        </div>
-      </div>`;
+    const dt=addDays(currentWeek,i); const sh=myShifts[i];
+    if(sh){const h=hrsNum(sh.start,sh.end);total+=h;
+      html+=`<div class="shift-day-card has-shift"><div class="sdc-day"><div class="sdc-dayname">${D[i]}</div><div class="sdc-date">${dt.getDate()} ${M[dt.getMonth()]}</div></div><div><span class="sdc-time">${sh.start.slice(0,5)} – ${sh.end.slice(0,5)}</span><span class="sdc-hrs">${hrsLabel(h)}</span></div></div>`;
     }else{
-      html+=`<div class="shift-day-card no-shift">
-        <div class="sdc-day"><div class="sdc-dayname">${DAY_NAMES[i]}</div><div class="sdc-date">${dt.getDate()} ${MONTHS[dt.getMonth()]}</div></div>
-        <div class="sdc-empty">Vardiya yok</div>
-      </div>`;
+      html+=`<div class="shift-day-card no-shift"><div class="sdc-day"><div class="sdc-dayname">${D[i]}</div><div class="sdc-date">${dt.getDate()} ${M[dt.getMonth()]}</div></div><div class="sdc-empty">${L().noShift}</div></div>`;
     }
   }
-  if(weekTotal>0)html+=`<div style="text-align:right;color:var(--gold-dark);font-size:.85rem;font-weight:600;margin-top:.3rem;padding-right:.2rem">Haftalık toplam: ${hrsLabel(weekTotal)}</div>`;
-  document.getElementById('shiftsContent').innerHTML=html||'<div class="empty-state"><div class="icon">📭</div>Bu hafta vardiya atanmadı</div>';
+  if(total>0)html+=`<div style="text-align:right;color:var(--gold-dark);font-size:.85rem;font-weight:600;margin-top:.3rem">${L().weekTotal}: ${hrsLabel(total)}</div>`;
+  document.getElementById('shiftsContent').innerHTML=html||`<div class="empty-state"><div class="icon">📭</div>${L().noShift}</div>`;
 }
 
 // ─── TABLO ────────────────────────────────────────────────────
+let tableWeek=null;
 function changeWeekTable(dir){tableWeek=addDays(tableWeek,dir*7);loadTable()}
 
 async function loadTable(){
@@ -402,256 +465,207 @@ async function loadTable(){
   const{data:shifts=[]}=await sb.from('shifts').select('*').eq('week_start',ws);
   const ids=(shifts||[]).map(s=>s.id);
   let assigns=[];
-  if(ids.length){const{data}=await sb.from('shift_assignments').select('*').in('shift_id',ids);assigns=data||[];}
-
+  if(ids.length){const{data}=await sb.from('shift_assignments').select('*').in('shift_id',ids);assigns=data||[]}
   const matrix={};
   const staff=allProfiles.filter(p=>p.role!=='admin');
   staff.forEach(p=>{matrix[p.id]={}});
-  shifts.forEach(s=>{
-    assigns.filter(a=>a.shift_id===s.id).forEach(a=>{
-      if(matrix[a.staff_id]&&!matrix[a.staff_id][s.day_index])
-        matrix[a.staff_id][s.day_index]={start:s.start_time,end:s.end_time};
-    });
-  });
-
-  const thDays=DAY_SHORT.map((d,i)=>{
-    const dt=addDays(tableWeek,i);
-    return`<th class="sched-th${i>=5?' wknd':''}">${d}<br><small style="font-weight:400;font-size:.62rem">${dt.getDate()} ${MONTHS[dt.getMonth()]}</small></th>`;
-  }).join('');
-
+  shifts.forEach(s=>{assigns.filter(a=>a.shift_id===s.id).forEach(a=>{if(matrix[a.staff_id]&&!matrix[a.staff_id][s.day_index])matrix[a.staff_id][s.day_index]={start:s.start_time,end:s.end_time}})});
+  const DS=L().daysShort; const M=L().months;
+  const thDays=DS.map((d,i)=>{const dt=addDays(tableWeek,i);return`<th class="sched-th${i>=5?' wknd':''}">${d}<br><small style="font-weight:400;font-size:.6rem">${dt.getDate()} ${M[dt.getMonth()]}</small></th>`}).join('');
   const rows=staff.length?staff.map(p=>{
-    const tint=hexTint(p.color,0.22);
     const isMe=p.id===me.id;
-    const cells=DAY_SHORT.map((_,i)=>{
-      const cell=matrix[p.id]?.[i];
-      const bg=tint&&isMe?`style="background:${tint}"`:'';
-      if(cell){
-        const h=hrsNum(cell.start,cell.end);
-        return`<td class="sched-td${i>=5?' wknd':''}" ${bg}><div class="sched-cell"><span class="sv-time">${cell.start.slice(0,5)}–${cell.end.slice(0,5)}</span><span class="sv-hrs">${hrsLabel(h)}</span></div></td>`;
-      }else{
-        return`<td class="sched-td${i>=5?' wknd':''}" ${bg}><div class="sched-cell empty">·</div></td>`;
-      }
-    }).join('');
-    const dot=`<span class="staff-dot" style="background:${p.color||'#aaa'}"></span>`;
+    const tint=isMe?hexTint(p.color,0.18):'';
+    const cells=DS.map((_,i)=>{const cell=matrix[p.id]?.[i];const bg=tint?`style="background:${tint}"`:''
+      if(cell){const h=hrsNum(cell.start,cell.end);return`<td class="sched-td${i>=5?' wknd':''}" ${bg}><div class="sched-cell"><span class="sv-time">${cell.start.slice(0,5)}–${cell.end.slice(0,5)}</span><span class="sv-hrs">${hrsLabel(h)}</span></div></td>`}
+      return`<td class="sched-td${i>=5?' wknd':''}" ${bg}><div class="sched-cell empty">·</div></td>`}).join('');
     const dept=p.department?`<span class="staff-dept">${esc(p.department)}</span>`:'';
-    return`<tr class="sched-tr${isMe?' me-row':''}">
-      <td class="sched-td staff-td">${dot} ${esc(p.name||'?')}${dept}</td>
-      ${cells}
-    </tr>`;
-  }).join(''):`<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--muted)">Personel bulunamadı</td></tr>`;
-
-  document.getElementById('schedTable').innerHTML=`<thead><tr><th class="sched-th staff-th">Personel</th>${thDays}</tr></thead><tbody>${rows}</tbody>`;
+    return`<tr class="sched-tr${isMe?' me-row':''}"><td class="sched-td staff-td"><span class="staff-dot" style="background:${p.color||'#aaa'}"></span> ${esc(p.name||'?')}${dept}</td>${cells}</tr>`;
+  }).join(''):`<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--muted)">—</td></tr>`;
+  document.getElementById('schedTable').innerHTML=`<thead><tr><th class="sched-th staff-th">${L().tabTable}</th>${thDays}</tr></thead><tbody>${rows}</tbody>`;
 }
 
 // ─── MÜSAİTLİK ───────────────────────────────────────────────
+let availWeek=null; let availState={};
 function changeWeekAvail(dir){availWeek=addDays(availWeek,dir*7);loadAvail()}
 
 async function loadAvail(){
   document.getElementById('weekLabelAvail').textContent=weekLabel(availWeek);
   const ws=fmtDate(availWeek);
   const{data}=await sb.from('availability').select('day_index,available').eq('staff_id',me.id).eq('week_start',ws);
-  availState={};
-  (data||[]).forEach(r=>{availState[r.day_index]=r.available});
+  availState={};(data||[]).forEach(r=>{availState[r.day_index]=r.available});
+  renderAvail();
+}
 
+function renderAvail(){
+  const D=L().days; const M=L().months;
   let html='';
   for(let i=0;i<7;i++){
-    const dt=addDays(availWeek,i);
-    const val=availState[i];
+    const dt=addDays(availWeek,i);const val=availState[i];
     const cls=val===true?'avail':val===false?'notavail':'';
-    const label=val===true?'✓ Müsait':val===false?'✗ Müsait Değil':'—';
-    html+=`<div class="avail-day ${cls}" onclick="toggleAvail(${i})" data-day="${i}">
-      <div class="avail-dayname">${DAY_NAMES[i]}</div>
-      <div class="avail-date">${dt.getDate()} ${MONTHS[dt.getMonth()]}</div>
-      <div class="avail-status">${label}</div>
-    </div>`;
+    const lbl=val===true?L().availAvail:val===false?L().availNot:L().availNone;
+    html+=`<div class="avail-day ${cls}" onclick="toggleAvail(${i})" data-day="${i}"><div class="avail-dayname">${D[i]}</div><div class="avail-date">${dt.getDate()} ${M[dt.getMonth()]}</div><div class="avail-status">${lbl}</div></div>`;
   }
   document.getElementById('availGrid').innerHTML=html;
+  document.getElementById('availSaveBtn').textContent=L().availSave;
 }
 
-function toggleAvail(idx){
-  const cur=availState[idx];
-  availState[idx]=cur===true?false:cur===false?undefined:true;
-  loadAvailUI();
-}
-
-function loadAvailUI(){
-  for(let i=0;i<7;i++){
-    const el=document.querySelector(`.avail-day[data-day="${i}"]`);
-    if(!el)continue;
-    const val=availState[i];
-    el.className='avail-day'+(val===true?' avail':val===false?' notavail':'');
-    el.querySelector('.avail-status').textContent=val===true?'✓ Müsait':val===false?'✗ Müsait Değil':'—';
-  }
-}
+function toggleAvail(idx){const cur=availState[idx];availState[idx]=cur===true?false:cur===false?undefined:true;renderAvail()}
 
 async function saveAvail(){
-  const btn=document.getElementById('availSaveBtn');
-  btn.disabled=true; btn.textContent='Kaydediliyor…';
+  const btn=document.getElementById('availSaveBtn');btn.disabled=true;btn.textContent='…';
   const ws=fmtDate(availWeek);
   await sb.from('availability').delete().eq('staff_id',me.id).eq('week_start',ws);
-  const rows=Object.entries(availState).filter(([,v])=>v!==undefined).map(([i,v])=>({
-    staff_id:me.id, week_start:ws, day_index:parseInt(i), available:v
-  }));
+  const rows=Object.entries(availState).filter(([,v])=>v!==undefined).map(([i,v])=>({staff_id:me.id,week_start:ws,day_index:parseInt(i),available:v}));
   if(rows.length)await sb.from('availability').insert(rows);
-  btn.disabled=false; btn.textContent='Kaydet';
-  showToast('Müsaitlik kaydedildi ✓');
+  btn.disabled=false;btn.textContent=L().availSave;
+  showToast(L().availSaved);
 }
 
-// ─── BİLDİRİMLER / SWAP ──────────────────────────────────────
+// ─── BİLDİRİMLER ─────────────────────────────────────────────
 async function updateNotifBadge(){
-  const{data}=await sb.from('swap_requests').select('id,status').or(`requester_id.eq.${me.id},target_id.eq.${me.id}`);
-  const pending=(data||[]).filter(r=>
-    (r.status==='pending'&&r.target_id===me.id)||
-    (r.status==='staff_approved'&&r.requester_id===me.id)
-  ).length;
-  document.getElementById('notifTabLabel').textContent='Bildirimler'+(pending>0?` (${pending})`:'');
+  const{data}=await sb.from('swap_requests').select('id,status,target_id').or(`requester_id.eq.${me.id},target_id.eq.${me.id}`);
+  const count=(data||[]).filter(r=>r.status==='pending'&&r.target_id===me.id).length;
+  updateNotifTab(count);
 }
 
 async function loadNotif(){
+  document.getElementById('notifContent').innerHTML=`<div class="spinner">${L().loginLoad}</div>`;
   const{data:reqs}=await sb.from('swap_requests')
-    .select('*, rs:requester_shift_id(start_time,end_time,day_index,week_start), ts:target_shift_id(start_time,end_time,day_index,week_start)')
+    .select('*, rs:requester_shift_id(start_time,end_time,day_index), ts:target_shift_id(start_time,end_time,day_index)')
     .or(`requester_id.eq.${me.id},target_id.eq.${me.id}`)
     .order('created_at',{ascending:false});
 
   const pById={};allProfiles.forEach(p=>{pById[p.id]=p});
 
-  if(!reqs||!reqs.length){
-    document.getElementById('notifContent').innerHTML='<div class="empty-state"><div class="icon">🔔</div>Henüz bildirim yok</div>';
-    return;
-  }
+  // Deduplicate by id (safety net)
+  const seen=new Set(); const unique=(reqs||[]).filter(r=>{if(seen.has(r.id))return false;seen.add(r.id);return true});
 
+  if(!unique.length){document.getElementById('notifContent').innerHTML=`<div class="empty-state"><div class="icon">🔔</div>${L().notifEmpty}</div>`;return}
+
+  const D=L().days;
   let html='';
-  (reqs||[]).forEach(r=>{
-    const requester=pById[r.requester_id]||{name:'?'};
-    const target=pById[r.target_id]||{name:'?'};
+  unique.forEach(r=>{
     const isRequester=r.requester_id===me.id;
+    const requester=pById[r.requester_id]||{name:'?',color:'#aaa'};
+    const target=pById[r.target_id]||{name:'?',color:'#aaa'};
     const rs=r.rs,ts=r.ts;
-    const rsLabel=rs?`${DAY_NAMES[rs.day_index]} ${rs.start_time?.slice(0,5)}–${rs.end_time?.slice(0,5)}`:'?';
-    const tsLabel=ts?`${DAY_NAMES[ts.day_index]} ${ts.start_time?.slice(0,5)}–${ts.end_time?.slice(0,5)}`:'?';
-    const needsMyAction=(r.status==='pending'&&r.target_id===me.id);
-    const statusLabels={pending:'Bekliyor',staff_approved:'Onay Bekliyor (Yönetici)',accepted:'Onaylandı',rejected:'Reddedildi',admin_rejected:'Yönetici Reddetti'};
-    const badgeCls=r.status==='accepted'?'accepted':r.status.includes('reject')?'rejected':r.status==='staff_approved'?'staff_approved':'pending';
-    html+=`<div class="notif-card ${needsMyAction?'needs-action':r.status}">
-      <div class="nc-top">
-        <div>
-          <div class="nc-label">${isRequester?'Gönderdiğiniz talep':'Size gelen talep'}</div>
-          <div class="nc-name">${esc(requester.name)} ⇄ ${esc(target.name)}</div>
-          <div class="nc-shift" style="margin-top:.3rem">
-            <span style="color:${requester.color||'#888'}">${esc(requester.name)}</span>: ${esc(rsLabel)}<br>
-            <span style="color:${target.color||'#888'}">${esc(target.name)}</span>: ${esc(tsLabel)}
-          </div>
-        </div>
-        <span class="nc-badge ${badgeCls}">${statusLabels[r.status]||r.status}</span>
+    const rsLabel=rs?`${D[rs.day_index]} ${rs.start_time?.slice(0,5)}–${rs.end_time?.slice(0,5)}`:'?';
+    const tsLabel=ts?`${D[ts.day_index]} ${ts.start_time?.slice(0,5)}–${ts.end_time?.slice(0,5)}`:'?';
+
+    // Smart status label based on who is waiting
+    let badgeCls,badgeText,cardCls='';
+    if(r.status==='pending'){
+      if(!isRequester){
+        badgeCls='action';badgeText=L().swapActionNeeded;cardCls='action-needed';
+      }else{
+        badgeCls='waiting';badgeText=L().swapWaiting(target.name);
+      }
+    }else if(r.status==='staff_approved'){
+      badgeCls='waiting';badgeText=L().swapAdminWaiting;
+    }else if(r.status==='accepted'){
+      badgeCls='accepted';badgeText=L().swapAccepted;cardCls='accepted';
+    }else{
+      badgeCls='rejected';badgeText=r.status==='admin_rejected'?L().swapAdminRejected:L().swapRejected;cardCls='rejected';
+    }
+
+    const actionBtns=(!isRequester&&r.status==='pending')?`<div class="nc-actions">
+      <button class="nc-btn reject" onclick="respondSwap('${r.id}',false)">${L().swapRejectBtn}</button>
+      <button class="nc-btn accept" onclick="respondSwap('${r.id}',true)">${L().swapAcceptBtn}</button>
+    </div>`:'';
+
+    html+=`<div class="notif-card ${cardCls}">
+      <div class="nc-who">
+        <span style="font-size:.72rem;color:var(--muted)">${isRequester?L().swapSent:L().swapReceived}:</span>
+        <strong style="color:${requester.color}">${esc(requester.name)}</strong>
+        <span style="color:#bbb">⇄</span>
+        <strong style="color:${target.color}">${esc(target.name)}</strong>
+        <span class="nc-badge ${badgeCls}">${badgeText}</span>
       </div>
-      ${needsMyAction?`<div class="nc-actions">
-        <button class="nc-btn reject" onclick="respondSwap('${r.id}',false)">Reddet</button>
-        <button class="nc-btn accept" onclick="respondSwap('${r.id}',true)">Kabul Et</button>
-      </div>`:''}
+      <div class="nc-shifts">
+        <span style="color:${requester.color}">●</span> ${esc(requester.name)}: ${esc(rsLabel)}<br>
+        <span style="color:${target.color}">●</span> ${esc(target.name)}: ${esc(tsLabel)}
+      </div>
+      ${actionBtns}
     </div>`;
   });
   document.getElementById('notifContent').innerHTML=html;
 }
 
 async function respondSwap(id,approve){
-  if(!confirm(approve?'Değişimi kabul ediyorsunuz. Yönetici onayına gidecek.':'Talebi reddetmek istiyor musunuz?'))return;
+  if(!confirm(approve?L().swapConfirmAccept:L().swapConfirmReject))return;
   await sb.from('swap_requests').update({status:approve?'staff_approved':'rejected'}).eq('id',id);
   if(approve){
-    // Yöneticiye email gönder
-    const{data:req}=await sb.from('swap_requests').select('*, rs:requester_shift_id(start_time,end_time,day_index), ts:target_shift_id(start_time,end_time,day_index)').eq('id',id).single();
+    const{data:req}=await sb.from('swap_requests').select('*,rs:requester_shift_id(start_time,end_time,day_index),ts:target_shift_id(start_time,end_time,day_index)').eq('id',id).single();
     if(req){
       const pById={};allProfiles.forEach(p=>{pById[p.id]=p});
-      const requester=pById[req.requester_id];const target=pById[req.target_id];
-      await sendEmail({
-        to:'admin',
-        subject:`Vardiya değişim talebi: ${requester?.name} ⇄ ${target?.name}`,
-        body:`${requester?.name} ve ${target?.name} vardiya değiştirmek istiyor.\n\n`+
-          `${requester?.name}: ${DAY_NAMES[req.rs?.day_index]} ${req.rs?.start_time?.slice(0,5)}–${req.rs?.end_time?.slice(0,5)}\n`+
-          `${target?.name}: ${DAY_NAMES[req.ts?.day_index]} ${req.ts?.start_time?.slice(0,5)}–${req.ts?.end_time?.slice(0,5)}\n\n`+
-          `Onaylamak veya reddetmek için admin paneline gidin.`
-      });
+      const rp=pById[req.requester_id],tp=pById[req.target_id];
+      const D=L().days;
+      await sendEmail({to:'admin',subject:`Vardiya değişim talebi: ${rp?.name} ⇄ ${tp?.name}`,
+        body:`${rp?.name} ve ${tp?.name} vardiya değiştirmek istiyor.\n\n${rp?.name}: ${D[req.rs?.day_index]} ${req.rs?.start_time?.slice(0,5)}–${req.rs?.end_time?.slice(0,5)}\n${tp?.name}: ${D[req.ts?.day_index]} ${req.ts?.start_time?.slice(0,5)}–${req.ts?.end_time?.slice(0,5)}\n\nAdmin paneli: masalrestaurant.nl/admin`});
     }
   }
-  showToast(approve?'Kabul edildi, yönetici onayı bekleniyor':'Talep reddedildi');
-  loadNotif(); updateNotifBadge();
+  showToast(approve?L().acceptedToast:L().rejectedToast);
+  loadNotif();updateNotifBadge();
 }
 
 // ─── SWAP OLUŞTUR ─────────────────────────────────────────────
 let swapShiftsCache=[];
+let swapSubmitting=false;
 
 async function openSwapModal(){
-  // Benim vardiyalarımı yükle (bu hafta)
   const ws=fmtDate(currentWeek);
   const{data:shifts}=await sb.from('shifts').select('*,shift_assignments(staff_id)').eq('week_start',ws);
   swapShiftsCache=shifts||[];
+  const D=L().days;
   const myShifts=(shifts||[]).filter(s=>s.shift_assignments?.some(a=>a.staff_id===me.id));
-
-  const mySelect=document.getElementById('swapMyShift');
-  mySelect.innerHTML=myShifts.length
-    ?myShifts.map(s=>`<option value="${s.id}">${DAY_NAMES[s.day_index]}: ${s.start_time.slice(0,5)}–${s.end_time.slice(0,5)}</option>`).join('')
-    :'<option value="">Bu hafta vardiya yok</option>';
-
-  const staffSelect=document.getElementById('swapTargetStaff');
-  staffSelect.innerHTML=allProfiles.filter(p=>p.id!==me.id&&p.role!=='admin').map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
-
+  document.getElementById('swapMyShift').innerHTML=myShifts.length
+    ?myShifts.map(s=>`<option value="${s.id}">${D[s.day_index]}: ${s.start_time.slice(0,5)}–${s.end_time.slice(0,5)}</option>`).join('')
+    :`<option value="">${L().swapNoShifts}</option>`;
+  document.getElementById('swapTargetStaff').innerHTML=allProfiles.filter(p=>p.id!==me.id&&p.role!=='admin').map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
+  document.getElementById('swapSendBtn').textContent=L().swapSend;
+  swapSubmitting=false;
   loadTargetShifts();
   document.getElementById('swapModal').classList.add('open');
 }
 
 function loadTargetShifts(){
-  const targetId=document.getElementById('swapTargetStaff').value;
-  const targetShifts=swapShiftsCache.filter(s=>s.shift_assignments?.some(a=>a.staff_id===targetId));
-  const select=document.getElementById('swapTargetShift');
-  select.innerHTML=targetShifts.length
-    ?targetShifts.map(s=>`<option value="${s.id}">${DAY_NAMES[s.day_index]}: ${s.start_time.slice(0,5)}–${s.end_time.slice(0,5)}</option>`).join('')
-    :'<option value="">Bu hafta vardiya yok</option>';
+  const tid=document.getElementById('swapTargetStaff').value;
+  const D=L().days;
+  const ts=swapShiftsCache.filter(s=>s.shift_assignments?.some(a=>a.staff_id===tid));
+  document.getElementById('swapTargetShift').innerHTML=ts.length
+    ?ts.map(s=>`<option value="${s.id}">${D[s.day_index]}: ${s.start_time.slice(0,5)}–${s.end_time.slice(0,5)}</option>`).join('')
+    :`<option value="">${L().swapNoShifts}</option>`;
 }
 
 function closeSwapModal(){document.getElementById('swapModal').classList.remove('open')}
 
 async function sendSwapRequest(){
+  if(swapSubmitting)return;
   const myShiftId=document.getElementById('swapMyShift').value;
   const targetId=document.getElementById('swapTargetStaff').value;
   const targetShiftId=document.getElementById('swapTargetShift').value;
-  if(!myShiftId||!targetShiftId){showToast('Lütfen tüm alanları doldurun');return}
-
+  if(!myShiftId||!targetShiftId){showToast('!');return}
+  swapSubmitting=true;
+  const btn=document.getElementById('swapSendBtn');btn.disabled=true;btn.textContent=L().swapSending;
   const ws=fmtDate(currentWeek);
-  const{error}=await sb.from('swap_requests').insert({
-    requester_id:me.id, target_id:targetId,
-    requester_shift_id:myShiftId, target_shift_id:targetShiftId,
-    week_start:ws, status:'pending'
-  });
-  if(error){showToast('Hata: '+error.message);return}
-
-  // Hedef personele email gönder
+  const{error}=await sb.from('swap_requests').insert({requester_id:me.id,target_id:targetId,requester_shift_id:myShiftId,target_shift_id:targetShiftId,week_start:ws,status:'pending'});
+  if(error){showToast('Hata: '+error.message);btn.disabled=false;btn.textContent=L().swapSend;swapSubmitting=false;return}
   const target=allProfiles.find(p=>p.id===targetId);
   const myShift=swapShiftsCache.find(s=>s.id===myShiftId);
   const tShift=swapShiftsCache.find(s=>s.id===targetShiftId);
-  await sendEmail({
-    to:target,
-    subject:`Vardiya değişim talebi: ${me.name}`,
-    body:`Merhaba ${target?.name},\n\n${me.name} sizinle vardiya değiştirmek istiyor.\n\n`+
-      `${me.name}: ${DAY_NAMES[myShift?.day_index]} ${myShift?.start_time?.slice(0,5)}–${myShift?.end_time?.slice(0,5)}\n`+
-      `Sizin vardiya: ${DAY_NAMES[tShift?.day_index]} ${tShift?.start_time?.slice(0,5)}–${tShift?.end_time?.slice(0,5)}\n\n`+
-      `Onaylamak için personel paneline giriş yapın: masalrestaurant.nl/staff`
-  });
-
-  closeSwapModal();
-  showToast('Talep gönderildi ✓');
-  loadNotif(); updateNotifBadge();
+  const D=L().days;
+  await sendEmail({to:target,subject:`Vardiya değişim talebi: ${me.name}`,
+    body:`Merhaba ${target?.name},\n\n${me.name} sizinle vardiya değiştirmek istiyor.\n\n${me.name}: ${D[myShift?.day_index]} ${myShift?.start_time?.slice(0,5)}–${myShift?.end_time?.slice(0,5)}\nSizin vardiya: ${D[tShift?.day_index]} ${tShift?.start_time?.slice(0,5)}–${tShift?.end_time?.slice(0,5)}\n\nYanıt için: masalrestaurant.nl/staff`});
+  closeSwapModal();showToast(L().swapSentOk);loadNotif();updateNotifBadge();
 }
 
 // ─── EMAIL ────────────────────────────────────────────────────
 async function sendEmail({to,subject,body}){
-  try{
-    await fetch(`${SUPABASE_URL}/functions/v1/send-email`,{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_ANON},
-      body:JSON.stringify({to,subject,body})
-    });
-  }catch(e){console.warn('Email gönderilemedi',e)}
+  try{await fetch(`${SUPABASE_URL}/functions/v1/send-email`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_ANON},body:JSON.stringify({to,subject,body})})}catch(e){}
 }
 
 // ─── INIT ─────────────────────────────────────────────────────
+setLang(lang);
 initApp();
 </script>
 </body>
