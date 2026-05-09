@@ -161,6 +161,7 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
     <div class="tab" data-tab="party" data-i18n="tab_party" onclick="switchTab('party')">Feest aanvragen</div>
     <div class="tab" data-tab="shifts" data-i18n="tab_shifts" onclick="switchTab('shifts')">Shifts</div>
     <div class="tab" data-tab="haccp" onclick="switchTab('haccp')">HACCP</div>
+    <div class="tab" data-tab="swaps" onclick="switchTab('swaps')" id="swapsTab">Vardiya Değişimleri</div>
   </div>
   <main>
 
@@ -208,6 +209,15 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
       <div class="sched-wrap">
         <table class="sched-table" id="schedTable"></table>
       </div>
+    </section>
+
+    <!-- SWAP REQUESTS -->
+    <section class="section" id="sec-swaps">
+      <div class="toolbar">
+        <h2>Vardiya Değişimleri</h2>
+        <button class="btn ghost" onclick="loadSwaps()">↻ Yenile</button>
+      </div>
+      <div id="swapsContainer"></div>
     </section>
 
     <!-- HACCP -->
@@ -483,7 +493,12 @@ async function showApp(){
     .on('postgres_changes',{event:'*',schema:'public',table:'reservations'},()=>{
       if(document.querySelector('.tab.active')?.dataset.tab==='reservations')loadReservations();
     })
+    .on('postgres_changes',{event:'*',schema:'public',table:'swap_requests'},()=>{
+      updateSwapBadge();
+      if(document.querySelector('.tab.active')?.dataset.tab==='swaps')loadSwaps();
+    })
     .subscribe();
+  updateSwapBadge();
 }
 
 if(sessionStorage.getItem('masalAdmin')==='1'){showApp()}
@@ -496,6 +511,92 @@ function switchTab(name){
   if(name==='party')loadParty();
   if(name==='shifts')loadShifts();
   if(name==='haccp')loadHaccp();
+  if(name==='swaps')loadSwaps();
+}
+
+// === SWAP REQUESTS ===
+const DAY_NAMES_TR_S=['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
+
+async function updateSwapBadge(){
+  const{data}=await sb.from('swap_requests').select('id').eq('status','staff_approved');
+  const count=(data||[]).length;
+  const tab=document.getElementById('swapsTab');
+  if(tab)tab.textContent='Vardiya Değişimleri'+(count>0?` (${count})`:'');
+}
+
+async function loadSwaps(){
+  const c=document.getElementById('swapsContainer');
+  c.innerHTML='<div style="color:#888;padding:2rem;text-align:center">Yükleniyor…</div>';
+  const{data:reqs,error}=await sb.from('swap_requests')
+    .select('*, rs:requester_shift_id(start_time,end_time,day_index), ts:target_shift_id(start_time,end_time,day_index)')
+    .eq('status','staff_approved')
+    .order('created_at',{ascending:false});
+  if(error){c.innerHTML=`<div class="empty">${t('err')+error.message}</div>`;return}
+  if(!reqs||!reqs.length){
+    c.innerHTML='<div class="empty" style="padding:3rem">Onay bekleyen değişim talebi yok</div>';
+    return;
+  }
+  const pById={};profiles.forEach(p=>{pById[p.id]=p});
+  c.innerHTML=reqs.map(r=>{
+    const req=pById[r.requester_id]||{name:'?',color:'#aaa'};
+    const tgt=pById[r.target_id]||{name:'?',color:'#aaa'};
+    const rs=r.rs,ts=r.ts;
+    const rsLabel=rs?`${DAY_NAMES_TR_S[rs.day_index]} ${rs.start_time?.slice(0,5)}–${rs.end_time?.slice(0,5)}`:'?';
+    const tsLabel=ts?`${DAY_NAMES_TR_S[ts.day_index]} ${ts.start_time?.slice(0,5)}–${ts.end_time?.slice(0,5)}`:'?';
+    return`<div style="background:#fff;border-radius:10px;border:1px solid #e5e1d8;border-left:4px solid var(--gold);padding:1.2rem 1.4rem;margin-bottom:.8rem">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.6rem">
+        <div>
+          <div style="font-size:.72rem;letter-spacing:.6px;text-transform:uppercase;color:#888;margin-bottom:.4rem">Değişim Talebi</div>
+          <div style="display:flex;align-items:center;gap:.8rem;flex-wrap:wrap">
+            <span style="font-weight:600;color:${req.color}">${esc(req.name)}</span>
+            <span style="color:#aaa;font-size:.85rem">${esc(rsLabel)}</span>
+            <span style="color:#bbb">⇄</span>
+            <span style="font-weight:600;color:${tgt.color}">${esc(tgt.name)}</span>
+            <span style="color:#aaa;font-size:.85rem">${esc(tsLabel)}</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:.5rem">
+          <button class="btn danger small" onclick="respondSwap('${r.id}',false,'${r.requester_id}','${r.target_id}')">Reddet</button>
+          <button class="btn small" onclick="respondSwap('${r.id}',true,'${r.requester_id}','${r.target_id}','${r.requester_shift_id}','${r.target_shift_id}')">Onayla</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function respondSwap(id,approve,reqId,tgtId,reqShiftId,tgtShiftId){
+  if(!confirm(approve?'Değişimi onaylıyor musunuz?':'Değişimi reddediyor musunuz?'))return;
+  if(approve){
+    await sb.from('shift_assignments').delete().eq('shift_id',reqShiftId).eq('staff_id',reqId);
+    await sb.from('shift_assignments').insert({shift_id:reqShiftId,staff_id:tgtId});
+    await sb.from('shift_assignments').delete().eq('shift_id',tgtShiftId).eq('staff_id',tgtId);
+    await sb.from('shift_assignments').insert({shift_id:tgtShiftId,staff_id:reqId});
+  }
+  await sb.from('swap_requests').update({status:approve?'accepted':'admin_rejected'}).eq('id',id);
+
+  // Her iki personele email gönder
+  const pById={};profiles.forEach(p=>{pById[p.id]=p});
+  const reqP=pById[reqId],tgtP=pById[tgtId];
+  const subject=approve?'Vardiya değişiminiz onaylandı ✓':'Vardiya değişiminiz reddedildi';
+  const body=approve
+    ?`Merhaba,\n\nYönetici vardiya değişiminizi onayladı.\n\n${reqP?.name} ⇄ ${tgtP?.name}\n\nVardiyalarınız güncellendi. Detaylar için: masalrestaurant.nl/staff`
+    :`Merhaba,\n\nYönetici vardiya değişim talebini reddetti.\n\n${reqP?.name} ⇄ ${tgtP?.name}\n\nDetaylar için: masalrestaurant.nl/staff`;
+  for(const p of [reqP,tgtP]){
+    if(p?.email&&!p.email.includes('.internal'))
+      await sendEmail(p.email,subject,body);
+  }
+
+  loadSwaps();updateSwapBadge();
+}
+
+async function sendEmail(to,subject,body){
+  try{
+    await fetch(`${SUPABASE_URL}/functions/v1/send-email`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_ANON},
+      body:JSON.stringify({to,subject,body})
+    });
+  }catch(e){console.warn('Email hatası',e)}
 }
 
 // === RESERVATIONS ===
