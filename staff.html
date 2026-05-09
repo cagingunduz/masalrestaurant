@@ -266,7 +266,7 @@ const I18N={
     swapSentOk:'Verzoek verzonden ✓',swapNoShifts:'Geen diensten deze week',
     swapConfirmAccept:'Wisseling accepteren? Gaat naar manager voor goedkeuring.',
     swapConfirmReject:'Verzoek afwijzen?',
-    acceptedToast:'Geaccepteerd, wacht op manager',rejectedToast:'Verzoek afgewezen',
+    acceptedToast:'Geaccepteerd, wacht op manager',rejectedToast:'Verzoek afgewezen',deleteSwap:'Verwijderen',confirmDelete:'Verzoek verwijderen?',deletedToast:'Verwijderd',
     days:['Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag','Zondag'],
     daysShort:['Ma','Di','Wo','Do','Vr','Za','Zo'],
     months:['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'],
@@ -290,7 +290,7 @@ const I18N={
     swapSentOk:'Request sent ✓',swapNoShifts:'No shifts this week',
     swapConfirmAccept:'Accept swap? It will go to the manager for approval.',
     swapConfirmReject:'Decline this request?',
-    acceptedToast:'Accepted, waiting for manager',rejectedToast:'Request declined',
+    acceptedToast:'Accepted, waiting for manager',rejectedToast:'Request declined',deleteSwap:'Delete',confirmDelete:'Delete this request?',deletedToast:'Deleted',
     days:['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'],
     daysShort:['Mo','Tu','We','Th','Fr','Sa','Su'],
     months:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
@@ -314,7 +314,7 @@ const I18N={
     swapSentOk:'Talep gönderildi ✓',swapNoShifts:'Bu hafta vardiya yok',
     swapConfirmAccept:'Değişimi kabul ediyorsunuz. Yönetici onayına gidecek.',
     swapConfirmReject:'Talebi reddetmek istiyor musunuz?',
-    acceptedToast:'Kabul edildi, yönetici bekleniyor',rejectedToast:'Talep reddedildi',
+    acceptedToast:'Kabul edildi, yönetici bekleniyor',rejectedToast:'Talep reddedildi',deleteSwap:'Sil',confirmDelete:'Bu talep silinsin mi?',deletedToast:'Silindi',
     days:['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'],
     daysShort:['Pt','Sa','Ça','Pe','Cu','Ct','Pz'],
     months:['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'],
@@ -568,9 +568,16 @@ async function loadNotif(){
       badgeCls='rejected';badgeText=r.status==='admin_rejected'?L().swapAdminRejected:L().swapRejected;cardCls='rejected';
     }
 
-    const actionBtns=(!isRequester&&r.status==='pending')?`<div class="nc-actions">
+    const canRespond=!isRequester&&r.status==='pending';
+    const canDelete=isRequester&&(r.status==='pending'||r.status==='rejected'||r.status==='admin_rejected');
+
+    const actionBtns=canRespond?`<div class="nc-actions">
       <button class="nc-btn reject" onclick="respondSwap('${r.id}',false)">${L().swapRejectBtn}</button>
       <button class="nc-btn accept" onclick="respondSwap('${r.id}',true)">${L().swapAcceptBtn}</button>
+    </div>`:'';
+
+    const deleteBtn=canDelete?`<div style="margin-top:.6rem;text-align:right">
+      <button onclick="deleteSwap('${r.id}')" style="background:none;border:none;color:#ccc;cursor:pointer;font-size:.78rem;padding:.2rem .4rem;border-radius:4px" onmouseover="this.style.color='#c0392b'" onmouseout="this.style.color='#ccc'">✕ ${L().deleteSwap}</button>
     </div>`:'';
 
     html+=`<div class="notif-card ${cardCls}">
@@ -585,7 +592,7 @@ async function loadNotif(){
         <span style="color:${requester.color}">●</span> ${esc(requester.name)}: ${esc(rsLabel)}<br>
         <span style="color:${target.color}">●</span> ${esc(target.name)}: ${esc(tsLabel)}
       </div>
-      ${actionBtns}
+      ${actionBtns}${deleteBtn}
     </div>`;
   });
   document.getElementById('notifContent').innerHTML=html;
@@ -605,6 +612,13 @@ async function respondSwap(id,approve){
     }
   }
   showToast(approve?L().acceptedToast:L().rejectedToast);
+  loadNotif();updateNotifBadge();
+}
+
+async function deleteSwap(id){
+  if(!confirm(L().confirmDelete))return;
+  await sb.from('swap_requests').delete().eq('id',id);
+  showToast(L().deletedToast);
   loadNotif();updateNotifBadge();
 }
 
