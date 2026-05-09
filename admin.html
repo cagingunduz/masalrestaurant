@@ -344,6 +344,8 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
     <input type="text" id="newStaffName" class="input" style="width:100%" data-i18n-ph="name_ph" placeholder="Volledige naam">
     <label data-i18n="staff_dept">Afdeling / Bölüm</label>
     <input type="text" id="newStaffDept" class="input" style="width:100%" placeholder="bijv. Keuken, Bar, Bediening...">
+    <label>E-mail (bildirimler)</label>
+    <input type="email" id="newStaffEmail" class="input" style="width:100%" placeholder="naam@email.com">
     <label data-i18n="staff_pass">Şifre</label>
     <input type="password" id="newStaffPass" class="input" style="width:100%" placeholder="••••••••">
     <label data-i18n="color">Kleur</label><br>
@@ -864,13 +866,14 @@ async function saveEditStaff(){
   closeEditStaff();loadShifts();
 }
 
-function openAddStaff(){document.getElementById('newStaffName').value='';document.getElementById('newStaffDept').value='';document.getElementById('newStaffPass').value='';document.getElementById('newStaffColor').value='#c6a55c';document.getElementById('addStaffModal').classList.add('open')}
+function openAddStaff(){document.getElementById('newStaffName').value='';document.getElementById('newStaffDept').value='';document.getElementById('newStaffEmail').value='';document.getElementById('newStaffPass').value='';document.getElementById('newStaffColor').value='#c6a55c';document.getElementById('addStaffModal').classList.add('open')}
 function closeAddStaff(){document.getElementById('addStaffModal').classList.remove('open')}
 
 async function saveStaff(){
   const name=document.getElementById('newStaffName').value.trim();
   const color=document.getElementById('newStaffColor').value;
   const department=document.getElementById('newStaffDept').value.trim()||null;
+  const contact_email=document.getElementById('newStaffEmail').value.trim()||null;
   const password=document.getElementById('newStaffPass').value;
   if(!name){alert(t('err')+'Naam vereist');return}
   if(!password){alert(t('err')+'Şifre vereist');return}
@@ -879,11 +882,13 @@ async function saveStaff(){
   const res=await fetch(`${SUPABASE_URL}/functions/v1/create-staff`,{
     method:'POST',
     headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_ANON},
-    body:JSON.stringify({name,password,color,department})
+    body:JSON.stringify({name,password,color,department,contact_email})
   });
   const json=await res.json();
   btn.disabled=false;
   if(!res.ok){alert(t('err')+(json.error||'Onbekende fout'));return}
+  // contact_email'i profiles'a kaydet
+  if(contact_email&&json.id) await sb.from('profiles').update({contact_email}).eq('id',json.id);
   const{data:p}=await sb.from('profiles').select('*').order('name');
   profiles=p||[];
   closeAddStaff();loadShifts();
