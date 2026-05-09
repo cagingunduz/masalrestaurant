@@ -674,8 +674,8 @@ async function sendSwapRequest(){
 }
 
 // ─── EMAIL ────────────────────────────────────────────────────
-async function sendEmail({to,subject,body}){
-  try{await fetch(`${SUPABASE_URL}/functions/v1/send-email`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_ANON},body:JSON.stringify({to,subject,body})})}catch(e){}
+async function sendEmail({to,userId,subject,body}){
+  try{await fetch(`${SUPABASE_URL}/functions/v1/send-email`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_ANON},body:JSON.stringify({to,userId,subject,body})})}catch(e){}
 }
 
 // ─── INIT ─────────────────────────────────────────────────────
