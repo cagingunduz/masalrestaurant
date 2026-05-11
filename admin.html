@@ -852,49 +852,50 @@ async function notifyShifts(){
   const DN_NL=['Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag','Zondag'];
   const MO_NL=['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
   const ws=fmtDate(currentWeek);
-  const weekEnd=addDays(currentWeek,6);
-  const weekStr=`${currentWeek.getDate()} ${MO_NL[currentWeek.getMonth()]} – ${weekEnd.getDate()} ${MO_NL[weekEnd.getMonth()]} ${weekEnd.getFullYear()}`;
 
-  // Bu hafta zaten bildirim gönderilmiş kişileri al
-  const{data:alreadySent=[]}=await sb.from('shift_notifications').select('staff_id').eq('week_start',ws);
-  const alreadySentIds=new Set((alreadySent||[]).map(r=>r.staff_id));
+  // Bu hafta hangi (shift_id, staff_id) çiftleri zaten bildirilmiş?
+  const{data:alreadySent=[]}=await sb.from('shift_notifications').select('shift_id,staff_id').eq('week_start',ws);
+  const notifiedKeys=new Set((alreadySent||[]).map(r=>`${r.shift_id}_${r.staff_id}`));
 
-  // Shifti olan, e-postası olan ve henüz bildirilmemiş personeller
-  const toNotify=staff.filter(p=>{
+  // Her personel için bildirilmemiş vardiyaları bul
+  const toSend=[];
+  for(const p of staff){
+    if(!p.contact_email) continue;
     const days=matrix[p.id]||{};
-    return p.contact_email && Object.keys(days).length>0 && !alreadySentIds.has(p.id);
-  });
+    const newShifts=Object.entries(days)
+      .filter(([,s])=>!notifiedKeys.has(`${s.shiftId}_${p.id}`))
+      .sort(([a],[b])=>Number(a)-Number(b));
+    if(newShifts.length>0) toSend.push({profile:p, newShifts});
+  }
 
-  const alreadyCount=staff.filter(p=>alreadySentIds.has(p.id)).length;
-
-  if(!toNotify.length){
-    alert(`Bu hafta bildirilecek yeni personel yok.${alreadyCount>0?`\n(${alreadyCount} kişiye daha önce gönderildi)`:''}`);
+  if(!toSend.length){
+    const skipped=staff.filter(p=>Object.values(matrix[p.id]||{}).some(s=>notifiedKeys.has(`${s.shiftId}_${p.id}`))).length;
+    alert(`Gönderilecek yeni vardiya değişikliği yok.${skipped>0?`\n(${skipped} kişi zaten güncel)`:''}`);
     return;
   }
 
   const btn=document.getElementById('notifyBtn');
-  btn.disabled=true;
-  btn.textContent='📧 Gönderiliyor…';
+  btn.disabled=true; btn.textContent='📧 Gönderiliyor…';
 
-  let sent=0;
-  for(const p of toNotify){
-    const days=matrix[p.id]||{};
-    const lines=Object.entries(days)
-      .sort(([a],[b])=>Number(a)-Number(b))
-      .map(([i,s])=>`  ${DN_NL[i]}: ${s.start.slice(0,5)} – ${s.end.slice(0,5)}`);
+  let sentCount=0;
+  for(const{profile:p, newShifts} of toSend){
+    const lines=newShifts.map(([i,s])=>`  ${DN_NL[i]}: ${s.start.slice(0,5)} – ${s.end.slice(0,5)}`);
+    const isOnlyNew=newShifts.length===1;
+    const subject=isOnlyNew
+      ?`Nieuwe dienst — ${DN_NL[newShifts[0][0]]}`
+      :`Nieuwe diensten — week van ${currentWeek.getDate()} ${MO_NL[currentWeek.getMonth()]}`;
+    const body=`Hallo ${p.name},\n\nEr ${newShifts.length===1?'is een nieuwe dienst':'zijn nieuwe diensten'} aan je rooster toegevoegd:\n\n${lines.join('\n')}\n\nBekijk je volledige rooster hier:\n👉 masalrestaurant.vercel.app/staff\n\nMet vriendelijke groet,\nMasal Restaurant`;
 
-    const body=`Hallo ${p.name},\n\nJe rooster voor de week van ${weekStr}:\n\n${lines.join('\n')}\n\nBekijk je volledige rooster hier:\n👉 masalrestaurant.vercel.app/staff\n\nMet vriendelijke groet,\nMasal Restaurant`;
+    await sendEmail(p.contact_email, subject, body);
 
-    await sendEmail(p.contact_email,`Jouw rooster — week van ${currentWeek.getDate()} ${MO_NL[currentWeek.getMonth()]}`,body);
-    // Gönderimi kaydet
-    await sb.from('shift_notifications').upsert({staff_id:p.id,week_start:ws},{onConflict:'staff_id,week_start'});
-    sent++;
+    // Gönderilen shift'leri kaydet
+    const rows=newShifts.map(([,s])=>({shift_id:s.shiftId,staff_id:p.id,week_start:ws}));
+    await sb.from('shift_notifications').upsert(rows,{onConflict:'shift_id,staff_id'});
+    sentCount++;
   }
 
-  btn.disabled=false;
-  btn.textContent='📧 Haber Ver';
-  const skipMsg=alreadyCount>0?`\n(${alreadyCount} kişi zaten bilgilendirilmişti, atlandı)`:'';
-  alert(`✅ ${sent} personele haftalık program maili gönderildi.${skipMsg}`);
+  btn.disabled=false; btn.textContent='📧 Haber Ver';
+  alert(`✅ ${sentCount} personele yeni vardiya bildirimi gönderildi.`);
 }
 
 // Cell modal
@@ -926,8 +927,8 @@ async function saveCellShift(){
     await sb.from('shift_assignments').insert({shift_id:data.id,staff_id:staffId});
     sendShiftNotification(staffId,dayIndex,start_time,end_time,false);
   }
-  // Vardiya değişti → o kişinin bu haftaki bildirim kaydını sil (tekrar bildirim gönderilsin)
-  await sb.from('shift_notifications').delete().eq('staff_id',staffId).eq('week_start',fmtDate(currentWeek));
+  // Vardiya güncellendiyse eski bildirim kaydını sil (değişiklik tekrar bildirilsin)
+  if(shiftId) await sb.from('shift_notifications').delete().eq('shift_id',shiftId).eq('staff_id',staffId);
   closeCellModal();loadShifts();
 }
 
@@ -953,8 +954,7 @@ async function deleteCellShift(){
   await sb.from('shift_assignments').delete().eq('shift_id',shiftId).eq('staff_id',staffId);
   const{count}=await sb.from('shift_assignments').select('*',{count:'exact',head:true}).eq('shift_id',shiftId);
   if(!count)await sb.from('shifts').delete().eq('id',shiftId);
-  // Vardiya silindi → bildirim kaydını da sil
-  await sb.from('shift_notifications').delete().eq('staff_id',staffId).eq('week_start',fmtDate(currentWeek));
+  // shift silinince CASCADE otomatik siler, ekstra işlem gerekmez
   closeCellModal();loadShifts();
 }
 
