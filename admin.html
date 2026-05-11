@@ -926,6 +926,8 @@ async function saveCellShift(){
     await sb.from('shift_assignments').insert({shift_id:data.id,staff_id:staffId});
     sendShiftNotification(staffId,dayIndex,start_time,end_time,false);
   }
+  // Vardiya değişti → o kişinin bu haftaki bildirim kaydını sil (tekrar bildirim gönderilsin)
+  await sb.from('shift_notifications').delete().eq('staff_id',staffId).eq('week_start',fmtDate(currentWeek));
   closeCellModal();loadShifts();
 }
 
@@ -951,6 +953,8 @@ async function deleteCellShift(){
   await sb.from('shift_assignments').delete().eq('shift_id',shiftId).eq('staff_id',staffId);
   const{count}=await sb.from('shift_assignments').select('*',{count:'exact',head:true}).eq('shift_id',shiftId);
   if(!count)await sb.from('shifts').delete().eq('id',shiftId);
+  // Vardiya silindi → bildirim kaydını da sil
+  await sb.from('shift_notifications').delete().eq('staff_id',staffId).eq('week_start',fmtDate(currentWeek));
   closeCellModal();loadShifts();
 }
 
