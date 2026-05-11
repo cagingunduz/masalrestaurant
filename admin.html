@@ -86,8 +86,11 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
 .del-staff-btn{background:none;border:none;color:#ccc;cursor:pointer;font-size:.8rem;margin-left:.4rem;padding:.1rem .3rem;border-radius:3px;line-height:1;vertical-align:middle}
 .del-staff-btn:hover{color:#c0392b;background:#fff0ee}
 /* cell edit modal */
-.cell-modal{max-width:270px}
+.cell-modal{max-width:320px}
 .time-row{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+.time-shortcuts{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.4rem}
+.sc-btn{background:#f7f5f0;border:1px solid #e0dbd0;color:#555;padding:.3rem .55rem;border-radius:6px;font-size:.78rem;font-weight:500;cursor:pointer;transition:all .15s}
+.sc-btn:hover{background:var(--gold);color:#fff;border-color:var(--gold)}
 
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:100;padding:1rem}
 .modal-bg.open{display:flex}
@@ -339,11 +342,21 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
     <div class="time-row">
       <div>
         <label data-i18n="start_time">Begintijd</label>
-        <input type="time" id="cellStart" class="input" style="width:100%">
+        <input type="time" id="cellStart" class="input" style="width:100%" step="300">
+        <div class="time-shortcuts">
+          <button class="sc-btn" onclick="setTime('cellStart','09:00')">09:00</button>
+          <button class="sc-btn" onclick="setTime('cellStart','10:00')">10:00</button>
+          <button class="sc-btn" onclick="setTime('cellStart','10:30')">10:30</button>
+          <button class="sc-btn" onclick="setTime('cellStart','10:45')">10:45</button>
+        </div>
       </div>
       <div>
         <label data-i18n="end_time">Eindtijd</label>
-        <input type="time" id="cellEnd" class="input" style="width:100%">
+        <input type="time" id="cellEnd" class="input" style="width:100%" step="300">
+        <div class="time-shortcuts">
+          <button class="sc-btn" onclick="setTime('cellEnd','17:00')">17:00</button>
+          <button class="sc-btn" onclick="setTime('cellEnd','22:00')">22:00</button>
+        </div>
       </div>
     </div>
     <div class="modal-actions">
@@ -912,6 +925,7 @@ function openCellModal(staffId,dayIndex,shiftId,start,end){
   document.getElementById('cellModal').classList.add('open');
 }
 function closeCellModal(){document.getElementById('cellModal').classList.remove('open');cellState={}}
+function setTime(inputId,val){document.getElementById(inputId).value=val}
 
 async function saveCellShift(){
   const{staffId,dayIndex,shiftId}=cellState;
