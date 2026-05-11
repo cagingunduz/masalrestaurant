@@ -91,6 +91,8 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
 .time-shortcuts{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.4rem}
 .sc-btn{background:#f7f5f0;border:1px solid #e0dbd0;color:#555;padding:.3rem .55rem;border-radius:6px;font-size:.78rem;font-weight:500;cursor:pointer;transition:all .15s}
 .sc-btn:hover{background:var(--gold);color:#fff;border-color:var(--gold)}
+input[type="time"]::-webkit-datetime-edit-ampm-field{display:none}
+input[type="time"]{-webkit-appearance:none}
 
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:100;padding:1rem}
 .modal-bg.open{display:flex}
