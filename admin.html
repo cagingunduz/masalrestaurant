@@ -270,6 +270,7 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
           <input type="date" id="weekPicker" class="input" onchange="onWeekChange()" style="width:138px">
           <button class="btn ghost small" onclick="openAddStaff()" data-i18n="add_staff">+ Medewerker</button>
           <button class="btn ghost small" onclick="loadShifts()" title="Vernieuwen">↻</button>
+          <button class="btn small" onclick="notifyShifts()" id="notifyBtn" style="background:#27ae60;border-color:#27ae60">📧 Haber Ver</button>
         </div>
       </div>
       <div class="sched-wrap">
@@ -837,6 +838,54 @@ async function loadShifts(){
       <th class="sched-th total-th">${t('col_total')}</th>
     </tr></thead>
     <tbody>${rows}</tbody>`;
+
+  // Cache for notify
+  window._shiftMatrix=matrix;
+  window._shiftProfiles=staff;
+}
+
+async function notifyShifts(){
+  const matrix=window._shiftMatrix||{};
+  const staff=window._shiftProfiles||[];
+  if(!staff.length){alert('Önce vardiyaları yükle.');return}
+
+  const DN_NL=['Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag','Zondag'];
+  const MO_NL=['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
+  const ws=fmtDate(currentWeek);
+  const weekEnd=addDays(currentWeek,6);
+  const weekStr=`${currentWeek.getDate()} ${MO_NL[currentWeek.getMonth()]} – ${weekEnd.getDate()} ${MO_NL[weekEnd.getMonth()]} ${weekEnd.getFullYear()}`;
+
+  // Sadece shifti olan ve contact_email'i olan personeller
+  const toNotify=staff.filter(p=>{
+    const days=matrix[p.id]||{};
+    return p.contact_email && Object.keys(days).length>0;
+  });
+
+  if(!toNotify.length){
+    alert('Bu hafta vardiyası olan ve e-postası girilmiş personel bulunamadı.');
+    return;
+  }
+
+  const btn=document.getElementById('notifyBtn');
+  btn.disabled=true;
+  btn.textContent='📧 Gönderiliyor…';
+
+  let sent=0;
+  for(const p of toNotify){
+    const days=matrix[p.id]||{};
+    const lines=Object.entries(days)
+      .sort(([a],[b])=>a-b)
+      .map(([i,s])=>`  ${DN_NL[i]}: ${s.start.slice(0,5)} – ${s.end.slice(0,5)}`);
+
+    const body=`Hallo ${p.name},\n\nJe rooster voor de week van ${weekStr}:\n\n${lines.join('\n')}\n\nBekijk je volledige rooster hier:\n👉 masalrestaurant.vercel.app/staff\n\nMet vriendelijke groet,\nMasal Restaurant`;
+
+    await sendEmail(p.contact_email,`Jouw rooster — week van ${currentWeek.getDate()} ${MO_NL[currentWeek.getMonth()]}`,body);
+    sent++;
+  }
+
+  btn.disabled=false;
+  btn.textContent='📧 Haber Ver';
+  alert(`✅ ${sent} personele haftalık program maili gönderildi.`);
 }
 
 // Cell modal
