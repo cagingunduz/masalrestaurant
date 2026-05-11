@@ -955,6 +955,11 @@ async function saveStaff(){
   if(!res.ok){alert(t('err')+(json.error||'Onbekende fout'));return}
   // contact_email'i profiles'a kaydet
   if(contact_email&&json.id) await sb.from('profiles').update({contact_email}).eq('id',json.id);
+  // Welcome email gönder
+  if(contact_email){
+    const welcomeBody=`Hallo ${name},\n\nJe bent toegevoegd aan MasalShift, het personeelsportaal van Masal Restaurant.\n\n🔐 Jouw wachtwoord: ${password}\n🌐 Inloggen: masalrestaurant.vercel.app/staff\n\n──────────────────\nWat kun je doen?\n\n📅 Mijn Rooster — Bekijk je diensten voor de week\n📊 Rooster — Bekijk het volledige teamrooster\n✅ Beschikbaarheid — Geef per dag aan wanneer je beschikbaar bent\n🔔 Meldingen — Vraag een dienstruil aan via de ⇄ knop\n──────────────────\n\nMet vriendelijke groet,\nMasal Restaurant`;
+    await sendEmail(contact_email,'Welkom bij MasalShift 👋',welcomeBody);
+  }
   const{data:p}=await sb.from('profiles').select('*').order('name');
   profiles=p||[];
   closeAddStaff();loadShifts();

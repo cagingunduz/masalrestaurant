@@ -162,6 +162,14 @@ header{background:var(--dark);color:#fff;padding:1rem 1.5rem;display:flex;align-
 .spinner{color:var(--muted);font-size:.9rem;padding:3rem;text-align:center}
 .empty-state{text-align:center;padding:3rem 1rem;color:var(--muted)}
 .empty-state .icon{font-size:2.5rem;margin-bottom:.8rem}
+/* GUIDE CARD */
+.guide-card{background:linear-gradient(135deg,#1a1a1a 0%,#2a2218 100%);border-radius:14px;padding:1.2rem 1.2rem 1rem;margin-bottom:1.2rem;position:relative}
+.guide-card-title{color:var(--gold);font-size:1rem;font-weight:700;margin-bottom:.8rem}
+.guide-card-items{list-style:none;display:flex;flex-direction:column;gap:.45rem;margin-bottom:.9rem}
+.guide-card-items li{color:#ccc;font-size:.82rem;line-height:1.4}
+.guide-card-items li b{color:#fff}
+.guide-close{background:var(--gold);color:#fff;border:none;border-radius:7px;padding:.4rem 1rem;font-size:.78rem;font-weight:600;cursor:pointer;letter-spacing:.5px}
+.guide-close:hover{background:var(--gold-dark)}
 .toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:.6rem 1.2rem;border-radius:8px;font-size:.85rem;z-index:200;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1}
 </style>
@@ -205,6 +213,11 @@ header{background:var(--dark);color:#fff;padding:1rem 1.5rem;display:flex;align-
   </nav>
 
   <section class="section active" id="sec-shifts">
+    <div id="guideCard" class="guide-card" style="display:none">
+      <div class="guide-card-title" id="guideTitle"></div>
+      <ul class="guide-card-items" id="guideItems"></ul>
+      <button class="guide-close" onclick="dismissGuide()" id="guideDismiss"></button>
+    </div>
     <div class="week-nav">
       <button class="week-btn" onclick="changeWeek(-1)" id="btnPrevShifts">← Önceki</button>
       <span class="week-label" id="weekLabel">—</span>
@@ -317,6 +330,8 @@ const I18N={
     availAvail:'✓ Beschikbaar',availNot:'✗ Niet beschikbaar',availPartial:'◑ Deels beschikbaar',availNone:'—',availSave:'Opslaan',availSaved:'Opgeslagen ✓',
     availFullAvail:'Hele dag beschikbaar',availFullNot:'Hele dag niet beschikbaar',availPartialLbl:'Bepaalde tijden niet beschikbaar',
     availAddRange:'+ Tijdslot toevoegen',availRangesTitle:'Niet beschikbaar van:',
+    guideTitle:'Welkom bij MasalShift 👋',guideClose:'Begrepen',
+    guideItems:['📅 <b>Mijn Rooster</b> — Bekijk je diensten voor de week','📊 <b>Rooster</b> — Bekijk het volledige teamrooster','✅ <b>Beschikbaarheid</b> — Geef per dag aan wanneer je beschikbaar bent. Standaard ben je de hele dag beschikbaar.','🔔 <b>Meldingen</b> — Vraag een dienstruil aan of reageer op een verzoek. Gebruik de ⇄ knop rechtsonder.'],
     notifEmpty:'Nog geen meldingen',notifTitle:'Meldingen',
     swapWaiting:n=>`Wacht op ${n}`,swapAdminWaiting:'Wacht op manager',swapAccepted:'Goedgekeurd ✓',
     swapRejected:'Afgewezen',swapAdminRejected:'Geweigerd door manager',swapActionNeeded:'Actie vereist',
@@ -343,6 +358,8 @@ const I18N={
     availAvail:'✓ Available',availNot:'✗ Not available',availPartial:'◑ Partly available',availNone:'—',availSave:'Save',availSaved:'Saved ✓',
     availFullAvail:'Available all day',availFullNot:'Not available all day',availPartialLbl:'Not available at certain times',
     availAddRange:'+ Add time slot',availRangesTitle:'Not available from:',
+    guideTitle:'Welcome to MasalShift 👋',guideClose:'Got it',
+    guideItems:['📅 <b>My Shifts</b> — View your shifts for the week','📊 <b>Schedule</b> — See the full team schedule','✅ <b>Availability</b> — Set your availability per day. By default you are available all day.','🔔 <b>Notifications</b> — Request a shift swap or respond to one. Use the ⇄ button bottom right.'],
     notifEmpty:'No notifications yet',notifTitle:'Notifications',
     swapWaiting:n=>`Waiting for ${n}`,swapAdminWaiting:'Waiting for manager',swapAccepted:'Approved ✓',
     swapRejected:'Declined',swapAdminRejected:'Declined by manager',swapActionNeeded:'Action needed',
@@ -369,6 +386,8 @@ const I18N={
     availAvail:'✓ Müsaitim',availNot:'✗ Müsait Değilim',availPartial:'◑ Kısmi Müsaitim',availNone:'—',availSave:'Kaydet',availSaved:'Kaydedildi ✓',
     availFullAvail:'Tüm gün müsaitim',availFullNot:'Tüm gün müsait değilim',availPartialLbl:'Belirli saatlerde müsait değilim',
     availAddRange:'+ Aralık ekle',availRangesTitle:'Müsait olmayan saatler:',
+    guideTitle:'MasalShift\'e hoş geldin 👋',guideClose:'Anladım',
+    guideItems:['📅 <b>Vardiyam</b> — Bu haftaki vardiyalarını gör','📊 <b>Tablo</b> — Tüm ekibin programını gör','✅ <b>Müsaitlik</b> — Her gün için müsaitliğini belirt. Varsayılan olarak tüm gün müsaitsin.','🔔 <b>Bildirimler</b> — Vardiya değişim talebi gönder veya gelen taleplere yanıt ver. Sağ alttaki ⇄ butonu ile talep oluşturabilirsin.'],
     notifEmpty:'Henüz bildirim yok',notifTitle:'Bildirimler',
     swapWaiting:n=>`${n} bekleniyor`,swapAdminWaiting:'Yönetici bekleniyor',swapAccepted:'Onaylandı ✓',
     swapRejected:'Reddedildi',swapAdminRejected:'Yönetici Reddetti',swapActionNeeded:'Yanıt gerekiyor',
@@ -467,6 +486,19 @@ async function initApp(){
   if(match)showApp(match);
 }
 
+function showGuide(){
+  const dismissed=localStorage.getItem('masalGuide_'+me.id);
+  if(dismissed) return;
+  document.getElementById('guideTitle').textContent=L().guideTitle;
+  document.getElementById('guideItems').innerHTML=L().guideItems.map(t=>`<li>${t}</li>`).join('');
+  document.getElementById('guideDismiss').textContent=L().guideClose;
+  document.getElementById('guideCard').style.display='block';
+}
+function dismissGuide(){
+  document.getElementById('guideCard').style.display='none';
+  localStorage.setItem('masalGuide_'+me.id,'1');
+}
+
 function showApp(profile){
   me=profile;
   document.getElementById('loginWrap').style.display='none';
@@ -475,6 +507,7 @@ function showApp(profile){
   document.getElementById('hDept').textContent=me.department||'';
   if(!me.department)document.getElementById('hDept').style.display='none';
   applyLangToUI();
+  showGuide();
   currentWeek=mondayOf(new Date());
   tableWeek=mondayOf(new Date());
   availWeek=mondayOf(new Date());
@@ -559,9 +592,11 @@ async function loadAvail(){
   document.getElementById('weekLabelAvail').textContent=weekLabel(availWeek);
   const ws=fmtDate(availWeek);
   const{data}=await sb.from('availability').select('day_index,available,status,unavailable_ranges').eq('staff_id',me.id).eq('week_start',ws);
+  // Default: all days available
   availState={};
+  for(let i=0;i<7;i++) availState[i]={status:'available',ranges:[]};
+  // Override with saved data
   (data||[]).forEach(r=>{
-    // backwards compat: if no status col yet, derive from boolean
     const st=r.status||(r.available===true?'available':r.available===false?'unavailable':null);
     if(st) availState[r.day_index]={status:st,ranges:r.unavailable_ranges||[]};
   });
