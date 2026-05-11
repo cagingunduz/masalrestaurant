@@ -650,8 +650,8 @@ async function respondSwap(id,approve,reqId,tgtId,reqShiftId,tgtShiftId){
   const reqP=pById[reqId],tgtP=pById[tgtId];
   const subject=approve?'Vardiya değişiminiz onaylandı ✓':'Vardiya değişiminiz reddedildi';
   const body=approve
-    ?`Merhaba,\n\nYönetici vardiya değişiminizi onayladı.\n\n${reqP?.name} ⇄ ${tgtP?.name}\n\nVardiyalarınız güncellendi. Detaylar için: masalrestaurant.nl/staff`
-    :`Merhaba,\n\nYönetici vardiya değişim talebini reddetti.\n\n${reqP?.name} ⇄ ${tgtP?.name}\n\nDetaylar için: masalrestaurant.nl/staff`;
+    ?`Merhaba,\n\nYönetici vardiya değişiminizi onayladı.\n\n${reqP?.name} ⇄ ${tgtP?.name}\n\nVardiyalarınız güncellendi. Detaylar için: masalrestaurant.vercel.app/staff.html.html`
+    :`Merhaba,\n\nYönetici vardiya değişim talebini reddetti.\n\n${reqP?.name} ⇄ ${tgtP?.name}\n\nDetaylar için: masalrestaurant.vercel.app/staff.html.html`;
   for(const p of [reqP,tgtP]){
     if(p?.contact_email)
       await sendEmail(p.contact_email,subject,body);
@@ -884,7 +884,7 @@ async function notifyShifts(){
     const subject=isOnlyNew
       ?`Nieuwe dienst — ${DN_NL[newShifts[0][0]]}`
       :`Nieuwe diensten — week van ${currentWeek.getDate()} ${MO_NL[currentWeek.getMonth()]}`;
-    const body=`Hallo ${p.name},\n\nEr ${newShifts.length===1?'is een nieuwe dienst':'zijn nieuwe diensten'} aan je rooster toegevoegd:\n\n${lines.join('\n')}\n\nBekijk je volledige rooster hier:\n👉 masalrestaurant.vercel.app/staff\n\nMet vriendelijke groet,\nMasal Restaurant`;
+    const body=`Hallo ${p.name},\n\nEr ${newShifts.length===1?'is een nieuwe dienst':'zijn nieuwe diensten'} aan je rooster toegevoegd:\n\n${lines.join('\n')}\n\nBekijk je volledige rooster hier:\n👉 masalrestaurant.vercel.app/staff.html\n\nMet vriendelijke groet,\nMasal Restaurant`;
 
     await sendEmail(p.contact_email, subject, body);
 
@@ -1019,7 +1019,7 @@ async function saveStaff(){
   if(contact_email&&json.id) await sb.from('profiles').update({contact_email}).eq('id',json.id);
   // Welcome email gönder
   if(contact_email){
-    const welcomeBody=`Hallo ${name},\n\nJe bent toegevoegd aan MasalShift, het personeelsportaal van Masal Restaurant.\n\n🔐 Jouw wachtwoord: ${password}\n🌐 Inloggen: masalrestaurant.vercel.app/staff\n\n──────────────────\nWat kun je doen?\n\n📅 Mijn Rooster — Bekijk je diensten voor de week\n📊 Rooster — Bekijk het volledige teamrooster\n✅ Beschikbaarheid — Geef per dag aan wanneer je beschikbaar bent\n🔔 Meldingen — Vraag een dienstruil aan via de ⇄ knop\n──────────────────\n\nMet vriendelijke groet,\nMasal Restaurant`;
+    const welcomeBody=`Hallo ${name},\n\nJe bent toegevoegd aan MasalShift, het personeelsportaal van Masal Restaurant.\n\n🔐 Jouw wachtwoord: ${password}\n🌐 Inloggen: masalrestaurant.vercel.app/staff.html\n\n──────────────────\nWat kun je doen?\n\n📅 Mijn Rooster — Bekijk je diensten voor de week\n📊 Rooster — Bekijk het volledige teamrooster\n✅ Beschikbaarheid — Geef per dag aan wanneer je beschikbaar bent\n🔔 Meldingen — Vraag een dienstruil aan via de ⇄ knop\n──────────────────\n\nMet vriendelijke groet,\nMasal Restaurant`;
     await sendEmail(contact_email,'Welkom bij MasalShift 👋',welcomeBody);
   }
   const{data:p}=await sb.from('profiles').select('*').order('name');

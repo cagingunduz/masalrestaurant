@@ -57,7 +57,7 @@ Deno.serve(async (req) => {
   const htmlBody = `<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:2rem">
     <img src="https://i0.wp.com/masalrestaurant.nl/wp-content/uploads/2021/11/Masal_Logo_DEF.png?fit=600%2C304&ssl=1" style="height:40px;margin-bottom:1.5rem;filter:sepia(1)saturate(2)hue-rotate(5deg)">
     <div style="background:#fff;border-radius:12px;padding:1.5rem;border:1px solid #e5e1d8;white-space:pre-line">${body.replace(/\n/g,'<br>')}</div>
-    <p style="color:#aaa;font-size:.75rem;margin-top:1rem">MasalShift — <a href="https://masalrestaurant.nl/staff">masalrestaurant.nl/staff</a></p>
+    <p style="color:#aaa;font-size:.75rem;margin-top:1rem">MasalShift — <a href="https://masalrestaurant.vercel.app/staff.html">masalrestaurant.vercel.app/staff.html</a></p>
   </div>`
 
   const res = await fetch('https://api.brevo.com/v3/smtp/email', {

@@ -793,7 +793,7 @@ async function respondSwap(id,approve){
       const rp=pById[req.requester_id],tp=pById[req.target_id];
       const D=L().days;
       await sendEmail({to:'admin',subject:`Vardiya değişim talebi: ${rp?.name} ⇄ ${tp?.name}`,
-        body:`${rp?.name} ve ${tp?.name} vardiya değiştirmek istiyor.\n\n${rp?.name}: ${D[req.rs?.day_index]} ${req.rs?.start_time?.slice(0,5)}–${req.rs?.end_time?.slice(0,5)}\n${tp?.name}: ${D[req.ts?.day_index]} ${req.ts?.start_time?.slice(0,5)}–${req.ts?.end_time?.slice(0,5)}\n\nAdmin paneli: masalrestaurant.nl/admin`});
+        body:`${rp?.name} ve ${tp?.name} vardiya değiştirmek istiyor.\n\n${rp?.name}: ${D[req.rs?.day_index]} ${req.rs?.start_time?.slice(0,5)}–${req.rs?.end_time?.slice(0,5)}\n${tp?.name}: ${D[req.ts?.day_index]} ${req.ts?.start_time?.slice(0,5)}–${req.ts?.end_time?.slice(0,5)}\n\nAdmin paneli: masalrestaurant.vercel.app/admin.html`});
     }
   }
   showToast(approve?L().acceptedToast:L().rejectedToast);
@@ -854,7 +854,7 @@ async function sendSwapRequest(){
   const tShift=swapShiftsCache.find(s=>s.id===targetShiftId);
   const D=L().days;
   await sendEmail({userId:targetId,subject:`Vardiya değişim talebi: ${me.name}`,
-    body:`Merhaba ${target?.name},\n\n${me.name} sizinle vardiya değiştirmek istiyor.\n\n${me.name}: ${D[myShift?.day_index]} ${myShift?.start_time?.slice(0,5)}–${myShift?.end_time?.slice(0,5)}\nSizin vardiya: ${D[tShift?.day_index]} ${tShift?.start_time?.slice(0,5)}–${tShift?.end_time?.slice(0,5)}\n\nYanıt için: masalrestaurant.nl/staff`});
+    body:`Merhaba ${target?.name},\n\n${me.name} sizinle vardiya değiştirmek istiyor.\n\n${me.name}: ${D[myShift?.day_index]} ${myShift?.start_time?.slice(0,5)}–${myShift?.end_time?.slice(0,5)}\nSizin vardiya: ${D[tShift?.day_index]} ${tShift?.start_time?.slice(0,5)}–${tShift?.end_time?.slice(0,5)}\n\nYanıt için: masalrestaurant.vercel.app/staff.html`});
   closeSwapModal();showToast(L().swapSentOk);loadNotif();updateNotifBadge();
 }
 
