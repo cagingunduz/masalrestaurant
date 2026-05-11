@@ -88,14 +88,34 @@ header{background:var(--dark);color:#fff;padding:1rem 1.5rem;display:flex;align-
 .avail-day{background:#fff;border-radius:10px;border:2px solid #e5e1d8;padding:.8rem .6rem;cursor:pointer;text-align:center;transition:all .2s;user-select:none}
 .avail-day.avail{border-color:var(--ok);background:#f0faf5}
 .avail-day.notavail{border-color:var(--err);background:#fdf0f0}
+.avail-day.partial{border-color:#e67e22;background:#fff8f0}
 .avail-dayname{font-weight:600;font-size:.88rem}
 .avail-date{font-size:.72rem;color:var(--muted);margin-top:.1rem}
 .avail-status{font-size:.72rem;margin-top:.5rem;font-weight:600;letter-spacing:.3px}
 .avail-day.avail .avail-status{color:var(--ok)}
 .avail-day.notavail .avail-status{color:var(--err)}
+.avail-day.partial .avail-status{color:#e67e22}
+.avail-times{font-size:.65rem;color:#e67e22;margin-top:.3rem;line-height:1.4;word-break:break-all}
 .avail-save{background:var(--gold);color:#fff;border:none;padding:.7rem 1.6rem;border-radius:8px;font-size:.9rem;font-weight:600;cursor:pointer;margin-top:1rem;width:100%}
 .avail-save:hover{background:var(--gold-dark)}
 .avail-save:disabled{opacity:.6;cursor:not-allowed}
+/* avail day modal */
+.avail-radio-group{display:flex;flex-direction:column;gap:.5rem;margin-top:.8rem}
+.avail-radio{display:block;cursor:pointer}
+.avail-radio input[type=radio]{display:none}
+.avail-radio-box{display:flex;align-items:center;gap:.75rem;padding:.85rem 1rem;border-radius:10px;border:2px solid #e5e1d8;transition:all .15s;font-size:.9rem;font-weight:500}
+.avail-radio input:checked + .avail-radio-box{border-width:2px}
+.avail-radio-green{background:#f0faf5}.avail-radio input:checked + .avail-radio-green{border-color:var(--ok);background:#e2f5ea}
+.avail-radio-red{background:#fdf0f0}.avail-radio input:checked + .avail-radio-red{border-color:var(--err);background:#fde4e4}
+.avail-radio-amber{background:#fff8f0}.avail-radio input:checked + .avail-radio-amber{border-color:#e67e22;background:#fdeede}
+.avail-radio-icon{font-size:1.1rem;width:1.4rem;text-align:center}
+.avail-ranges-wrap{margin-top:1rem;padding-top:1rem;border-top:1px solid #f0ece4}
+.avail-range-row{display:grid;grid-template-columns:1fr auto 1fr auto;align-items:center;gap:.5rem;margin-bottom:.5rem}
+.avail-range-row .input{padding:.5rem .6rem;font-size:.88rem}
+.avail-range-del{background:none;border:1px solid #f5c6cb;color:#c0392b;border-radius:6px;padding:.4rem .6rem;cursor:pointer;font-size:.9rem;line-height:1}
+.avail-range-del:hover{background:#fdf0f0}
+.avail-add-range{background:none;border:1px dashed var(--gold);color:var(--gold-dark);border-radius:8px;padding:.55rem 1rem;font-size:.82rem;cursor:pointer;width:100%;margin-top:.3rem;font-weight:500}
+.avail-add-range:hover{background:#fdf8f0}
 
 /* NOTIFICATIONS */
 .notif-card{background:#fff;border-radius:12px;border:1px solid #e5e1d8;padding:1rem 1.1rem;margin-bottom:.8rem}
@@ -219,6 +239,46 @@ header{background:var(--dark);color:#fff;padding:1rem 1.5rem;display:flex;align-
   </section>
 </div>
 
+<!-- DAY AVAIL MODAL -->
+<div class="modal-bg" id="availDayModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h3 id="availDayTitle" style="font-family:Georgia,serif;font-size:1.1rem;margin-bottom:.2rem"></h3>
+    <div class="avail-radio-group">
+      <label class="avail-radio">
+        <input type="radio" name="availStatus" value="available" onchange="onAvailStatusChange()">
+        <span class="avail-radio-box avail-radio-green">
+          <span class="avail-radio-icon">✓</span>
+          <span id="availLblAvail"></span>
+        </span>
+      </label>
+      <label class="avail-radio">
+        <input type="radio" name="availStatus" value="unavailable" onchange="onAvailStatusChange()">
+        <span class="avail-radio-box avail-radio-red">
+          <span class="avail-radio-icon">✗</span>
+          <span id="availLblNot"></span>
+        </span>
+      </label>
+      <label class="avail-radio">
+        <input type="radio" name="availStatus" value="partial" onchange="onAvailStatusChange()">
+        <span class="avail-radio-box avail-radio-amber">
+          <span class="avail-radio-icon">◑</span>
+          <span id="availLblPartial"></span>
+        </span>
+      </label>
+    </div>
+    <div class="avail-ranges-wrap" id="availRangesWrap" style="display:none">
+      <div style="font-size:.75rem;color:var(--muted);letter-spacing:.4px;text-transform:uppercase;margin-bottom:.6rem" id="availRangesTitle"></div>
+      <div id="availRangesList"></div>
+      <button class="avail-add-range" id="availAddRangeBtn" onclick="addAvailRange()"></button>
+    </div>
+    <div style="display:flex;gap:.6rem;justify-content:flex-end;margin-top:1.4rem">
+      <button class="btn ghost small" onclick="closeAvailModal()" id="availCancelBtn">İptal</button>
+      <button class="btn small" onclick="saveDayAvail()" id="availSaveDayBtn">Kaydet</button>
+    </div>
+  </div>
+</div>
+
 <button class="swap-fab" id="swapFab" onclick="openSwapModal()">⇄</button>
 
 <div class="modal-bg" id="swapModal">
@@ -254,7 +314,9 @@ const I18N={
     tabShifts:'Mijn Rooster',tabTable:'Rooster',tabAvail:'Beschikbaarheid',tabNotif:'Meldingen',
     prev:'← Vorige',next:'Volgende →',
     noShift:'Geen dienst',weekTotal:'Totaal per week',
-    availAvail:'✓ Beschikbaar',availNot:'✗ Niet beschikbaar',availNone:'—',availSave:'Opslaan',availSaved:'Opgeslagen ✓',
+    availAvail:'✓ Beschikbaar',availNot:'✗ Niet beschikbaar',availPartial:'◑ Deels beschikbaar',availNone:'—',availSave:'Opslaan',availSaved:'Opgeslagen ✓',
+    availFullAvail:'Hele dag beschikbaar',availFullNot:'Hele dag niet beschikbaar',availPartialLbl:'Bepaalde tijden niet beschikbaar',
+    availAddRange:'+ Tijdslot toevoegen',availRangesTitle:'Niet beschikbaar van:',
     notifEmpty:'Nog geen meldingen',notifTitle:'Meldingen',
     swapWaiting:n=>`Wacht op ${n}`,swapAdminWaiting:'Wacht op manager',swapAccepted:'Goedgekeurd ✓',
     swapRejected:'Afgewezen',swapAdminRejected:'Geweigerd door manager',swapActionNeeded:'Actie vereist',
@@ -278,7 +340,9 @@ const I18N={
     tabShifts:'My Shifts',tabTable:'Schedule',tabAvail:'Availability',tabNotif:'Notifications',
     prev:'← Previous',next:'Next →',
     noShift:'No shift',weekTotal:'Weekly total',
-    availAvail:'✓ Available',availNot:'✗ Not available',availNone:'—',availSave:'Save',availSaved:'Saved ✓',
+    availAvail:'✓ Available',availNot:'✗ Not available',availPartial:'◑ Partly available',availNone:'—',availSave:'Save',availSaved:'Saved ✓',
+    availFullAvail:'Available all day',availFullNot:'Not available all day',availPartialLbl:'Not available at certain times',
+    availAddRange:'+ Add time slot',availRangesTitle:'Not available from:',
     notifEmpty:'No notifications yet',notifTitle:'Notifications',
     swapWaiting:n=>`Waiting for ${n}`,swapAdminWaiting:'Waiting for manager',swapAccepted:'Approved ✓',
     swapRejected:'Declined',swapAdminRejected:'Declined by manager',swapActionNeeded:'Action needed',
@@ -302,7 +366,9 @@ const I18N={
     tabShifts:'Vardiyam',tabTable:'Tablo',tabAvail:'Müsaitlik',tabNotif:'Bildirimler',
     prev:'← Önceki',next:'Sonraki →',
     noShift:'Vardiya yok',weekTotal:'Haftalık toplam',
-    availAvail:'✓ Müsait',availNot:'✗ Müsait Değil',availNone:'—',availSave:'Kaydet',availSaved:'Kaydedildi ✓',
+    availAvail:'✓ Müsaitim',availNot:'✗ Müsait Değilim',availPartial:'◑ Kısmi Müsaitim',availNone:'—',availSave:'Kaydet',availSaved:'Kaydedildi ✓',
+    availFullAvail:'Tüm gün müsaitim',availFullNot:'Tüm gün müsait değilim',availPartialLbl:'Belirli saatlerde müsait değilim',
+    availAddRange:'+ Aralık ekle',availRangesTitle:'Müsait olmayan saatler:',
     notifEmpty:'Henüz bildirim yok',notifTitle:'Bildirimler',
     swapWaiting:n=>`${n} bekleniyor`,swapAdminWaiting:'Yönetici bekleniyor',swapAccepted:'Onaylandı ✓',
     swapRejected:'Reddedildi',swapAdminRejected:'Yönetici Reddetti',swapActionNeeded:'Yanıt gerekiyor',
@@ -486,13 +552,19 @@ async function loadTable(){
 
 // ─── MÜSAİTLİK ───────────────────────────────────────────────
 let availWeek=null; let availState={};
+let availEditDay=null; let availRanges=[];
 function changeWeekAvail(dir){availWeek=addDays(availWeek,dir*7);loadAvail()}
 
 async function loadAvail(){
   document.getElementById('weekLabelAvail').textContent=weekLabel(availWeek);
   const ws=fmtDate(availWeek);
-  const{data}=await sb.from('availability').select('day_index,available').eq('staff_id',me.id).eq('week_start',ws);
-  availState={};(data||[]).forEach(r=>{availState[r.day_index]=r.available});
+  const{data}=await sb.from('availability').select('day_index,available,status,unavailable_ranges').eq('staff_id',me.id).eq('week_start',ws);
+  availState={};
+  (data||[]).forEach(r=>{
+    // backwards compat: if no status col yet, derive from boolean
+    const st=r.status||(r.available===true?'available':r.available===false?'unavailable':null);
+    if(st) availState[r.day_index]={status:st,ranges:r.unavailable_ranges||[]};
+  });
   renderAvail();
 }
 
@@ -500,22 +572,100 @@ function renderAvail(){
   const D=L().days; const M=L().months;
   let html='';
   for(let i=0;i<7;i++){
-    const dt=addDays(availWeek,i);const val=availState[i];
-    const cls=val===true?'avail':val===false?'notavail':'';
-    const lbl=val===true?L().availAvail:val===false?L().availNot:L().availNone;
-    html+=`<div class="avail-day ${cls}" onclick="toggleAvail(${i})" data-day="${i}"><div class="avail-dayname">${D[i]}</div><div class="avail-date">${dt.getDate()} ${M[dt.getMonth()]}</div><div class="avail-status">${lbl}</div></div>`;
+    const dt=addDays(availWeek,i);
+    const s=availState[i];
+    let cls='',lbl='',timesHtml='';
+    if(s?.status==='available'){cls='avail';lbl=L().availAvail;}
+    else if(s?.status==='unavailable'){cls='notavail';lbl=L().availNot;}
+    else if(s?.status==='partial'){
+      cls='partial';lbl=L().availPartial;
+      if(s.ranges?.length) timesHtml=`<div class="avail-times">${s.ranges.map(r=>`${r.from}–${r.to}`).join('<br>')}</div>`;
+    } else {lbl=L().availNone;}
+    html+=`<div class="avail-day ${cls}" onclick="openDayModal(${i})" data-day="${i}">
+      <div class="avail-dayname">${D[i]}</div>
+      <div class="avail-date">${dt.getDate()} ${M[dt.getMonth()]}</div>
+      <div class="avail-status">${lbl}</div>
+      ${timesHtml}
+    </div>`;
   }
   document.getElementById('availGrid').innerHTML=html;
   document.getElementById('availSaveBtn').textContent=L().availSave;
 }
 
-function toggleAvail(idx){const cur=availState[idx];availState[idx]=cur===true?false:cur===false?undefined:true;renderAvail()}
+function openDayModal(idx){
+  availEditDay=idx;
+  const D=L().days; const M=L().months;
+  const dt=addDays(availWeek,idx);
+  document.getElementById('availDayTitle').textContent=`${D[idx]}, ${dt.getDate()} ${M[dt.getMonth()]}`;
+  document.getElementById('availLblAvail').textContent=L().availFullAvail;
+  document.getElementById('availLblNot').textContent=L().availFullNot;
+  document.getElementById('availLblPartial').textContent=L().availPartialLbl;
+  document.getElementById('availRangesTitle').textContent=L().availRangesTitle;
+  document.getElementById('availAddRangeBtn').textContent=L().availAddRange;
+  document.getElementById('availCancelBtn').textContent=L().swapCancel;
+  const s=availState[idx];
+  const status=s?.status||'available';
+  document.querySelector(`input[name="availStatus"][value="${status}"]`).checked=true;
+  availRanges=s?.ranges?JSON.parse(JSON.stringify(s.ranges)):[];
+  if(!availRanges.length&&status==='partial') availRanges=[{from:'09:00',to:'17:00'}];
+  renderAvailRanges();
+  document.getElementById('availRangesWrap').style.display=status==='partial'?'block':'none';
+  document.getElementById('availDayModal').classList.add('open');
+}
+
+function closeAvailModal(){
+  document.getElementById('availDayModal').classList.remove('open');
+  availEditDay=null;
+}
+
+function onAvailStatusChange(){
+  const status=document.querySelector('input[name="availStatus"]:checked')?.value;
+  document.getElementById('availRangesWrap').style.display=status==='partial'?'block':'none';
+  if(status==='partial'&&!availRanges.length){availRanges=[{from:'09:00',to:'17:00'}];renderAvailRanges();}
+}
+
+function addAvailRange(){
+  availRanges.push({from:'09:00',to:'17:00'});
+  renderAvailRanges();
+}
+
+function removeAvailRange(i){
+  availRanges.splice(i,1);
+  renderAvailRanges();
+}
+
+function renderAvailRanges(){
+  document.getElementById('availRangesList').innerHTML=availRanges.map((r,i)=>`
+    <div class="avail-range-row">
+      <input type="time" value="${r.from}" oninput="availRanges[${i}].from=this.value" class="input">
+      <span style="color:#aaa;text-align:center">–</span>
+      <input type="time" value="${r.to}" oninput="availRanges[${i}].to=this.value" class="input">
+      <button class="avail-range-del" onclick="removeAvailRange(${i})">×</button>
+    </div>`).join('');
+}
+
+function saveDayAvail(){
+  const status=document.querySelector('input[name="availStatus"]:checked')?.value;
+  if(!status) return;
+  if(status==='partial'&&!availRanges.length){
+    availState[availEditDay]={status:'available',ranges:[]};
+  } else {
+    availState[availEditDay]={status,ranges:status==='partial'?[...availRanges]:[]};
+  }
+  closeAvailModal();
+  renderAvail();
+}
 
 async function saveAvail(){
   const btn=document.getElementById('availSaveBtn');btn.disabled=true;btn.textContent='…';
   const ws=fmtDate(availWeek);
   await sb.from('availability').delete().eq('staff_id',me.id).eq('week_start',ws);
-  const rows=Object.entries(availState).filter(([,v])=>v!==undefined).map(([i,v])=>({staff_id:me.id,week_start:ws,day_index:parseInt(i),available:v}));
+  const rows=Object.entries(availState).filter(([,v])=>v?.status).map(([i,v])=>({
+    staff_id:me.id,week_start:ws,day_index:parseInt(i),
+    available:v.status==='available',
+    status:v.status,
+    unavailable_ranges:v.ranges||[]
+  }));
   if(rows.length)await sb.from('availability').insert(rows);
   btn.disabled=false;btn.textContent=L().availSave;
   showToast(L().availSaved);
