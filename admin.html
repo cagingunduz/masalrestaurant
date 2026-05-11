@@ -855,14 +855,20 @@ async function notifyShifts(){
   const weekEnd=addDays(currentWeek,6);
   const weekStr=`${currentWeek.getDate()} ${MO_NL[currentWeek.getMonth()]} – ${weekEnd.getDate()} ${MO_NL[weekEnd.getMonth()]} ${weekEnd.getFullYear()}`;
 
-  // Sadece shifti olan ve contact_email'i olan personeller
+  // Bu hafta zaten bildirim gönderilmiş kişileri al
+  const{data:alreadySent=[]}=await sb.from('shift_notifications').select('staff_id').eq('week_start',ws);
+  const alreadySentIds=new Set((alreadySent||[]).map(r=>r.staff_id));
+
+  // Shifti olan, e-postası olan ve henüz bildirilmemiş personeller
   const toNotify=staff.filter(p=>{
     const days=matrix[p.id]||{};
-    return p.contact_email && Object.keys(days).length>0;
+    return p.contact_email && Object.keys(days).length>0 && !alreadySentIds.has(p.id);
   });
 
+  const alreadyCount=staff.filter(p=>alreadySentIds.has(p.id)).length;
+
   if(!toNotify.length){
-    alert('Bu hafta vardiyası olan ve e-postası girilmiş personel bulunamadı.');
+    alert(`Bu hafta bildirilecek yeni personel yok.${alreadyCount>0?`\n(${alreadyCount} kişiye daha önce gönderildi)`:''}`);
     return;
   }
 
@@ -874,18 +880,21 @@ async function notifyShifts(){
   for(const p of toNotify){
     const days=matrix[p.id]||{};
     const lines=Object.entries(days)
-      .sort(([a],[b])=>a-b)
+      .sort(([a],[b])=>Number(a)-Number(b))
       .map(([i,s])=>`  ${DN_NL[i]}: ${s.start.slice(0,5)} – ${s.end.slice(0,5)}`);
 
     const body=`Hallo ${p.name},\n\nJe rooster voor de week van ${weekStr}:\n\n${lines.join('\n')}\n\nBekijk je volledige rooster hier:\n👉 masalrestaurant.vercel.app/staff\n\nMet vriendelijke groet,\nMasal Restaurant`;
 
     await sendEmail(p.contact_email,`Jouw rooster — week van ${currentWeek.getDate()} ${MO_NL[currentWeek.getMonth()]}`,body);
+    // Gönderimi kaydet
+    await sb.from('shift_notifications').upsert({staff_id:p.id,week_start:ws},{onConflict:'staff_id,week_start'});
     sent++;
   }
 
   btn.disabled=false;
   btn.textContent='📧 Haber Ver';
-  alert(`✅ ${sent} personele haftalık program maili gönderildi.`);
+  const skipMsg=alreadyCount>0?`\n(${alreadyCount} kişi zaten bilgilendirilmişti, atlandı)`:'';
+  alert(`✅ ${sent} personele haftalık program maili gönderildi.${skipMsg}`);
 }
 
 // Cell modal
