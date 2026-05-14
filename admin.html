@@ -314,6 +314,7 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
           <button class="btn ghost small" onclick="nextWeek()">→</button>
           <input type="date" id="weekPicker" class="input" onchange="onWeekChange()" style="width:138px">
           <button class="btn ghost small" onclick="openAddStaff()" data-i18n="add_staff">+ Medewerker</button>
+          <button class="btn ghost small" onclick="copyPrevWeek()" data-i18n="copy_prev_week">⧉ Vorige week kopiëren</button>
           <button class="btn ghost small" onclick="loadShifts()" title="Vernieuwen">↻</button>
           <button class="btn small" onclick="notifyShifts()" id="notifyBtn" style="background:#27ae60;border-color:#27ae60">📧 Haber Ver</button>
         </div>
@@ -523,6 +524,7 @@ const I18N={
     login_subtitle:'Voer uw wachtwoord in om door te gaan',password:'Wachtwoord',login_btn:'Inloggen',login_error:'Ongeldig wachtwoord',
     logout:'Uitloggen',
     tab_reservations:'Reserveringen',tab_party:'Feest aanvragen',tab_shifts:'Shifts',
+    copy_prev_week:'⧉ Vorige week kopiëren',copy_confirm:'De diensten van vorige week worden naar deze week gekopieerd. Bestaande diensten van deze week worden vervangen. Doorgaan?',copy_none:'Vorige week heeft geen diensten om te kopiëren.',
     tab_capacity:'Capaciteitslimiet',cap_start:'Begintijd',cap_end:'Eindtijd',cap_maxlbl:'Max. personen',cap_add:'+ Toevoegen',
     cap_range:'Tijdsbereik',cap_booked:'Geboekt',cap_full:'Vol',cap_open:'Beschikbaar',cap_empty:'Geen capaciteitslimieten ingesteld',
     cap_invalid:'Vul een geldige datum, tijden en max. personen in.',cap_confirm_delete:'Limiet verwijderen?',
@@ -553,6 +555,7 @@ const I18N={
     login_subtitle:'Devam etmek için şifrenizi giriniz',password:'Şifre',login_btn:'Giriş Yap',login_error:'Geçersiz şifre',
     logout:'Çıkış',
     tab_reservations:'Rezervasyonlar',tab_party:'Etkinlik Talepleri',tab_shifts:'Vardiyalar',
+    copy_prev_week:'⧉ Önceki haftayı kopyala',copy_confirm:'Önceki haftanın vardiyaları bu haftaya kopyalanacak. Bu haftadaki mevcut vardiyalar değiştirilecek. Devam edilsin mi?',copy_none:'Önceki haftada kopyalanacak vardiya yok.',
     tab_capacity:'Kapasite Limiti',cap_start:'Başlangıç',cap_end:'Bitiş',cap_maxlbl:'Maks. kişi',cap_add:'+ Ekle',
     cap_range:'Saat aralığı',cap_booked:'Dolu kişi',cap_full:'Dolu',cap_open:'Müsait',cap_empty:'Tanımlı kapasite limiti yok',
     cap_invalid:'Geçerli tarih, saat ve maks. kişi girin.',cap_confirm_delete:'Limit silinsin mi?',
@@ -909,6 +912,31 @@ function updateWeekLabel(){
 function onWeekChange(){const v=document.getElementById('weekPicker').value;if(!v)return;currentWeek=mondayOf(new Date(v+'T12:00:00'));updateWeekLabel();loadShifts()}
 function prevWeek(){currentWeek=addDays(currentWeek,-7);updateWeekLabel();loadShifts()}
 function nextWeek(){currentWeek=addDays(currentWeek,7);updateWeekLabel();loadShifts()}
+
+async function copyPrevWeek(){
+  const prevWs=fmtDate(addDays(currentWeek,-7));
+  const curWs=fmtDate(currentWeek);
+  const{data:prevShifts}=await sb.from('shifts').select('*').eq('week_start',prevWs);
+  if(!prevShifts||!prevShifts.length){alert(t('copy_none'));return}
+  if(!confirm(t('copy_confirm')))return;
+  // Mevcut haftanın vardiyalarını temizle (atamalar CASCADE ile silinir)
+  const{data:curShifts}=await sb.from('shifts').select('id').eq('week_start',curWs);
+  const curIds=(curShifts||[]).map(s=>s.id);
+  if(curIds.length)await sb.from('shifts').delete().in('id',curIds);
+  // Önceki haftanın atamalarını al
+  const prevIds=prevShifts.map(s=>s.id);
+  const{data:prevAssigns}=await sb.from('shift_assignments').select('*').in('shift_id',prevIds);
+  // Vardiyaları + atamaları kopyala (mail gönderilmez — manuel kalır)
+  for(const s of prevShifts){
+    const{data:ns,error}=await sb.from('shifts')
+      .insert({week_start:curWs,day_index:s.day_index,start_time:s.start_time,end_time:s.end_time})
+      .select().single();
+    if(error||!ns)continue;
+    const mine=(prevAssigns||[]).filter(a=>a.shift_id===s.id);
+    if(mine.length)await sb.from('shift_assignments').insert(mine.map(a=>({shift_id:ns.id,staff_id:a.staff_id})));
+  }
+  loadShifts();
+}
 
 function hrsNum(s,e){const[sh,sm]=s.split(':').map(Number);const[eh,em]=e.split(':').map(Number);return((eh*60+em)-(sh*60+sm))/60}
 function hrsLabel(n){const u=t('hour_unit');return n<=0?'':n%1===0?n+' '+u:n.toFixed(1)+' '+u}
