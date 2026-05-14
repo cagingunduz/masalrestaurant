@@ -2,13 +2,15 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#1a1a1a">
 <title>Masal Staff</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{--gold:#c6a55c;--gold-dark:#9c7e3e;--dark:#1a1a1a;--bg:#f7f5f0;--muted:#888;--ok:#27ae60;--err:#c0392b}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,system-ui,sans-serif;background:var(--bg);color:#222;min-height:100vh}
+html{background:#1a1a1a;overflow-x:hidden}
+body{font-family:-apple-system,system-ui,sans-serif;background:var(--bg);color:#222;min-height:100vh;overflow-x:hidden}
 
 /* LOGIN */
 .login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:1.5rem}
@@ -36,9 +38,8 @@ header{background:var(--dark);color:#fff;padding:1rem 1.5rem;display:flex;align-
 .h-logout:hover{background:var(--gold);color:#fff}
 
 /* TABS */
-.tabs{background:#fff;border-bottom:2px solid #e5e1d8;display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-.tabs::-webkit-scrollbar{display:none}
-.tab{flex-shrink:0;padding:.9rem 1.2rem;cursor:pointer;color:var(--muted);font-size:.82rem;letter-spacing:.8px;text-transform:uppercase;border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:all .2s}
+.tabs{background:#fff;border-bottom:2px solid #e5e1d8;display:flex}
+.tab{flex:1;text-align:center;padding:.9rem .4rem;cursor:pointer;color:var(--muted);font-size:.78rem;letter-spacing:.4px;text-transform:uppercase;border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:all .2s}
 .tab.active{color:var(--gold-dark);border-bottom-color:var(--gold)}
 .tab:hover{color:#333}
 
@@ -170,8 +171,88 @@ header{background:var(--dark);color:#fff;padding:1rem 1.5rem;display:flex;align-
 .guide-card-items li b{color:#fff}
 .guide-close{background:var(--gold);color:#fff;border:none;border-radius:7px;padding:.4rem 1rem;font-size:.78rem;font-weight:600;cursor:pointer;letter-spacing:.5px}
 .guide-close:hover{background:var(--gold-dark)}
-.toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:.6rem 1.2rem;border-radius:8px;font-size:.85rem;z-index:200;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+/* SETTINGS */
+.settings-card{background:#fff;border-radius:12px;border:1px solid #e5e1d8;padding:1.2rem 1.3rem;margin-bottom:1rem}
+.settings-card h4{font-size:.95rem;font-weight:700;color:#222;margin-bottom:.35rem}
+.settings-card p{font-size:.82rem;color:var(--muted);margin-bottom:1rem;line-height:1.5}
+.email-lang-grid{display:flex;gap:.6rem;flex-wrap:wrap}
+.email-lang-btn{flex:1;min-width:90px;padding:.7rem .5rem;border-radius:10px;border:2px solid #e5e1d8;background:#fff;font-size:.9rem;font-weight:600;cursor:pointer;text-align:center;transition:all .18s;line-height:1.4;color:#111}
+.email-lang-btn:hover{border-color:var(--gold);background:#fdf8f0;color:#111}
+.email-lang-btn.active{border-color:var(--gold);background:linear-gradient(135deg,#fffbf0,#fdf3d8);color:#111}
+.email-lang-btn .el-flag{font-size:1.4rem;display:block;margin-bottom:.2rem}
+.email-lang-btn .el-saved{font-size:.7rem;color:var(--ok);display:block;margin-top:.2rem;font-weight:500}
+.settings-save-msg{font-size:.82rem;color:var(--ok);margin-top:.7rem;min-height:1.2em;font-weight:500}
+
+.toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:.6rem 1.2rem;border-radius:8px;font-size:.85rem;z-index:200;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;max-width:calc(100vw - 2rem);text-align:center}
 .toast.show{opacity:1}
+
+/* ── MOBILE ──────────────────────────────────────────── */
+@media(max-width:480px){
+  /* Prevent iOS auto-zoom on input focus */
+  input,select,textarea{font-size:16px!important}
+
+  /* Header compact */
+  header{padding:.75rem 1rem}
+  .h-logo{height:28px}
+  .h-name{font-size:.82rem}
+  .h-dept{font-size:.7rem;padding:.15rem .45rem}
+  .h-logout{padding:.3rem .65rem;font-size:.72rem;min-height:34px}
+
+  /* Tabs — fit all 5 on one line */
+  .tabs{padding:0}
+  .tab{padding:.75rem .15rem;font-size:.62rem;letter-spacing:0}
+
+  /* Sections */
+  .section{padding:.9rem .85rem 2rem}
+
+  /* Week nav */
+  .week-nav{gap:.4rem;margin-bottom:.9rem}
+  .week-btn{padding:.45rem .75rem;font-size:.8rem;min-height:38px}
+  .week-label{font-size:.8rem;padding:.35rem .7rem}
+
+  /* Shift day cards */
+  .shift-day-card{padding:.85rem .9rem;gap:.75rem}
+  .sdc-dayname{font-size:.88rem}
+  .sdc-time{font-size:.95rem}
+
+  /* Availability grid — 2 columns always */
+  .avail-grid{grid-template-columns:1fr 1fr;gap:.5rem}
+  .avail-day{padding:.7rem .5rem}
+  .avail-dayname{font-size:.84rem}
+
+  /* Availability range row — stack on mobile */
+  .avail-range-row{grid-template-columns:1fr 1fr;grid-template-rows:auto auto;gap:.4rem}
+  .avail-range-row .input{padding:.55rem .5rem}
+  .avail-range-del{grid-column:span 2;width:100%;border-radius:6px;padding:.5rem}
+
+  /* Save button */
+  .avail-save{padding:.75rem;font-size:.9rem;min-height:46px}
+
+  /* Notification cards */
+  .notif-card{padding:.85rem .9rem}
+  .nc-actions{gap:.4rem}
+  .nc-btn{min-height:40px;font-size:.85rem}
+
+  /* Modal full-sheet on mobile (already bottom-sheet) */
+  .modal{padding:1.4rem 1.1rem 2rem}
+  .modal h3{font-size:1.1rem}
+  .modal-actions button{min-height:44px;font-size:.9rem}
+
+  /* Swap FAB */
+  .swap-fab{bottom:1.2rem;right:1.2rem;width:50px;height:50px;font-size:1.3rem}
+
+  /* Guide card */
+  .guide-card{padding:1rem}
+  .guide-card-items li{font-size:.8rem}
+
+  /* Schedule table scrollable */
+  .sched-wrap{border-radius:8px}
+  .sched-table{min-width:480px}
+  .sched-th{min-width:70px;padding:.45rem .25rem;font-size:.6rem}
+  .sched-th.staff-th{min-width:100px;padding-left:.6rem}
+  .sched-cell{min-height:40px}
+  .sv-time{font-size:.72rem}
+}
 </style>
 </head>
 <body>
@@ -210,6 +291,7 @@ header{background:var(--dark);color:#fff;padding:1rem 1.5rem;display:flex;align-
     <div class="tab" data-tab="table" onclick="switchTab('table')" id="tabTable">Tablo</div>
     <div class="tab" data-tab="avail" onclick="switchTab('avail')" id="tabAvail">Müsaitlik</div>
     <div class="tab" data-tab="notif" onclick="switchTab('notif')" id="tabNotif">Bildirimler</div>
+    <div class="tab" data-tab="settings" onclick="switchTab('settings')" id="tabSettings">Ayarlar</div>
   </nav>
 
   <section class="section active" id="sec-shifts">
@@ -249,6 +331,25 @@ header{background:var(--dark);color:#fff;padding:1rem 1.5rem;display:flex;align-
 
   <section class="section" id="sec-notif">
     <div id="notifContent"><div class="spinner">…</div></div>
+  </section>
+
+  <section class="section" id="sec-settings">
+    <div class="settings-card">
+      <h4 id="settingsEmailTitle"></h4>
+      <p id="settingsEmailDesc"></p>
+      <div class="email-lang-grid">
+        <button class="email-lang-btn" id="elBtnNL" onclick="setEmailLang('nl')">
+          <span class="el-flag">🇳🇱</span><span class="el-name"></span>
+        </button>
+        <button class="email-lang-btn" id="elBtnEN" onclick="setEmailLang('en')">
+          <span class="el-flag">🇬🇧</span><span class="el-name"></span>
+        </button>
+        <button class="email-lang-btn" id="elBtnTR" onclick="setEmailLang('tr')">
+          <span class="el-flag">🇹🇷</span><span class="el-name"></span>
+        </button>
+      </div>
+      <div class="settings-save-msg" id="settingsSaveMsg"></div>
+    </div>
   </section>
 </div>
 
@@ -327,6 +428,10 @@ const I18N={
     tabShifts:'Mijn Rooster',tabTable:'Rooster',tabAvail:'Beschikbaarheid',tabNotif:'Meldingen',
     prev:'← Vorige',next:'Volgende →',
     noShift:'Geen dienst',weekTotal:'Totaal per week',
+    tabSettings:'Instellingen',
+    settingsEmailTitle:'E-mailtaal',settingsEmailDesc:'Kies in welke taal je e-mails van MasalShift wilt ontvangen.',
+    settingsEmailSaved:'Voorkeur opgeslagen ✓',
+    langNL:'Nederlands',langEN:'Engels',langTR:'Turks',
     availAvail:'✓ Beschikbaar',availNot:'✗ Niet beschikbaar',availPartial:'◑ Deels beschikbaar',availNone:'—',availSave:'Opslaan',availSaved:'Opgeslagen ✓',
     availFullAvail:'Hele dag beschikbaar',availFullNot:'Hele dag niet beschikbaar',availPartialLbl:'Bepaalde tijden niet beschikbaar',
     availAddRange:'+ Tijdslot toevoegen',availRangesTitle:'Niet beschikbaar van:',
@@ -355,6 +460,10 @@ const I18N={
     tabShifts:'My Shifts',tabTable:'Schedule',tabAvail:'Availability',tabNotif:'Notifications',
     prev:'← Previous',next:'Next →',
     noShift:'No shift',weekTotal:'Weekly total',
+    tabSettings:'Settings',
+    settingsEmailTitle:'Email language',settingsEmailDesc:'Choose the language you want to receive MasalShift emails in.',
+    settingsEmailSaved:'Preference saved ✓',
+    langNL:'Dutch',langEN:'English',langTR:'Turkish',
     availAvail:'✓ Available',availNot:'✗ Not available',availPartial:'◑ Partly available',availNone:'—',availSave:'Save',availSaved:'Saved ✓',
     availFullAvail:'Available all day',availFullNot:'Not available all day',availPartialLbl:'Not available at certain times',
     availAddRange:'+ Add time slot',availRangesTitle:'Not available from:',
@@ -383,6 +492,10 @@ const I18N={
     tabShifts:'Vardiyam',tabTable:'Tablo',tabAvail:'Müsaitlik',tabNotif:'Bildirimler',
     prev:'← Önceki',next:'Sonraki →',
     noShift:'Vardiya yok',weekTotal:'Haftalık toplam',
+    tabSettings:'Ayarlar',
+    settingsEmailTitle:'E-posta dili',settingsEmailDesc:'MasalShift e-postalarını hangi dilde almak istediğinizi seçin.',
+    settingsEmailSaved:'Tercih kaydedildi ✓',
+    langNL:'Felemenkçe',langEN:'İngilizce',langTR:'Türkçe',
     availAvail:'✓ Müsaitim',availNot:'✗ Müsait Değilim',availPartial:'◑ Kısmi Müsaitim',availNone:'—',availSave:'Kaydet',availSaved:'Kaydedildi ✓',
     availFullAvail:'Tüm gün müsaitim',availFullNot:'Tüm gün müsait değilim',availPartialLbl:'Belirli saatlerde müsait değilim',
     availAddRange:'+ Aralık ekle',availRangesTitle:'Müsait olmayan saatler:',
@@ -435,6 +548,7 @@ function applyLangToUI(){
   document.getElementById('tabShifts').textContent=L().tabShifts;
   document.getElementById('tabTable').textContent=L().tabTable;
   document.getElementById('tabAvail').textContent=L().tabAvail;
+  document.getElementById('tabSettings').textContent=L().tabSettings;
   updateNotifTab(0);
   document.getElementById('btnPrevShifts').textContent=L().prev;
   document.getElementById('btnNextShifts').textContent=L().next;
@@ -450,6 +564,16 @@ function applyLangToUI(){
   document.getElementById('swapLblTheirs').textContent=L().swapLblTheirs;
   document.getElementById('swapCancelBtn').textContent=L().swapCancel;
   document.getElementById('swapSendBtn').textContent=L().swapSend;
+  // Settings page texts
+  document.getElementById('settingsEmailTitle').textContent=L().settingsEmailTitle;
+  document.getElementById('settingsEmailDesc').textContent=L().settingsEmailDesc;
+  // Email lang button labels in current app language
+  const elNL=document.getElementById('elBtnNL');
+  const elEN=document.getElementById('elBtnEN');
+  const elTR=document.getElementById('elBtnTR');
+  if(elNL) elNL.querySelector('.el-name').textContent=L().langNL;
+  if(elEN) elEN.querySelector('.el-name').textContent=L().langEN;
+  if(elTR) elTR.querySelector('.el-name').textContent=L().langTR;
 }
 function updateNotifTab(count){
   document.getElementById('tabNotif').textContent=L().tabNotif+(count>0?` (${count})`:'');
@@ -529,6 +653,7 @@ function switchTab(name){
   if(name==='table')loadTable();
   if(name==='avail')loadAvail();
   if(name==='notif')loadNotif();
+  if(name==='settings')loadSettings();
 }
 
 // ─── VARDIYAM ─────────────────────────────────────────────────
@@ -592,14 +717,13 @@ function changeWeekAvail(dir){availWeek=addDays(availWeek,dir*7);loadAvail()}
 async function loadAvail(){
   document.getElementById('weekLabelAvail').textContent=weekLabel(availWeek);
   const ws=fmtDate(availWeek);
-  const{data}=await sb.from('availability').select('day_index,available,status,unavailable_ranges').eq('staff_id',me.id).eq('week_start',ws);
+  const{data}=await sb.from('availability').select('day_index,status,unavailable_ranges').eq('staff_id',me.id).eq('week_start',ws);
   // Default: all days available
   availState={};
   for(let i=0;i<7;i++) availState[i]={status:'available',ranges:[]};
   // Override with saved data
   (data||[]).forEach(r=>{
-    const st=r.status||(r.available===true?'available':r.available===false?'unavailable':null);
-    if(st) availState[r.day_index]={status:st,ranges:r.unavailable_ranges||[]};
+    if(r.status) availState[r.day_index]={status:r.status,ranges:r.unavailable_ranges||[]};
   });
   renderAvail();
 }
@@ -695,14 +819,18 @@ function saveDayAvail(){
 async function saveAvail(){
   const btn=document.getElementById('availSaveBtn');btn.disabled=true;btn.textContent='…';
   const ws=fmtDate(availWeek);
-  await sb.from('availability').delete().eq('staff_id',me.id).eq('week_start',ws);
+  const{error:delErr}=await sb.from('availability').delete().eq('staff_id',me.id).eq('week_start',ws);
+  if(delErr){btn.disabled=false;btn.textContent=L().availSave;showToast('⚠ '+delErr.message);return}
   const rows=Object.entries(availState).filter(([,v])=>v?.status).map(([i,v])=>({
     staff_id:me.id,week_start:ws,day_index:parseInt(i),
-    available:v.status==='available',
+    type:v.status==='partial'?'partial':'allday',
     status:v.status,
     unavailable_ranges:v.ranges||[]
   }));
-  if(rows.length)await sb.from('availability').insert(rows);
+  if(rows.length){
+    const{error:insErr}=await sb.from('availability').insert(rows);
+    if(insErr){btn.disabled=false;btn.textContent=L().availSave;showToast('⚠ '+insErr.message);return}
+  }
   btn.disabled=false;btn.textContent=L().availSave;
   showToast(L().availSaved);
 }
@@ -862,6 +990,38 @@ async function sendSwapRequest(){
 // ─── EMAIL ────────────────────────────────────────────────────
 async function sendEmail({to,userId,subject,body}){
   try{await fetch(`${SUPABASE_URL}/functions/v1/send-email`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_ANON},body:JSON.stringify({to,userId,subject,body})})}catch(e){}
+}
+
+// ─── AYARLAR ─────────────────────────────────────────────────
+function loadSettings(){
+  // Reflect current saved lang on buttons
+  const saved=me.email_lang||'nl';
+  renderEmailLangBtns(saved);
+  document.getElementById('settingsSaveMsg').textContent='';
+}
+
+function renderEmailLangBtns(active){
+  ['nl','en','tr'].forEach(l=>{
+    const btn=document.getElementById('elBtn'+l.toUpperCase());
+    if(!btn)return;
+    btn.classList.toggle('active',l===active);
+  });
+}
+
+async function setEmailLang(l){
+  renderEmailLangBtns(l);
+  document.getElementById('settingsSaveMsg').textContent='…';
+  const{error}=await sb.from('profiles').update({email_lang:l}).eq('id',me.id);
+  if(error){
+    document.getElementById('settingsSaveMsg').textContent='⚠ '+error.message;
+    return;
+  }
+  me.email_lang=l;
+  // Update local allProfiles cache
+  const idx=allProfiles.findIndex(p=>p.id===me.id);
+  if(idx>=0) allProfiles[idx].email_lang=l;
+  document.getElementById('settingsSaveMsg').textContent=L().settingsEmailSaved;
+  setTimeout(()=>{document.getElementById('settingsSaveMsg').textContent=''},3000);
 }
 
 // ─── INIT ─────────────────────────────────────────────────────

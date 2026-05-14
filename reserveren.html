@@ -785,6 +785,99 @@ async function submitForm(e){
   if(error){alert('Error: '+error.message);return}
   const rid=data?.id||'';
   const base=window.location.origin+window.location.pathname.replace(/\/[^/]*$/,'/');
+
+  // ── SEND CONFIRMATION EMAIL ──────────────────────────────────────────────
+  const cancelUrl=`${base}cancel.html?id=${rid}`;
+  const confirmUrl=`${base}confirm.html?id=${rid}`;
+
+  const emailContent={
+    nl:{
+      subject:`Reservering bevestigd — Masal Restaurant & Café`,
+      greeting:`Beste ${name},`,
+      intro:`Uw reservering bij Masal Restaurant & Café is succesvol ontvangen!`,
+      detailsTitle:`Reserveringsdetails`,
+      labelDate:`Datum`,labelTime:`Tijdstip`,labelPersons:`Aantal personen`,labelPhone:`Telefoon`,
+      confirmText:`Klik op onderstaande knop om uw reservering te bevestigen:`,
+      confirmBtn:`✓ Reservering bevestigen`,
+      cancelText:`Wilt u annuleren?`,cancelLink:`Klik hier om te annuleren`,
+      address:`📍 Talent Square 333, Tilburg`,
+      closing:`Tot ziens bij Masal!`,
+      team:`Het team van Masal Restaurant & Café`,
+    },
+    en:{
+      subject:`Reservation confirmed — Masal Restaurant & Café`,
+      greeting:`Dear ${name},`,
+      intro:`Your reservation at Masal Restaurant & Café has been successfully received!`,
+      detailsTitle:`Reservation details`,
+      labelDate:`Date`,labelTime:`Time`,labelPersons:`Number of guests`,labelPhone:`Phone`,
+      confirmText:`Click the button below to confirm your reservation:`,
+      confirmBtn:`✓ Confirm reservation`,
+      cancelText:`Want to cancel?`,cancelLink:`Click here to cancel`,
+      address:`📍 Talent Square 333, Tilburg`,
+      closing:`See you at Masal!`,
+      team:`The Masal Restaurant & Café team`,
+    },
+    tr:{
+      subject:`Rezervasyon onayı — Masal Restaurant & Café`,
+      greeting:`Sayın ${name},`,
+      intro:`Masal Restaurant & Café'deki rezervasyonunuz başarıyla alındı!`,
+      detailsTitle:`Rezervasyon detayları`,
+      labelDate:`Tarih`,labelTime:`Saat`,labelPersons:`Kişi sayısı`,labelPhone:`Telefon`,
+      confirmText:`Rezervasyonunuzu onaylamak için aşağıdaki butona tıklayın:`,
+      confirmBtn:`✓ Rezervasyonu onayla`,
+      cancelText:`İptal etmek ister misiniz?`,cancelLink:`İptal için tıklayın`,
+      address:`📍 Talent Square 333, Tilburg`,
+      closing:`Masal'da görüşürüz!`,
+      team:`Masal Restaurant & Café ekibi`,
+    }
+  };
+  const ec=emailContent[lang]||emailContent.nl;
+
+  const htmlBody=`<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="margin:0;padding:0;background:#f7f5f0;font-family:-apple-system,system-ui,sans-serif">
+  <div style="max-width:520px;margin:0 auto;padding:2rem 1rem">
+    <div style="text-align:center;margin-bottom:1.5rem">
+      <img src="https://i0.wp.com/masalrestaurant.nl/wp-content/uploads/2021/11/Masal_Logo_DEF.png?fit=600%2C304&ssl=1" style="height:44px">
+    </div>
+    <div style="background:#fff;border-radius:14px;overflow:hidden;border:1px solid #e5e1d8">
+      <div style="background:#1e3a1e;padding:1.5rem 2rem;text-align:center">
+        <div style="font-size:2.2rem">✓</div>
+        <h2 style="color:#c6a55c;font-family:Georgia,serif;margin:.4rem 0 0;font-size:1.25rem">${ec.intro}</h2>
+      </div>
+      <div style="padding:1.8rem 2rem">
+        <p style="color:#444;margin:0 0 1.2rem">${ec.greeting}</p>
+        <h3 style="color:#1e3a1e;font-size:.85rem;text-transform:uppercase;letter-spacing:.5px;margin:0 0 .75rem">${ec.detailsTitle}</h3>
+        <table style="width:100%;border-collapse:collapse;margin-bottom:1.4rem">
+          <tr style="border-bottom:1px solid #f0ece4"><td style="padding:.6rem .5rem;color:#888;font-size:.85rem;width:40%">${ec.labelDate}</td><td style="padding:.6rem .5rem;font-weight:600;color:#1a1a1a;font-size:.9rem">${selectedDate}</td></tr>
+          <tr style="border-bottom:1px solid #f0ece4"><td style="padding:.6rem .5rem;color:#888;font-size:.85rem">${ec.labelTime}</td><td style="padding:.6rem .5rem;font-weight:600;color:#1a1a1a;font-size:.9rem">${selectedTime}</td></tr>
+          <tr style="border-bottom:1px solid #f0ece4"><td style="padding:.6rem .5rem;color:#888;font-size:.85rem">${ec.labelPersons}</td><td style="padding:.6rem .5rem;font-weight:600;color:#1a1a1a;font-size:.9rem">${personCount}</td></tr>
+          <tr><td style="padding:.6rem .5rem;color:#888;font-size:.85rem">${ec.labelPhone}</td><td style="padding:.6rem .5rem;font-weight:600;color:#1a1a1a;font-size:.9rem">${phone}</td></tr>
+        </table>
+        <p style="color:#555;font-size:.85rem;margin:0 0 .9rem">${ec.confirmText}</p>
+        <div style="text-align:center;margin-bottom:1.4rem">
+          <a href="${confirmUrl}" style="display:inline-block;background:#1e3a1e;color:#fff;padding:.75rem 2rem;border-radius:8px;text-decoration:none;font-weight:700;font-size:.95rem">${ec.confirmBtn}</a>
+        </div>
+        <p style="color:#888;font-size:.8rem;text-align:center">${ec.cancelText} <a href="${cancelUrl}" style="color:#c6a55c">${ec.cancelLink}</a></p>
+      </div>
+      <div style="background:#f7f5f0;padding:1rem 2rem;border-top:1px solid #e5e1d8;text-align:center">
+        <p style="margin:0;color:#888;font-size:.8rem">${ec.address}</p>
+        <p style="margin:.3rem 0 0;color:#555;font-size:.82rem">${ec.closing}<br><strong>${ec.team}</strong></p>
+      </div>
+    </div>
+    <p style="text-align:center;color:#aaa;font-size:.72rem;margin-top:1rem">Masal Restaurant & Café · <a href="https://masalrestaurant.nl" style="color:#aaa">masalrestaurant.nl</a></p>
+  </div>
+</body></html>`;
+
+  // Send to customer
+  try{
+    const r1=await fetch(`${SUPABASE_URL}/functions/v1/send-email`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${SUPABASE_ANON}`},
+      body:JSON.stringify({to:email,subject:ec.subject,body:'',htmlBody})
+    });
+    const j1=await r1.json();
+    if(!r1.ok)console.error('Customer email error:',j1);
+  }catch(e){console.error('Customer email exception:',e)}
+
   document.body.innerHTML=`
   <div class="page" style="padding-top:4rem">
     <div class="success-wrap" id="sw2" style="display:block">

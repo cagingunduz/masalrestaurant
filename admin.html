@@ -19,7 +19,7 @@ body{font-family:-apple-system,system-ui,sans-serif;background:var(--bg);color:#
 .login-box button:hover{background:var(--gold-dark)}
 .login-error{color:#c0392b;font-size:.85rem;margin-top:.5rem;min-height:1.2em}
 
-header{background:var(--dark);color:#fff;padding:1.2rem 2rem;display:flex;align-items:center;justify-content:space-between}
+header{background:var(--dark);color:#fff;padding:1.2rem 2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:60}
 header .logo{height:40px;width:auto;filter:brightness(0) invert(1)}
 header .user{display:flex;align-items:center;gap:1rem;font-size:.9rem;color:#bbb}
 header button{background:transparent;border:1px solid var(--gold);color:var(--gold);padding:.4rem .9rem;border-radius:6px;cursor:pointer;font-size:.8rem;letter-spacing:1px;text-transform:uppercase}
@@ -82,6 +82,11 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
 .sv-hrs{font-size:.67rem;color:var(--muted)}
 .sched-cell.empty{color:#d0cbc0;font-size:1.3rem;line-height:1}
 .sched-cell.empty:hover{color:var(--gold)}
+.sched-td.unavail-td{background:repeating-linear-gradient(135deg,#fff5f5,#fff5f5 4px,#ffeaea 4px,#ffeaea 8px)!important}
+.sched-cell.unavail{color:#e0a0a0;font-size:1rem;display:flex;align-items:center;justify-content:center;min-height:54px;cursor:default}
+.sched-td.partial-td{background:repeating-linear-gradient(135deg,#fffdf5,#fffdf5 4px,#fff8e6 4px,#fff8e6 8px)!important}
+.sv-partial{display:block;font-size:.6rem;color:#e67e22;font-weight:500;margin-top:2px;line-height:1.2;white-space:nowrap}
+.sched-cell.partial-empty{color:#f0a500}
 .staff-dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0}
 .del-staff-btn{background:none;border:none;color:#ccc;cursor:pointer;font-size:.8rem;margin-left:.4rem;padding:.1rem .3rem;border-radius:3px;line-height:1;vertical-align:middle}
 .del-staff-btn:hover{color:#c0392b;background:#fff0ee}
@@ -127,29 +132,36 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
 
 /* ── MOBILE ──────────────────────────────────────────── */
 @media(max-width:640px){
+  /* Prevent iOS auto-zoom on input focus */
+  input,select,textarea{font-size:16px!important}
+
   /* Header */
-  header{padding:.8rem 1rem;gap:.5rem}
-  header .logo{height:28px}
-  header .user{gap:.5rem;font-size:.8rem}
+  header{padding:.75rem 1rem;gap:.5rem}
+  header .logo{height:26px}
+  header .user{gap:.4rem;font-size:.8rem}
   header .user span#userName{display:none}
-  header button{padding:.3rem .6rem;font-size:.72rem}
-  .lang-switch button{padding:.2rem .4rem;font-size:.7rem}
+  header button{padding:.35rem .65rem;font-size:.72rem;min-height:36px}
+  .lang-switch button{padding:.25rem .45rem;font-size:.7rem}
 
   /* Tabs */
-  .tabs{padding:0 .5rem;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .tabs{padding:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
   .tabs::-webkit-scrollbar{display:none}
-  .tab{padding:.75rem .9rem;font-size:.75rem;letter-spacing:.4px;white-space:nowrap;flex-shrink:0}
+  .tab{padding:.8rem 1rem;font-size:.75rem;letter-spacing:.3px;white-space:nowrap;flex-shrink:0}
 
   /* Main */
-  main{padding:1rem .75rem 3rem}
+  main{padding:.85rem .75rem 4rem}
 
   /* Toolbar */
-  .toolbar{flex-direction:column;align-items:flex-start;gap:.6rem}
+  .toolbar{flex-direction:column;align-items:flex-start;gap:.5rem}
   .toolbar h2{font-size:1.1rem}
   .toolbar .actions{width:100%;flex-wrap:wrap;gap:.4rem}
-  .toolbar .actions .btn,.toolbar .actions .select,.toolbar .actions .input{font-size:.78rem}
-  .toolbar .actions .input[type=date]{width:auto;flex:1;min-width:110px}
-  .week-label{font-size:.8rem;padding:.3rem .7rem}
+  .toolbar .actions .btn,.toolbar .actions select,.toolbar .actions .input{font-size:.8rem;min-height:38px}
+  .toolbar .actions input[type=date]{width:auto;flex:1;min-width:120px}
+  .week-label{font-size:.8rem;padding:.35rem .7rem}
+
+  /* Buttons — touch-friendly */
+  .btn{min-height:38px;padding:.55rem 1rem}
+  .btn.small{min-height:34px;padding:.4rem .75rem}
 
   /* Tables — card style on mobile */
   table{display:block;background:transparent;box-shadow:none;border-radius:0}
@@ -157,38 +169,66 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
   tbody{display:flex;flex-direction:column;gap:.6rem}
   tr{display:flex;flex-direction:column;background:#fff;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.06);padding:.8rem 1rem;border:1px solid #f0ece4}
   tr.cancelled-row{background:linear-gradient(transparent calc(50% - 1px),#e74c3c calc(50% - 1px),#e74c3c calc(50% + 1px),transparent calc(50% + 1px))!important}
-  td{padding:.25rem 0;border:none;font-size:.85rem;display:flex;align-items:flex-start;gap:.4rem}
-  td:before{content:attr(data-label);font-size:.68rem;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);white-space:nowrap;min-width:80px;padding-top:.1rem}
-  td .btn{padding:.3rem .6rem;font-size:.73rem}
+  td{padding:.3rem 0;border:none;font-size:.85rem;display:flex;align-items:flex-start;gap:.4rem}
+  td:before{content:attr(data-label);font-size:.68rem;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);white-space:nowrap;min-width:80px;padding-top:.15rem;flex-shrink:0}
+  td .btn{padding:.3rem .65rem;font-size:.75rem}
 
   /* Swap cards */
-  #swapsContainer .card,
-  #swapsContainer > div{font-size:.85rem}
+  #swapsContainer>div{font-size:.85rem;padding:1rem!important}
+  #swapsContainer>div>div{flex-direction:column!important;gap:.8rem!important}
+  #swapsContainer>div>div>div:last-child{display:flex;gap:.5rem;width:100%}
+  #swapsContainer>div>div>div:last-child .btn{flex:1;text-align:center}
 
   /* Schedule table stays scrollable */
-  .sched-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-  .sched-table{display:table!important;min-width:620px}
+  .sched-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:8px}
+  .sched-table{display:table!important;min-width:580px}
   .sched-table thead{display:table-header-group!important}
   .sched-table tbody{display:table-row-group!important;flex-direction:unset}
   .sched-table tr{display:table-row!important;background:none;border-radius:0;box-shadow:none;padding:0;border:none}
   .sched-table td,.sched-table th{display:table-cell!important;border:revert}
+  .sched-th{min-width:80px;padding:.5rem .3rem;font-size:.62rem}
+  .sched-th.staff-th{min-width:110px;padding-left:.6rem}
+  .sched-cell{min-height:46px}
+  .sv-time{font-size:.75rem}
 
   /* HACCP table stays scrollable */
-  #haccpTable{display:table!important;min-width:620px}
+  #haccpTable{display:table!important;min-width:580px}
   #haccpTable thead{display:table-header-group!important}
   #haccpTable tbody{display:table-row-group!important;flex-direction:unset}
   #haccpTable tr{display:table-row!important;background:none;border-radius:0;box-shadow:none;padding:0;border:none}
   #haccpTable td,#haccpTable th{display:table-cell!important;border:revert}
+  /* HACCP legend */
+  #sec-haccp>div:nth-child(2){flex-wrap:wrap;gap:.4rem}
+  #sec-haccp>div:nth-child(2)>span[style*="margin-left:auto"]{margin-left:0!important;width:100%}
+  /* HACCP notes section */
+  #sec-haccp>div:last-child{padding:1rem}
+  #sec-haccp>div:last-child>div:last-child{flex-wrap:wrap;gap:.5rem}
+  #haccpParaaf{width:100%!important}
+
+  /* Time shortcut buttons — bigger touch targets */
+  .sc-btn{min-height:38px;padding:.45rem .6rem;font-size:.82rem}
+  .time-shortcuts{gap:.4rem;margin-top:.5rem}
+  .time-row{gap:.5rem}
+  .cell-modal .modal-actions{flex-wrap:wrap}
+  .cell-modal .modal-actions .btn{min-height:40px}
 
   /* Modals */
-  .modal-bg{align-items:flex-end;padding:0}
-  .modal{border-radius:16px 16px 0 0;max-width:100%!important;width:100%;padding:1.5rem 1.2rem;max-height:85vh}
+  .modal-bg{align-items:flex-end!important;padding:0}
+  .modal{border-radius:16px 16px 0 0;max-width:100%!important;width:100%;padding:1.5rem 1.2rem 2rem;max-height:88vh}
   .modal h3{font-size:1.1rem}
-  .modal-actions{flex-wrap:wrap}
-  .modal-actions .btn{flex:1;text-align:center}
+  .modal-actions{flex-wrap:wrap;gap:.5rem}
+  .modal-actions .btn{flex:1;text-align:center;min-height:42px}
+  /* Modal handle */
+  .modal::before{content:'';display:block;width:36px;height:4px;background:#ddd;border-radius:2px;margin:0 auto .8rem}
+
+  /* Staff list inside modal */
+  .staff-list{max-height:200px}
 
   /* Empty state */
   .empty{padding:2rem 1rem;font-size:.85rem}
+
+  /* Login */
+  .login-box{padding:2rem 1.5rem}
 }
 </style>
 </head>
@@ -659,16 +699,15 @@ async function respondSwap(id,approve,reqId,tgtId,reqShiftId,tgtShiftId){
   }
   await sb.from('swap_requests').update({status:approve?'accepted':'admin_rejected'}).eq('id',id);
 
-  // Her iki personele email gönder
+  // Her iki personele kendi dillerinde email gönder
   const pById={};profiles.forEach(p=>{pById[p.id]=p});
   const reqP=pById[reqId],tgtP=pById[tgtId];
-  const subject=approve?'Vardiya değişiminiz onaylandı ✓':'Vardiya değişiminiz reddedildi';
-  const body=approve
-    ?`Merhaba,\n\nYönetici vardiya değişiminizi onayladı.\n\n${reqP?.name} ⇄ ${tgtP?.name}\n\nVardiyalarınız güncellendi. Detaylar için: masalrestaurant.vercel.app/staff.html.html`
-    :`Merhaba,\n\nYönetici vardiya değişim talebini reddetti.\n\n${reqP?.name} ⇄ ${tgtP?.name}\n\nDetaylar için: masalrestaurant.vercel.app/staff.html.html`;
   for(const p of [reqP,tgtP]){
-    if(p?.contact_email)
-      await sendEmail(p.contact_email,subject,body);
+    if(!p?.contact_email) continue;
+    const el=EL(p);
+    const subject=approve?el.swapApprovedSubject:el.swapRejectedSubject;
+    const body=approve?el.swapApprovedBody(reqP?.name,tgtP?.name):el.swapRejectedBody(reqP?.name,tgtP?.name);
+    await sendEmail(p.contact_email,subject,body);
   }
 
   loadSwaps();updateSwapBadge();
@@ -795,6 +834,12 @@ async function loadShifts(){
   let assigns=[];
   if(ids.length){const{data}=await sb.from('shift_assignments').select('*').in('shift_id',ids);assigns=data||[];}
 
+  // Müsaitlik verisi — tüm personel için
+  const{data:availRows=[]}=await sb.from('availability').select('staff_id,day_index,status,unavailable_ranges').eq('week_start',ws);
+  const unavailSet=new Set((availRows||[]).filter(r=>r.status==='unavailable').map(r=>`${r.staff_id}_${r.day_index}`));
+  const partialMap={};
+  (availRows||[]).filter(r=>r.status==='partial').forEach(r=>{partialMap[`${r.staff_id}_${r.day_index}`]=r.unavailable_ranges||[]});
+
   // matrix[staffId][dayIndex] = {shiftId, assignId, start, end}
   const matrix={};
   profiles.forEach(p=>{matrix[p.id]={}});
@@ -824,12 +869,23 @@ async function loadShifts(){
     const cells=DN.map((_,i)=>{
       const cell=matrix[p.id]?.[i];
       const isWknd=i>=5;
+      const isUnavail=unavailSet.has(`${p.id}_${i}`);
+      const partialRanges=partialMap[`${p.id}_${i}`];
+      const isPartial=!!partialRanges;
       if(cell){
         const h=hrsNum(cell.start,cell.end);weekTotal+=h;
         const data=`'${p.id}',${i},'${cell.shiftId}','${cell.start}','${cell.end}'`;
-        return`<td class="sched-td${isWknd?' wknd':''}" ${bg}><div class="sched-cell filled" onclick="openCellModal(${data})"><span class="sv-time">${cell.start.slice(0,5)}–${cell.end.slice(0,5)}</span><span class="sv-hrs">${hrsLabel(h)}</span></div></td>`;
+        const partialBadge=isPartial?`<span class="sv-partial" title="${(partialRanges).map(r=>r.from+'–'+r.to).join(', ')}">✕ ${partialRanges.map(r=>r.from.slice(0,5)+'–'+r.to.slice(0,5)).join(' ')}</span>`:'';
+        return`<td class="sched-td${isWknd?' wknd':''}${isUnavail?' unavail-td':''}${isPartial?' partial-td':''}" ${bg}><div class="sched-cell filled" onclick="openCellModal(${data})"><span class="sv-time">${cell.start.slice(0,5)}–${cell.end.slice(0,5)}</span><span class="sv-hrs">${hrsLabel(h)}</span>${partialBadge}</div></td>`;
       }else{
         const data=`'${p.id}',${i},null,null,'09:00','17:00'`;
+        if(isUnavail){
+          return`<td class="sched-td${isWknd?' wknd':''} unavail-td" ${bg}><div class="sched-cell unavail" title="${currentLang==='tr'?'Müsait değil':'Niet beschikbaar'}">✕</div></td>`;
+        }
+        if(isPartial){
+          const rangeText=partialRanges.map(r=>r.from.slice(0,5)+'–'+r.to.slice(0,5)).join(', ');
+          return`<td class="sched-td${isWknd?' wknd':''} partial-td" ${bg}><div class="sched-cell empty partial-empty" onclick="openCellModal(${data})" title="Müsait değil: ${rangeText}">+<span class="sv-partial">✕ ${rangeText}</span></div></td>`;
+        }
         return`<td class="sched-td${isWknd?' wknd':''}" ${bg}><div class="sched-cell empty" onclick="openCellModal(${data})">+</div></td>`;
       }
     }).join('');
@@ -858,13 +914,46 @@ async function loadShifts(){
   window._shiftProfiles=staff;
 }
 
+// ─── E-POSTA DİL PAKETLERİ ────────────────────────────────────
+const EMAIL_L={
+  nl:{
+    days:['Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag','Zondag'],
+    months:['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'],
+    shiftSubject:(count,day,d,m)=>count===1?`Nieuwe dienst — ${day}`:`Nieuwe diensten — week van ${d} ${m}`,
+    shiftBody:(name,count,lines)=>`Hallo ${name},\n\nEr ${count===1?'is een nieuwe dienst':'zijn nieuwe diensten'} aan je rooster toegevoegd:\n\n${lines.join('\n')}\n\nBekijk je volledige rooster hier:\n👉 masalrestaurant.vercel.app/staff.html\n\nMet vriendelijke groet,\nMasal Restaurant`,
+    swapApprovedSubject:'Dienstruil goedgekeurd ✓',
+    swapRejectedSubject:'Dienstruil geweigerd',
+    swapApprovedBody:(r,t)=>`Hallo,\n\nDe manager heeft de dienstruil goedgekeurd.\n\n${r} ⇄ ${t}\n\nJe rooster is bijgewerkt. Bekijk het hier:\n👉 masalrestaurant.vercel.app/staff.html\n\nMet vriendelijke groet,\nMasal Restaurant`,
+    swapRejectedBody:(r,t)=>`Hallo,\n\nDe manager heeft het verzoek tot dienstruil geweigerd.\n\n${r} ⇄ ${t}\n\nDetails:\n👉 masalrestaurant.vercel.app/staff.html\n\nMet vriendelijke groet,\nMasal Restaurant`,
+  },
+  en:{
+    days:['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'],
+    months:['January','February','March','April','May','June','July','August','September','October','November','December'],
+    shiftSubject:(count,day,d,m)=>count===1?`New shift — ${day}`:`New shifts — week of ${d} ${m}`,
+    shiftBody:(name,count,lines)=>`Hello ${name},\n\n${count===1?'A new shift has been':'New shifts have been'} added to your schedule:\n\n${lines.join('\n')}\n\nView your full schedule here:\n👉 masalrestaurant.vercel.app/staff.html\n\nBest regards,\nMasal Restaurant`,
+    swapApprovedSubject:'Shift swap approved ✓',
+    swapRejectedSubject:'Shift swap declined',
+    swapApprovedBody:(r,t)=>`Hello,\n\nThe manager has approved the shift swap.\n\n${r} ⇄ ${t}\n\nYour schedule has been updated. View it here:\n👉 masalrestaurant.vercel.app/staff.html\n\nBest regards,\nMasal Restaurant`,
+    swapRejectedBody:(r,t)=>`Hello,\n\nThe manager has declined the shift swap request.\n\n${r} ⇄ ${t}\n\nDetails:\n👉 masalrestaurant.vercel.app/staff.html\n\nBest regards,\nMasal Restaurant`,
+  },
+  tr:{
+    days:['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'],
+    months:['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'],
+    shiftSubject:(count,day,d,m)=>count===1?`Yeni vardiya — ${day}`:`Yeni vardiyalar — ${d} ${m} haftası`,
+    shiftBody:(name,count,lines)=>`Merhaba ${name},\n\nProgramına ${count===1?'yeni bir vardiya eklendi':'yeni vardiyalar eklendi'}:\n\n${lines.join('\n')}\n\nTüm programını görmek için:\n👉 masalrestaurant.vercel.app/staff.html\n\nİyi çalışmalar,\nMasal Restaurant`,
+    swapApprovedSubject:'Vardiya değişimi onaylandı ✓',
+    swapRejectedSubject:'Vardiya değişimi reddedildi',
+    swapApprovedBody:(r,t)=>`Merhaba,\n\nYönetici vardiya değişiminizi onayladı.\n\n${r} ⇄ ${t}\n\nVardiyalarınız güncellendi. Detaylar için:\n👉 masalrestaurant.vercel.app/staff.html\n\nİyi çalışmalar,\nMasal Restaurant`,
+    swapRejectedBody:(r,t)=>`Merhaba,\n\nYönetici vardiya değişim talebini reddetti.\n\n${r} ⇄ ${t}\n\nDetaylar için:\n👉 masalrestaurant.vercel.app/staff.html\n\nİyi çalışmalar,\nMasal Restaurant`,
+  }
+};
+function EL(p){return EMAIL_L[p.email_lang]||EMAIL_L.nl}
+
 async function notifyShifts(){
   const matrix=window._shiftMatrix||{};
   const staff=window._shiftProfiles||[];
   if(!staff.length){alert('Önce vardiyaları yükle.');return}
 
-  const DN_NL=['Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag','Zondag'];
-  const MO_NL=['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
   const ws=fmtDate(currentWeek);
 
   // Bu hafta hangi (shift_id, staff_id) çiftleri zaten bildirilmiş?
@@ -893,12 +982,11 @@ async function notifyShifts(){
 
   let sentCount=0;
   for(const{profile:p, newShifts} of toSend){
-    const lines=newShifts.map(([i,s])=>`  ${DN_NL[i]}: ${s.start.slice(0,5)} – ${s.end.slice(0,5)}`);
-    const isOnlyNew=newShifts.length===1;
-    const subject=isOnlyNew
-      ?`Nieuwe dienst — ${DN_NL[newShifts[0][0]]}`
-      :`Nieuwe diensten — week van ${currentWeek.getDate()} ${MO_NL[currentWeek.getMonth()]}`;
-    const body=`Hallo ${p.name},\n\nEr ${newShifts.length===1?'is een nieuwe dienst':'zijn nieuwe diensten'} aan je rooster toegevoegd:\n\n${lines.join('\n')}\n\nBekijk je volledige rooster hier:\n👉 masalrestaurant.vercel.app/staff.html\n\nMet vriendelijke groet,\nMasal Restaurant`;
+    const el=EL(p);
+    const lines=newShifts.map(([i,s])=>`  ${el.days[i]}: ${s.start.slice(0,5)} – ${s.end.slice(0,5)}`);
+    const count=newShifts.length;
+    const subject=el.shiftSubject(count,el.days[newShifts[0][0]],currentWeek.getDate(),el.months[currentWeek.getMonth()]);
+    const body=el.shiftBody(p.name,count,lines);
 
     await sendEmail(p.contact_email, subject, body);
 
@@ -913,7 +1001,20 @@ async function notifyShifts(){
 }
 
 // Cell modal
-function openCellModal(staffId,dayIndex,shiftId,start,end){
+async function openCellModal(staffId,dayIndex,shiftId,start,end){
+  // Müsaitlik kontrolü — sadece yeni vardiya eklerken
+  if(!shiftId){
+    const ws=fmtDate(currentWeek);
+    const{data:avail}=await sb.from('availability').select('status').eq('staff_id',staffId).eq('week_start',ws).eq('day_index',dayIndex).single();
+    if(avail?.status==='unavailable'){
+      const p=profiles.find(x=>x.id===staffId);
+      const DN_TR=['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
+      const DN_NL=['Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag','Zondag'];
+      const DN=currentLang==='tr'?DN_TR:DN_NL;
+      alert(`⚠️ ${p?.name||'Personel'} ${DN[dayIndex]} günü müsait değil.\nYine de vardiya eklemek için "Tamam" sonra tekrar tıklayın.`);
+      return;
+    }
+  }
   cellState={staffId,dayIndex,shiftId};
   const p=profiles.find(x=>x.id===staffId);
   const DN=currentLang==='tr'?['Pt','Sa','Ça','Pe','Cu','Ct','Pz']:['Ma','Di','Wo','Do','Vr','Za','Zo'];
