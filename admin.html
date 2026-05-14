@@ -718,7 +718,7 @@ async function sendEmail(to,subject,body){
     await fetch(`${SUPABASE_URL}/functions/v1/send-email`,{
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_ANON},
-      body:JSON.stringify({to,subject,body})
+      body:JSON.stringify({to,subject,body,sender:'staff'})
     });
   }catch(e){console.warn('Email hatası',e)}
 }

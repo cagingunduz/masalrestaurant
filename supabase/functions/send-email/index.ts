@@ -10,17 +10,23 @@ const corsHeaders = {
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  const SMTP_HOST    = Deno.env.get('SMTP_HOST')    || 'mail.masalrestaurant.nl'
-  const SMTP_PORT    = parseInt(Deno.env.get('SMTP_PORT') || '587')
-  const SMTP_USER    = Deno.env.get('SMTP_USER')    || 'reserveren@masalrestaurant.nl'
-  const SMTP_PASS    = Deno.env.get('SMTP_PASS')    || ''
-  const ADMIN_EMAIL  = Deno.env.get('ADMIN_EMAIL')  || 'manager@masalrestaurant.nl'
-  const FROM_EMAIL   = SMTP_USER
-  const FROM_NAME    = 'Masal Restaurant & Café'
+  const SMTP_HOST       = Deno.env.get('SMTP_HOST')        || 'plesk.onsit.nl'
+  const SMTP_PORT       = parseInt(Deno.env.get('SMTP_PORT')   || '465')
+  const SMTP_USER_RES   = Deno.env.get('SMTP_USER')        || 'reserveren@masalrestaurant.nl'
+  const SMTP_PASS_RES   = Deno.env.get('SMTP_PASS')        || ''
+  const SMTP_USER_STAFF = Deno.env.get('SMTP_USER_STAFF')  || 'staff@masalrestaurant.nl'
+  const SMTP_PASS_STAFF = Deno.env.get('SMTP_PASS_STAFF')  || ''
+  const ADMIN_EMAIL     = Deno.env.get('ADMIN_EMAIL')      || 'manager@masalrestaurant.nl'
   const SUPABASE_URL = Deno.env.get('SUPABASE_URL') || ''
   const SERVICE_ROLE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || ''
 
-  const { to, userId, subject, body, htmlBody: customHtml } = await req.json()
+  const { to, userId, subject, body, htmlBody: customHtml, sender } = await req.json()
+
+  // Pick credentials based on sender type
+  const isStaff = sender === 'staff'
+  const FROM_EMAIL = isStaff ? SMTP_USER_STAFF : SMTP_USER_RES
+  const FROM_PASS  = isStaff ? SMTP_PASS_STAFF : SMTP_PASS_RES
+  const FROM_NAME  = 'Masal Restaurant & Café'
 
   // Resolve recipient
   let toEmail: string
@@ -64,7 +70,7 @@ Deno.serve(async (req) => {
     host: SMTP_HOST,
     port: SMTP_PORT,
     secure: SMTP_PORT === 465,
-    auth: { user: SMTP_USER, pass: SMTP_PASS },
+    auth: { user: FROM_EMAIL, pass: FROM_PASS },
     tls: { rejectUnauthorized: false },
   })
 
