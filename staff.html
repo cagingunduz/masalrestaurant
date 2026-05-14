@@ -423,7 +423,7 @@ const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
 // ─── I18N ──────────────────────────────────────────────────────
 const I18N={
   nl:{
-    loginSub:'Voer uw wachtwoord in',loginBtn:'Inloggen',loginErr:'Ongeldig wachtwoord',loginLoad:'Laden…',
+    loginSub:'Voer uw wachtwoord in',loginBtn:'Inloggen',loginErr:'Ongeldig wachtwoord',loginLoad:'Laden…',connErr:'Verbindingsfout',errPrefix:'Fout: ',
     logout:'Uitloggen',
     tabShifts:'Mijn Rooster',tabTable:'Rooster',tabAvail:'Beschikbaarheid',tabNotif:'Meldingen',
     prev:'← Vorige',next:'Volgende →',
@@ -455,7 +455,7 @@ const I18N={
     hrs:'u',
   },
   en:{
-    loginSub:'Enter your password to continue',loginBtn:'Log In',loginErr:'Incorrect password',loginLoad:'Loading…',
+    loginSub:'Enter your password to continue',loginBtn:'Log In',loginErr:'Incorrect password',loginLoad:'Loading…',connErr:'Connection error',errPrefix:'Error: ',
     logout:'Log Out',
     tabShifts:'My Shifts',tabTable:'Schedule',tabAvail:'Availability',tabNotif:'Notifications',
     prev:'← Previous',next:'Next →',
@@ -487,7 +487,7 @@ const I18N={
     hrs:'h',
   },
   tr:{
-    loginSub:'Şifrenizi girerek devam edin',loginBtn:'Giriş Yap',loginErr:'Şifre hatalı',loginLoad:'Yükleniyor…',
+    loginSub:'Şifrenizi girerek devam edin',loginBtn:'Giriş Yap',loginErr:'Şifre hatalı',loginLoad:'Yükleniyor…',connErr:'Bağlantı hatası',errPrefix:'Hata: ',
     logout:'Çıkış',
     tabShifts:'Vardiyam',tabTable:'Tablo',tabAvail:'Müsaitlik',tabNotif:'Bildirimler',
     prev:'← Önceki',next:'Sonraki →',
@@ -557,6 +557,8 @@ function applyLangToUI(){
   document.getElementById('btnPrevAvail').textContent=L().prev;
   document.getElementById('btnNextAvail').textContent=L().next;
   document.getElementById('availSaveBtn').textContent=L().availSave;
+  document.getElementById('availSaveDayBtn').textContent=L().availSave;
+  document.getElementById('availCancelBtn').textContent=L().swapCancel;
   document.getElementById('swapModalTitle').textContent=L().swapModalTitle;
   document.getElementById('swapModalSub').textContent=L().swapModalSub;
   document.getElementById('swapLblMine').textContent=L().swapLblMine;
@@ -590,7 +592,7 @@ async function login(e){
   btn.disabled=true; btn.textContent=L().loginLoad;
   document.getElementById('loginErr').textContent='';
   const{data:profiles,error}=await sb.from('profiles').select('*');
-  if(error||!profiles?.length){document.getElementById('loginErr').textContent='Connection error';btn.disabled=false;btn.textContent=L().loginBtn;return}
+  if(error||!profiles?.length){document.getElementById('loginErr').textContent=L().connErr;btn.disabled=false;btn.textContent=L().loginBtn;return}
   const match=profiles.find(p=>p.password===pw);
   if(!match){document.getElementById('loginErr').textContent=L().loginErr;btn.disabled=false;btn.textContent=L().loginBtn;return}
   sessionStorage.setItem('masalStaffId',match.id);
@@ -977,7 +979,7 @@ async function sendSwapRequest(){
   const btn=document.getElementById('swapSendBtn');btn.disabled=true;btn.textContent=L().swapSending;
   const ws=fmtDate(currentWeek);
   const{error}=await sb.from('swap_requests').insert({requester_id:me.id,target_id:targetId,requester_shift_id:myShiftId,target_shift_id:targetShiftId,week_start:ws,status:'pending'});
-  if(error){showToast('Hata: '+error.message);btn.disabled=false;btn.textContent=L().swapSend;swapSubmitting=false;return}
+  if(error){showToast(L().errPrefix+error.message);btn.disabled=false;btn.textContent=L().swapSend;swapSubmitting=false;return}
   const target=allProfiles.find(p=>p.id===targetId);
   const myShift=swapShiftsCache.find(s=>s.id===myShiftId);
   const tShift=swapShiftsCache.find(s=>s.id===targetShiftId);

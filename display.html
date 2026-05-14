@@ -104,8 +104,8 @@ section.active{display:block}
   <div class="login-box">
     <img class="login-logo" src="https://i0.wp.com/masalrestaurant.nl/wp-content/uploads/2021/11/Masal_Logo_DEF.png?fit=600%2C304&ssl=1" alt="Masal">
     <h2>Masal Display</h2>
-    <input type="password" id="passInput" placeholder="Wachtwoord" onkeydown="if(event.key==='Enter')doLogin()">
-    <button class="login-btn" onclick="doLogin()">Inloggen</button>
+    <input type="password" id="passInput" data-i18n-ph="login_pw" placeholder="Wachtwoord" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()" data-i18n="login_btn">Inloggen</button>
     <div class="login-err" id="loginErr"></div>
   </div>
 </div>
@@ -151,7 +151,7 @@ function doLogin(){
     sessionStorage.setItem('displayAuth','1');
     document.getElementById('loginWrap').style.display='none';
   } else {
-    document.getElementById('loginErr').textContent='Ongeldig wachtwoord';
+    document.getElementById('loginErr').textContent=t('login_err');
     document.getElementById('passInput').value='';
     document.getElementById('passInput').focus();
   }
@@ -181,6 +181,7 @@ const T={
     btn_confirm:'Bevestigen',btn_confirmed:'✓ Bevestigd',status_arrived:'Aanwezig',btn_arrived:'Aanwezig',
     empty_today:'Geen reserveringen voor vandaag',empty_upcoming:'Geen reserveringen',
     refresh_label:'Automatisch vernieuwen over',
+    login_btn:'Inloggen',login_pw:'Wachtwoord',login_err:'Ongeldig wachtwoord',
     days:['Zondag','Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag'],
     months:['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec']
   },
@@ -193,6 +194,7 @@ const T={
     btn_confirm:'Confirm',btn_confirmed:'✓ Confirmed',status_arrived:'Arrived',btn_arrived:'Arrived',
     empty_today:'No reservations for today',empty_upcoming:'No reservations found',
     refresh_label:'Auto refresh in',
+    login_btn:'Log in',login_pw:'Password',login_err:'Invalid password',
     days:['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
     months:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
   },
@@ -205,6 +207,7 @@ const T={
     btn_confirm:'Onayla',btn_confirmed:'✓ Onaylandı',status_arrived:'Geldi',btn_arrived:'Geldi',
     empty_today:'Bugün rezervasyon yok',empty_upcoming:'Rezervasyon bulunamadı',
     refresh_label:'Otomatik yenileme',
+    login_btn:'Giriş yap',login_pw:'Şifre',login_err:'Geçersiz şifre',
     days:['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'],
     months:['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara']
   }
@@ -218,6 +221,7 @@ function setLang(l){
   localStorage.setItem('masalDisplayLang',l);
   document.documentElement.lang=l;
   document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.dataset.i18n;if(T[l][k])el.textContent=T[l][k]});
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{const k=el.dataset.i18nPh;if(T[l][k])el.placeholder=T[l][k]});
   document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('active',b.textContent===l.toUpperCase()));
   updateClock();
   loadAll();

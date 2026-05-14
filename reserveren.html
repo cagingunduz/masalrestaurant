@@ -458,7 +458,7 @@ const T={
     s3_occasion:'Bijzondere gelegenheid (optioneel)',
     s4_title:'Uw gegevens',s4_sub:'Vul uw contactgegevens in om de reservering te bevestigen.',
     sum_title:'Reservering overzicht',
-    f_name:'Naam',f_phone:'Telefoon',f_notes:'Bijzonderheden',
+    f_name:'Naam',f_phone:'Telefoon',f_notes:'Bijzonderheden',f_date:'Datum',err:'Fout: ',
     f_notes_ph:'Allergieën, speciale wensen...',
     btn_next:'Volgende',btn_back:'Terug',
     res_submit:'Reservering Bevestigen',
@@ -491,7 +491,7 @@ const T={
     s3_occasion:'Special occasion (optional)',
     s4_title:'Your details',s4_sub:'Enter your contact details to confirm the reservation.',
     sum_title:'Reservation summary',
-    f_name:'Name',f_phone:'Phone',f_notes:'Special requests',
+    f_name:'Name',f_phone:'Phone',f_notes:'Special requests',f_date:'Date',err:'Error: ',
     f_notes_ph:'Allergies, special wishes...',
     btn_next:'Next',btn_back:'Back',
     res_submit:'Confirm Reservation',
@@ -524,7 +524,7 @@ const T={
     s3_occasion:'Özel gün (isteğe bağlı)',
     s4_title:'Bilgileriniz',s4_sub:'Rezervasyonu onaylamak için iletişim bilgilerinizi girin.',
     sum_title:'Rezervasyon özeti',
-    f_name:'Ad Soyad',f_phone:'Telefon',f_notes:'Özel istekler',
+    f_name:'Ad Soyad',f_phone:'Telefon',f_notes:'Özel istekler',f_date:'Tarih',err:'Hata: ',
     f_notes_ph:'Alerji, özel gün, diğer istekler...',
     btn_next:'Devam',btn_back:'Geri',
     res_submit:'Rezervasyonu Onayla',
@@ -812,7 +812,7 @@ async function submitParty(e){
     name,phone,email,guests:String(personCount),event_date,event_type,decoration,cake,wishes
   });
   btn.disabled=false;
-  if(error){alert('Error: '+error.message);return}
+  if(error){alert(t('err')+error.message);return}
   document.body.innerHTML=`
   <div class="page" style="padding-top:4rem">
     <div class="success-wrap" style="display:block">
@@ -857,7 +857,7 @@ async function submitForm(e){
     persons:String(personCount),notes:(notes+occ).trim(),status:'confirmed'
   }).select('id').single();
   btn.disabled=false;
-  if(error){alert('Error: '+error.message);return}
+  if(error){alert(t('err')+error.message);return}
   const rid=data?.id||'';
   const base=window.location.origin+window.location.pathname.replace(/\/[^/]*$/,'/');
 
@@ -904,7 +904,7 @@ async function submitForm(e){
   const htmlBody=`<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="margin:0;padding:0;background:#f7f5f0;font-family:-apple-system,system-ui,sans-serif">
   <div style="max-width:520px;margin:0 auto;padding:2rem 1rem">
     <div style="text-align:center;margin-bottom:1.5rem">
-      <img src="https://i0.wp.com/masalrestaurant.nl/wp-content/uploads/2021/11/Masal_Logo_DEF.png?fit=600%2C304&ssl=1" style="height:44px">
+      <img src="https://i0.wp.com/masalrestaurant.nl/wp-content/uploads/2021/11/Masal_Logo_DEF.png?fit=600%2C304&ssl=1" width="87" height="44" alt="Masal Restaurant" style="display:block;width:87px;height:44px;margin:0 auto;border:0;outline:none;-ms-interpolation-mode:bicubic">
     </div>
     <div style="background:#fff;border-radius:14px;overflow:hidden;border:1px solid #e5e1d8">
       <div style="background:#1e3a1e;padding:1.5rem 2rem;text-align:center">
