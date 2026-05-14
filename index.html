@@ -86,8 +86,14 @@ section{padding:7rem 3.5rem}
 .menu-card-btn:hover{background:var(--gold-dark);color:#fff;transform:translateY(-2px)}
 
 /* VIDEO SECTION */
-.video-section{width:100%;line-height:0;margin:0;overflow:hidden}
-.video-section video{width:100%;display:block;object-fit:cover;max-height:70vh}
+.video-section{width:100%;line-height:0;margin:0;overflow:hidden;position:relative}
+.video-section video{width:100%;display:block;object-fit:cover;max-height:100vh}
+.video-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(13,13,13,.35) 0%,rgba(13,13,13,0) 40%,rgba(13,13,13,.55) 100%);pointer-events:none}
+.video-hero-content{position:absolute;bottom:3.5rem;left:50%;transform:translateX(-50%);text-align:center;z-index:2;width:100%;padding:0 2rem}
+.video-hero-content h1{font-family:'Playfair Display',serif;font-size:clamp(2.2rem,5vw,4rem);font-weight:500;color:#fff;line-height:1.15;margin-bottom:1rem}
+.video-hero-content h1 em{font-style:italic;color:var(--gold)}
+.video-hero-content p{font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:rgba(255,255,255,.75);margin-bottom:1.6rem}
+.video-hero-content .btn-primary{opacity:1;animation:none}
 
 /* EXPERIENCE */
 .experience{position:relative;min-height:480px;display:flex;align-items:flex-end;padding:4rem 3.5rem;overflow:hidden;margin:0;border-radius:0}
@@ -244,23 +250,17 @@ footer p{line-height:1.7}
   </div>
 </nav>
 
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-bg"></div>
-  <div class="hero-content">
-    <p class="hero-label" data-i18n="hero_label">Hoşgeldiniz — Welkom</p>
-    <h1 data-i18n="hero_title">Een Turks <em>sprookje</em> in het hart van Tilburg</h1>
-    <p data-i18n="hero_desc">Onze keuken is geïnspireerd door de rijke culinaire tradities van Turkije. We streven ernaar om onze gasten een authentieke en onvergetelijke eetervaring te bieden.</p>
-    <a href="reserveren.html" class="btn-primary" data-i18n="hero_cta">Reserveer een tafel</a>
-  </div>
-  <div class="scroll-hint"><span>Scroll</span><div class="scroll-line"></div></div>
-</section>
-
-<!-- VIDEO -->
+<!-- VIDEO (hero) -->
 <div class="video-section">
   <video autoplay muted loop playsinline preload="auto">
     <source src="video-masal.mp4" type="video/mp4">
   </video>
+  <div class="video-overlay"></div>
+  <div class="video-hero-content">
+    <h1 data-i18n="hero_title">Een Turks <em>sprookje</em> in het hart van Tilburg</h1>
+    <p data-i18n="hero_desc">Onze keuken is geïnspireerd door de rijke culinaire tradities van Turkije.</p>
+    <a href="reserveren.html" class="btn-primary" data-i18n="hero_cta">Reserveer een tafel</a>
+  </div>
 </div>
 
 <!-- ABOUT -->
