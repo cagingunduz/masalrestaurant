@@ -246,11 +246,12 @@ setInterval(tick,1000);
 
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 
-function timeLabel(time){
+function timeLabel(time,dateStr){
   if(!time)return '';
   const now=new Date();
   const[h,m]=(time||'').split(':').map(Number);
-  const tx=new Date();tx.setHours(h,m||0,0,0);
+  const tx=dateStr?new Date(dateStr+'T00:00:00'):new Date();
+  tx.setHours(h,m||0,0,0);
   const diff=(tx-now)/60000;
   const cls=diff<0?'past':diff<=30?'soon':'';
   return `<span class="time-badge ${cls}">${time}</span>`;
@@ -336,7 +337,7 @@ async function loadUpcoming(){
   c.innerHTML=Object.entries(groups).map(([date,rows])=>`
     <div class="date-group">
       <div class="date-group-label">${date}</div>
-      ${renderTable(rows,false)}
+      ${renderTable(rows,true)}
     </div>`).join('');
 }
 
@@ -357,7 +358,7 @@ function renderTable(rows,showTime){
       const notes=isParty?(r.wishes||''):(r.notes||'');
       const isCancelled=r.status==='cancelled';
       return`<tr${isCancelled?' class="cancelled-row"':''}>
-        ${showTime?`<td>${isParty?'<span class="time-badge" style="opacity:.4">—</span>':timeLabel(r.time)}</td>`:''}
+        ${showTime?`<td>${isParty?'<span class="time-badge" style="opacity:.4">—</span>':timeLabel(r.time,r._date)}</td>`:''}
         <td><div class="name-cell">${esc(r.name)}</div></td>
         <td><span class="type-badge ${isParty?'party':'res'}">${t(isParty?'type_party':'type_res')}</span></td>
         <td>${persons}</td>
