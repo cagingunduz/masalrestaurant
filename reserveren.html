@@ -663,7 +663,7 @@ function selectDate(ds){
 }
 
 /* ── TIME ── */
-function buildTimeGrid(){
+async function buildTimeGrid(){
   const grid=document.getElementById('timeGrid');
   const now=new Date();
   const todayStr=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
@@ -673,10 +673,27 @@ function buildTimeGrid(){
   const selDay=selectedDate?new Date(selectedDate+'T00:00:00').getDay():0;
   const isWeekend=selDay===0||selDay===6;
   const openMins=isWeekend?10*60:11*60;
+  // Kapasite limitleri — dolu saat aralıklarını belirle
+  const toMin=hm=>{const[hh,mm]=hm.split(':').map(Number);return hh*60+mm};
+  let fullRanges=[];
+  if(selectedDate){
+    const [lr,rr]=await Promise.all([
+      sb.from('capacity_limits').select('*').eq('date',selectedDate),
+      sb.from('reservations').select('time,persons,status').eq('date',selectedDate)
+    ]);
+    const limits=lr.data||[],resv=rr.data||[];
+    limits.forEach(lim=>{
+      const ls=toMin(lim.start_time),le=toMin(lim.end_time);
+      const booked=resv.filter(r=>r.status!=='cancelled'&&r.time&&toMin(r.time)>=ls&&toMin(r.time)<le)
+        .reduce((sum,r)=>sum+(parseInt(r.persons)||0),0);
+      if(booked>=lim.max_persons)fullRanges.push([ls,le]);
+    });
+  }
   grid.innerHTML=TIMES.map(ti=>{
     const [h,m]=ti.split(':').map(Number);
     const tMins=h*60+m;
-    const isPast=(isToday&&tMins<=(nowMins+30))||tMins<openMins;
+    const isFull=fullRanges.some(([s,e])=>tMins>=s&&tMins<e);
+    const isPast=(isToday&&tMins<=(nowMins+30))||tMins<openMins||isFull;
     const sel=ti===selectedTime&&!isPast?' selected':'';
     if(isPast&&ti===selectedTime)selectedTime=null;
     return`<div class="time-chip${sel}${isPast?' disabled':''}" ${!isPast?`onclick="selectTime('${ti}',this)"`:''}>${ti}</div>`;

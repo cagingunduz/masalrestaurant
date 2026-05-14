@@ -270,6 +270,7 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
     <div class="tab active" data-tab="reservations" data-i18n="tab_reservations" onclick="switchTab('reservations')">Reserveringen</div>
     <div class="tab" data-tab="party" data-i18n="tab_party" onclick="switchTab('party')">Feest aanvragen</div>
     <div class="tab" data-tab="shifts" data-i18n="tab_shifts" onclick="switchTab('shifts')">Shifts</div>
+    <div class="tab" data-tab="capacity" data-i18n="tab_capacity" onclick="switchTab('capacity')">Capaciteitslimiet</div>
     <div class="tab" data-tab="haccp" onclick="switchTab('haccp')">HACCP</div>
     <div class="tab" data-tab="swaps" onclick="switchTab('swaps')" id="swapsTab">Vardiya Değişimleri</div>
   </div>
@@ -320,6 +321,36 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
       <div class="sched-wrap">
         <table class="sched-table" id="schedTable"></table>
       </div>
+    </section>
+
+    <!-- CAPACITY LIMITS -->
+    <section class="section" id="sec-capacity">
+      <div class="toolbar">
+        <h2 data-i18n="tab_capacity">Capaciteitslimiet</h2>
+        <div class="actions">
+          <button class="btn ghost" onclick="loadCapacity()" data-i18n="refresh">Vernieuwen</button>
+        </div>
+      </div>
+      <div style="background:#fff;border-radius:10px;padding:1.2rem 1.4rem;margin-bottom:1.2rem;box-shadow:0 4px 20px rgba(0,0,0,.04);display:flex;gap:.9rem;flex-wrap:wrap;align-items:flex-end">
+        <div style="display:flex;flex-direction:column;gap:.3rem">
+          <label style="font-size:.72rem;color:#888;text-transform:uppercase;letter-spacing:.5px" data-i18n="col_date">Datum</label>
+          <input type="date" id="capDate" class="input">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:.3rem">
+          <label style="font-size:.72rem;color:#888;text-transform:uppercase;letter-spacing:.5px" data-i18n="cap_start">Begintijd</label>
+          <input type="text" id="capStart" class="input" placeholder="11:00" maxlength="5" oninput="fmtTimeInput(this)" style="width:90px">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:.3rem">
+          <label style="font-size:.72rem;color:#888;text-transform:uppercase;letter-spacing:.5px" data-i18n="cap_end">Eindtijd</label>
+          <input type="text" id="capEnd" class="input" placeholder="22:00" maxlength="5" oninput="fmtTimeInput(this)" style="width:90px">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:.3rem">
+          <label style="font-size:.72rem;color:#888;text-transform:uppercase;letter-spacing:.5px" data-i18n="cap_maxlbl">Max. personen</label>
+          <input type="number" id="capMax" class="input" min="1" placeholder="100" style="width:100px">
+        </div>
+        <button class="btn" onclick="addCapacity()" data-i18n="cap_add">+ Toevoegen</button>
+      </div>
+      <div id="capContainer"></div>
     </section>
 
     <!-- SWAP REQUESTS -->
@@ -483,7 +514,7 @@ const SUPABASE_URL='https://mytqxxdzfrropqcrhipv.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15dHF4eGR6ZnJyb3BxY3JoaXB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MjgwMTUsImV4cCI6MjA5MTAwNDAxNX0.eKAts80PGm6TTYSllnYq79UaG0_ERJi7FBLnh2GgG4I';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
 
-const ADMIN_PASSWORD='blabla';
+const ADMIN_PASSWORD='masal2017';
 const DAY_NAMES_NL=['Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag','Zondag'];
 const DAY_NAMES_TR=['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
 
@@ -492,6 +523,9 @@ const I18N={
     login_subtitle:'Voer uw wachtwoord in om door te gaan',password:'Wachtwoord',login_btn:'Inloggen',login_error:'Ongeldig wachtwoord',
     logout:'Uitloggen',
     tab_reservations:'Reserveringen',tab_party:'Feest aanvragen',tab_shifts:'Shifts',
+    tab_capacity:'Capaciteitslimiet',cap_start:'Begintijd',cap_end:'Eindtijd',cap_maxlbl:'Max. personen',cap_add:'+ Toevoegen',
+    cap_range:'Tijdsbereik',cap_booked:'Geboekt',cap_full:'Vol',cap_open:'Beschikbaar',cap_empty:'Geen capaciteitslimieten ingesteld',
+    cap_invalid:'Vul een geldige datum, tijden en max. personen in.',cap_confirm_delete:'Limiet verwijderen?',
     filter_all:'Alle',status_new:'Nieuw',status_confirmed:'Bevestigd',status_cancelled:'Geannuleerd',
     refresh:'Vernieuwen',prev:'← Vorige',next:'Volgende →',
     new_shift:'Nieuwe shift',edit_shift:'Shift bewerken',
@@ -519,6 +553,9 @@ const I18N={
     login_subtitle:'Devam etmek için şifrenizi giriniz',password:'Şifre',login_btn:'Giriş Yap',login_error:'Geçersiz şifre',
     logout:'Çıkış',
     tab_reservations:'Rezervasyonlar',tab_party:'Etkinlik Talepleri',tab_shifts:'Vardiyalar',
+    tab_capacity:'Kapasite Limiti',cap_start:'Başlangıç',cap_end:'Bitiş',cap_maxlbl:'Maks. kişi',cap_add:'+ Ekle',
+    cap_range:'Saat aralığı',cap_booked:'Dolu kişi',cap_full:'Dolu',cap_open:'Müsait',cap_empty:'Tanımlı kapasite limiti yok',
+    cap_invalid:'Geçerli tarih, saat ve maks. kişi girin.',cap_confirm_delete:'Limit silinsin mi?',
     filter_all:'Tümü',status_new:'Yeni',status_confirmed:'Onaylandı',status_cancelled:'İptal',
     refresh:'Yenile',prev:'← Önceki',next:'Sonraki →',
     date:'Tarih',start_time:'Başlangıç',end_time:'Bitiş',
@@ -635,6 +672,7 @@ function switchTab(name){
   if(name==='reservations')loadReservations();
   if(name==='party')loadParty();
   if(name==='shifts')loadShifts();
+  if(name==='capacity')loadCapacity();
   if(name==='haccp')loadHaccp();
   if(name==='swaps')loadSwaps();
 }
@@ -766,6 +804,57 @@ async function deleteRes(id){
   loadReservations();
 }
 
+// === CAPACITY LIMITS ===
+const capToMin=hm=>{const[h,m]=String(hm).split(':').map(Number);return h*60+m};
+
+async function loadCapacity(){
+  const c=document.getElementById('capContainer');
+  const today=fmtDate(new Date());
+  const{data:limits,error}=await sb.from('capacity_limits').select('*').gte('date',today).order('date').order('start_time');
+  if(error){c.innerHTML=`<div class="empty">${t('err')}${error.message}</div>`;return}
+  if(!limits||!limits.length){c.innerHTML=`<div class="empty">${t('cap_empty')}</div>`;return}
+  const dates=[...new Set(limits.map(l=>l.date))];
+  const{data:resv=[]}=await sb.from('reservations').select('date,time,persons,status').in('date',dates);
+  c.innerHTML=`<table>
+    <thead><tr><th>${t('col_date')}</th><th>${t('cap_range')}</th><th>${t('cap_maxlbl')}</th><th>${t('cap_booked')}</th><th>${t('col_status')}</th><th>${t('col_actions')}</th></tr></thead>
+    <tbody>${limits.map(l=>{
+      const s=capToMin(l.start_time),e=capToMin(l.end_time);
+      const booked=(resv||[]).filter(r=>r.date===l.date&&r.status!=='cancelled'&&r.time&&capToMin(r.time)>=s&&capToMin(r.time)<e)
+        .reduce((sum,r)=>sum+(parseInt(r.persons)||0),0);
+      const full=booked>=l.max_persons;
+      return`<tr>
+        <td data-label="${t('col_date')}">${l.date}</td>
+        <td data-label="${t('cap_range')}">${String(l.start_time).slice(0,5)} – ${String(l.end_time).slice(0,5)}</td>
+        <td data-label="${t('cap_maxlbl')}">${l.max_persons}</td>
+        <td data-label="${t('cap_booked')}">${booked}</td>
+        <td data-label="${t('col_status')}"><span class="badge ${full?'cancelled':'confirmed'}">${full?t('cap_full'):t('cap_open')}</span></td>
+        <td data-label="${t('col_actions')}"><button class="btn small danger" onclick="deleteCapacity('${l.id}')">×</button></td>
+      </tr>`;
+    }).join('')}</tbody></table>`;
+}
+
+async function addCapacity(){
+  const date=document.getElementById('capDate').value;
+  const start=document.getElementById('capStart').value.trim();
+  const end=document.getElementById('capEnd').value.trim();
+  const max=parseInt(document.getElementById('capMax').value,10);
+  if(!date||!/^\d{2}:\d{2}$/.test(start)||!/^\d{2}:\d{2}$/.test(end)||!max||max<1||start>=end){
+    alert(t('cap_invalid'));return;
+  }
+  const{error}=await sb.from('capacity_limits').insert({date,start_time:start,end_time:end,max_persons:max});
+  if(error){alert(t('err')+error.message);return}
+  document.getElementById('capStart').value='';
+  document.getElementById('capEnd').value='';
+  document.getElementById('capMax').value='';
+  loadCapacity();
+}
+
+async function deleteCapacity(id){
+  if(!confirm(t('cap_confirm_delete')))return;
+  await sb.from('capacity_limits').delete().eq('id',id);
+  loadCapacity();
+}
+
 // === PARTY REQUESTS ===
 async function loadParty(){
   const {data,error}=await sb.from('party_requests').select('*').order('created_at',{ascending:false});
@@ -862,6 +951,7 @@ async function loadShifts(){
 
   // Rows
   const staff=profiles.filter(p=>p.role!=='admin'||profiles.length===1);
+  let grandTotal=0;
   const rows=staff.length?staff.map(p=>{
     let weekTotal=0;
     const tint=hexTint(p.color,0.28);
@@ -889,6 +979,7 @@ async function loadShifts(){
         return`<td class="sched-td${isWknd?' wknd':''}" ${bg}><div class="sched-cell empty" onclick="openCellModal(${data})">+</div></td>`;
       }
     }).join('');
+    grandTotal+=weekTotal;
     return`<tr class="sched-tr">
       <td class="sched-td staff-td" ${bg}>
         <span class="staff-dot" style="background:${p.color||'#aaa'}"></span>&nbsp;${esc(p.name||'?')}
@@ -907,7 +998,12 @@ async function loadShifts(){
       ${thDays}
       <th class="sched-th total-th">${t('col_total')}</th>
     </tr></thead>
-    <tbody>${rows}</tbody>`;
+    <tbody>${rows}</tbody>
+    ${staff.length?`<tfoot><tr class="sched-tr">
+      <td class="sched-td staff-td" style="text-align:right;font-weight:700">${t('col_total')}</td>
+      <td class="sched-td" colspan="7" style="background:#f3efe6"></td>
+      <td class="sched-td total-td" style="font-weight:700;font-size:.95rem">${grandTotal>0?hrsLabel(grandTotal):'–'}</td>
+    </tr></tfoot>`:''}`;
 
   // Cache for notify
   window._shiftMatrix=matrix;
