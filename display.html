@@ -84,9 +84,30 @@ tr.cancelled-row td{color:rgba(255,255,255,.3)!important;text-decoration:line-th
 
 section{display:none}
 section.active{display:block}
+/* LOGIN */
+#loginWrap{position:fixed;inset:0;background:#111;display:flex;align-items:center;justify-content:center;z-index:999}
+.login-box{background:#1e1e1e;border:1px solid rgba(198,165,92,.2);border-radius:16px;padding:2.5rem 2.2rem;width:340px;text-align:center}
+.login-logo{height:46px;filter:brightness(0)invert(1);margin-bottom:1.4rem}
+.login-box h2{font-family:'Playfair Display',serif;color:var(--gold);font-size:1.4rem;margin-bottom:1.4rem}
+.login-box input{width:100%;background:#2a2a2a;border:1.5px solid rgba(198,165,92,.2);color:#fff;border-radius:8px;padding:.8rem 1rem;font-size:1rem;margin-bottom:.9rem;outline:none;font-family:'Jost',sans-serif}
+.login-box input:focus{border-color:var(--gold)}
+.login-btn{width:100%;background:var(--gold);color:#111;border:none;padding:.85rem;border-radius:8px;font-size:1rem;font-weight:700;letter-spacing:.5px;cursor:pointer;font-family:'Jost',sans-serif}
+.login-btn:hover{background:var(--gold-light)}
+.login-err{color:#e74c3c;font-size:.82rem;margin-top:.5rem;min-height:1.1rem}
 </style>
 </head>
 <body>
+
+<!-- LOGIN -->
+<div id="loginWrap">
+  <div class="login-box">
+    <img class="login-logo" src="https://i0.wp.com/masalrestaurant.nl/wp-content/uploads/2021/11/Masal_Logo_DEF.png?fit=600%2C304&ssl=1" alt="Masal">
+    <h2>Masal Display</h2>
+    <input type="password" id="passInput" placeholder="Wachtwoord" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">Inloggen</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
 
 <header>
   <img class="logo" src="https://i0.wp.com/masalrestaurant.nl/wp-content/uploads/2021/11/Masal_Logo_DEF.png?fit=600%2C304&ssl=1" alt="Masal">
@@ -123,6 +144,27 @@ section.active{display:block}
 <div class="refresh-bar"><span data-i18n="refresh_label">—</span> <span id="countdown">60</span>s</div>
 
 <script>
+// ── AUTH ──────────────────────────────────────────────────────────────────
+function doLogin(){
+  if(document.getElementById('passInput').value==='masal2017'){
+    sessionStorage.setItem('displayAuth','1');
+    document.getElementById('loginWrap').style.display='none';
+  } else {
+    document.getElementById('loginErr').textContent='Ongeldig wachtwoord';
+    document.getElementById('passInput').value='';
+    document.getElementById('passInput').focus();
+  }
+}
+if(sessionStorage.getItem('displayAuth')==='1'){
+  document.addEventListener('DOMContentLoaded',()=>{
+    document.getElementById('loginWrap').style.display='none';
+  });
+} else {
+  document.addEventListener('DOMContentLoaded',()=>{
+    document.getElementById('passInput').focus();
+  });
+}
+
 const SUPABASE_URL='https://mytqxxdzfrropqcrhipv.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15dHF4eGR6ZnJyb3BxY3JoaXB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MjgwMTUsImV4cCI6MjA5MTAwNDAxNX0.eKAts80PGm6TTYSllnYq79UaG0_ERJi7FBLnh2GgG4I';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
