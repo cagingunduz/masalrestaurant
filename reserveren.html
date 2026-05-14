@@ -77,6 +77,9 @@ a{text-decoration:none;color:inherit}
 .time-chip:hover{border-color:var(--gold);color:var(--gold-light)}
 .time-chip.selected{background:var(--gold);border-color:var(--gold);color:#111;font-weight:600}
 .time-chip.disabled{opacity:.25;cursor:not-allowed;pointer-events:none}
+.cap-warn{display:flex;flex-direction:column;gap:.3rem;background:rgba(192,57,43,.12);border:1px solid rgba(192,57,43,.45);border-radius:8px;padding:.85rem 1rem;margin-top:1.1rem}
+.cap-warn strong{color:#e74c3c;font-size:.74rem;letter-spacing:.6px;text-transform:uppercase}
+.cap-warn p{color:var(--muted);font-size:.85rem;line-height:1.5;margin:0}
 
 /* ── PERSON COUNTER ── */
 .person-block{display:flex;flex-direction:column;align-items:center;padding:1.5rem 0 1rem}
@@ -263,6 +266,7 @@ a{text-decoration:none;color:inherit}
         <button class="ctr-btn" onclick="changeCount(1)">+</button>
       </div>
     </div>
+    <div id="capWarn" class="cap-warn" style="display:none"></div>
     <div id="partyBanner" style="display:none" class="party-banner">
       <div class="party-banner-icon">🎉</div>
       <div class="party-banner-body">
@@ -463,6 +467,7 @@ const T={
     back_site:'Terug naar website',
     lbl_date:'Datum',lbl_time:'Tijd',lbl_persons:'Personen',lbl_name:'Naam',lbl_phone:'Telefoon',
     err_fields:'Vul alle verplichte velden in.',err_time:'Selecteer eerst een tijdstip.',
+    cap_warn:'Beperkte capaciteit',cap_warn_msg:'Voor dit tijdstip zijn nog {n} plaats(en) beschikbaar. Verlaag het aantal personen of kies een ander tijdstip.',cap_full_msg:'Dit tijdstip is volgeboekt. Kies a.u.b. een ander tijdstip.',err_capacity:'Niet genoeg plaatsen beschikbaar voor dit tijdstip.',
     lnk_confirm:'✓ Reservering bevestigen',lnk_cancel:'✕ Reservering annuleren',
     months:['Januari','Februari','Maart','April','Mei','Juni','Juli','Augustus','September','Oktober','November','December'],
     days:['Ma','Di','Wo','Do','Vr','Za','Zo'],
@@ -495,6 +500,7 @@ const T={
     back_site:'Back to website',
     lbl_date:'Date',lbl_time:'Time',lbl_persons:'Guests',lbl_name:'Name',lbl_phone:'Phone',
     err_fields:'Please fill in all required fields.',err_time:'Please select a time first.',
+    cap_warn:'Limited capacity',cap_warn_msg:'Only {n} seat(s) left for this time. Lower the number of guests or choose another time.',cap_full_msg:'This time slot is fully booked. Please choose another time.',err_capacity:'Not enough seats available for this time.',
     lnk_confirm:'✓ Confirm reservation',lnk_cancel:'✕ Cancel reservation',
     months:['January','February','March','April','May','June','July','August','September','October','November','December'],
     days:['Mo','Tu','We','Th','Fr','Sa','Su'],
@@ -527,6 +533,7 @@ const T={
     back_site:'Siteye dön',
     lbl_date:'Tarih',lbl_time:'Saat',lbl_persons:'Kişi',lbl_name:'Ad',lbl_phone:'Telefon',
     err_fields:'Lütfen tüm zorunlu alanları doldurun.',err_time:'Lütfen önce bir saat seçin.',
+    cap_warn:'Sınırlı kapasite',cap_warn_msg:'Bu saat için yalnızca {n} kişilik yer kaldı. Kişi sayısını azaltın veya başka bir saat seçin.',cap_full_msg:'Bu saat tamamen doldu. Lütfen başka bir saat seçin.',err_capacity:'Bu saat için yeterli yer yok.',
     lnk_confirm:'✓ Rezervasyonu onayla',lnk_cancel:'✕ Rezervasyonu iptal et',
     months:['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'],
     days:['Pt','Sa','Ça','Pe','Cu','Ct','Pz'],
@@ -572,6 +579,7 @@ function setLang(l){
 function goStep(n){
   if(n===2&&!selectedDate)return;
   if(n===3&&!selectedTime)return;
+  if(n===4&&!checkCapacity())return;
   currentStep=n;
   [1,2,3,4].forEach(i=>{
     document.getElementById('card'+i).style.display=i===n?'block':'none';
@@ -579,6 +587,7 @@ function goStep(n){
   document.getElementById('cardParty').style.display='none';
   updateStepIndicator();
   if(n===2)updateS2Sub();
+  if(n===3)checkCapacity();
   if(n===4)updateSummary();
   window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -676,15 +685,16 @@ async function buildTimeGrid(){
   // Kapasite limitleri — dolu saat aralıklarını belirle
   const toMin=hm=>{const[hh,mm]=hm.split(':').map(Number);return hh*60+mm};
   let fullRanges=[];
+  capLimits=[];capResv=[];
   if(selectedDate){
     const [lr,rr]=await Promise.all([
       sb.from('capacity_limits').select('*').eq('date',selectedDate),
       sb.from('reservations').select('time,persons,status').eq('date',selectedDate)
     ]);
-    const limits=lr.data||[],resv=rr.data||[];
-    limits.forEach(lim=>{
+    capLimits=lr.data||[];capResv=rr.data||[];
+    capLimits.forEach(lim=>{
       const ls=toMin(lim.start_time),le=toMin(lim.end_time);
-      const booked=resv.filter(r=>r.status!=='cancelled'&&r.time&&toMin(r.time)>=ls&&toMin(r.time)<le)
+      const booked=capResv.filter(r=>r.status!=='cancelled'&&r.time&&toMin(r.time)>=ls&&toMin(r.time)<le)
         .reduce((sum,r)=>sum+(parseInt(r.persons)||0),0);
       if(booked>=lim.max_persons)fullRanges.push([ls,le]);
     });
@@ -708,6 +718,39 @@ function selectTime(ti,el){
   document.getElementById('btnTime').disabled=false;
 }
 
+/* ── CAPACITY ── */
+let capLimits=[],capResv=[];
+const capToMin=hm=>{const[hh,mm]=String(hm).split(':').map(Number);return hh*60+mm};
+function capRemaining(time){
+  if(!time||!capLimits.length)return Infinity;
+  const tm=capToMin(time);
+  let rem=Infinity;
+  capLimits.forEach(lim=>{
+    const ls=capToMin(lim.start_time),le=capToMin(lim.end_time);
+    if(tm>=ls&&tm<le){
+      const booked=capResv.filter(r=>r.status!=='cancelled'&&r.time&&capToMin(r.time)>=ls&&capToMin(r.time)<le)
+        .reduce((s,r)=>s+(parseInt(r.persons)||0),0);
+      rem=Math.min(rem,lim.max_persons-booked);
+    }
+  });
+  return rem;
+}
+function checkCapacity(){
+  const warn=document.getElementById('capWarn');
+  const nextBtn=document.querySelector('#card3 .btn-primary');
+  if(!warn)return true;
+  const rem=capRemaining(selectedTime);
+  if(rem===Infinity||personCount<=rem){
+    warn.style.display='none';
+    if(nextBtn)nextBtn.disabled=false;
+    return true;
+  }
+  warn.innerHTML=`<strong>${t('cap_warn')}</strong><p>${rem<=0?t('cap_full_msg'):t('cap_warn_msg').replace('{n}',rem)}</p>`;
+  warn.style.display='flex';
+  if(nextBtn)nextBtn.disabled=true;
+  return false;
+}
+
 function updateS2Sub(){
   const el=document.getElementById('s2sub');
   if(selectedDate&&el){
@@ -723,6 +766,7 @@ function changeCount(d){
   document.getElementById('partyBanner').style.display=isParty?'flex':'none';
   document.getElementById('btnPartySwitch').style.display=isParty?'block':'none';
   document.querySelector('#card3 .btn-primary').style.display=isParty?'none':'flex';
+  checkCapacity();
 }
 
 /* ── OCCASIONS ── */
@@ -796,6 +840,15 @@ async function submitForm(e){
   const notes=document.getElementById('resNotes').value.trim();
   if(!name||!phone||!email){alert(t('err_fields'));return}
   if(!selectedTime){alert(t('err_time'));return}
+  // Kapasite son kontrol — güncel veriyle
+  if(selectedDate){
+    const [lr,rr]=await Promise.all([
+      sb.from('capacity_limits').select('*').eq('date',selectedDate),
+      sb.from('reservations').select('time,persons,status').eq('date',selectedDate)
+    ]);
+    capLimits=lr.data||[];capResv=rr.data||[];
+  }
+  if(personCount>capRemaining(selectedTime)){alert(t('err_capacity'));return}
   const occ=selectedOccasion?'\n['+selectedOccasion+']':'';
   const btn=document.getElementById('submitBtn');
   btn.disabled=true;
@@ -818,7 +871,7 @@ async function submitForm(e){
       intro:`Uw reservering bij Masal Restaurant & Café is succesvol ontvangen!`,
       detailsTitle:`Reserveringsdetails`,
       labelDate:`Datum`,labelTime:`Tijdstip`,labelPersons:`Aantal personen`,labelPhone:`Telefoon`,
-      cancelText:`Wilt u annuleren?`,cancelLink:`Klik hier om te annuleren`,
+      cancelText:`Bent u verhinderd? U kunt uw reservering hieronder annuleren.`,cancelBtn:`✕ Reservering annuleren`,
       address:`📍 Talent Square 333, Tilburg`,
       closing:`Tot ziens bij Masal!`,
       team:`Het team van Masal Restaurant & Café`,
@@ -829,7 +882,7 @@ async function submitForm(e){
       intro:`Your reservation at Masal Restaurant & Café has been successfully received!`,
       detailsTitle:`Reservation details`,
       labelDate:`Date`,labelTime:`Time`,labelPersons:`Number of guests`,labelPhone:`Phone`,
-      cancelText:`Want to cancel?`,cancelLink:`Click here to cancel`,
+      cancelText:`Can't make it? You can cancel your reservation below.`,cancelBtn:`✕ Cancel reservation`,
       address:`📍 Talent Square 333, Tilburg`,
       closing:`See you at Masal!`,
       team:`The Masal Restaurant & Café team`,
@@ -840,7 +893,7 @@ async function submitForm(e){
       intro:`Masal Restaurant & Café'deki rezervasyonunuz başarıyla alındı!`,
       detailsTitle:`Rezervasyon detayları`,
       labelDate:`Tarih`,labelTime:`Saat`,labelPersons:`Kişi sayısı`,labelPhone:`Telefon`,
-      cancelText:`İptal etmek ister misiniz?`,cancelLink:`İptal için tıklayın`,
+      cancelText:`Gelemiyor musunuz? Rezervasyonunuzu aşağıdan iptal edebilirsiniz.`,cancelBtn:`✕ Rezervasyonu iptal et`,
       address:`📍 Talent Square 333, Tilburg`,
       closing:`Masal'da görüşürüz!`,
       team:`Masal Restaurant & Café ekibi`,
@@ -867,7 +920,10 @@ async function submitForm(e){
           <tr style="border-bottom:1px solid #f0ece4"><td style="padding:.6rem .5rem;color:#888;font-size:.85rem">${ec.labelPersons}</td><td style="padding:.6rem .5rem;font-weight:600;color:#1a1a1a;font-size:.9rem">${personCount}</td></tr>
           <tr><td style="padding:.6rem .5rem;color:#888;font-size:.85rem">${ec.labelPhone}</td><td style="padding:.6rem .5rem;font-weight:600;color:#1a1a1a;font-size:.9rem">${phone}</td></tr>
         </table>
-        <p style="color:#888;font-size:.8rem;text-align:center">${ec.cancelText} <a href="${cancelUrl}" style="color:#c6a55c">${ec.cancelLink}</a></p>
+        <p style="color:#555;font-size:.85rem;margin:0 0 .9rem;text-align:center">${ec.cancelText}</p>
+        <div style="text-align:center">
+          <a href="${cancelUrl}" style="display:inline-block;background:#c0392b;color:#fff;padding:.7rem 2rem;border-radius:8px;text-decoration:none;font-weight:700;font-size:.92rem">${ec.cancelBtn}</a>
+        </div>
       </div>
       <div style="background:#f7f5f0;padding:1rem 2rem;border-top:1px solid #e5e1d8;text-align:center">
         <p style="margin:0;color:#888;font-size:.8rem">${ec.address}</p>

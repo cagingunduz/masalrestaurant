@@ -795,7 +795,7 @@ async function updateRes(id,status){
 }
 async function cancelRes(id){
   if(!confirm(t('confirm_cancel_res')))return;
-  await sb.from('reservations').update({status:'cancelled'}).eq('id',id);
+  await sb.from('reservations').update({status:'cancelled',cancelled_by:'admin'}).eq('id',id);
   loadReservations();
 }
 async function deleteRes(id){
