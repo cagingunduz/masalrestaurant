@@ -90,8 +90,10 @@ function show(icon,title,msg,actionsHtml=''){
 
 async function doCancel(){
   show('⏳',L.loading,'');
-  const{error}=await sb.from('reservations').update({status:'cancelled',cancelled_by:'customer'}).eq('id',id);
+  const{error}=await sb.from('reservations').update({status:'cancelled'}).eq('id',id);
   if(error){show('❌',L.err_title,L.err_msg,`<a href="index.html" class="btn ghost">${L.back}</a>`);return}
+  // Kim iptal etti bilgisini işaretle (kolon yoksa sessizce geçilir)
+  await sb.from('reservations').update({cancelled_by:'customer'}).eq('id',id);
   show('✅',L.done_title,L.done_msg,`<a href="index.html" class="btn">${L.back}</a>`);
 }
 

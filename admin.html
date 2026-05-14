@@ -802,6 +802,7 @@ async function loadReservations(){
         <td data-label="${t('col_status')}"><span class="badge ${r.status||'new'}">${t('status_'+(r.status||'new'))}</span></td>
         <td data-label="" style="display:flex;gap:.4rem;align-items:center;flex-wrap:wrap">
           ${(r.status||'new')==='new'?`<button class="btn small" style="background:#4CAF50;color:#fff" onclick="updateRes('${r.id}','confirmed')">${t('btn_confirm_res')}</button>`:''}
+          ${r.status!=='cancelled'?`<button class="btn small" onclick="cancelRes('${r.id}')">${t('btn_cancel_res')}</button>`:''}
           <button class="btn small danger" onclick="deleteRes('${r.id}')">×</button>
         </td>
       </tr>`).join('')}</tbody></table>`;
@@ -813,7 +814,9 @@ async function updateRes(id,status){
 }
 async function cancelRes(id){
   if(!confirm(t('confirm_cancel_res')))return;
-  await sb.from('reservations').update({status:'cancelled',cancelled_by:'admin'}).eq('id',id);
+  await sb.from('reservations').update({status:'cancelled'}).eq('id',id);
+  // Kim iptal etti bilgisini işaretle (kolon yoksa sessizce geçilir)
+  await sb.from('reservations').update({cancelled_by:'admin'}).eq('id',id);
   loadReservations();
 }
 async function deleteRes(id){
@@ -934,22 +937,25 @@ async function copyPrevWeek(){
   const{data:prevShifts}=await sb.from('shifts').select('*').eq('week_start',prevWs);
   if(!prevShifts||!prevShifts.length){alert(t('copy_none'));return}
   if(!confirm(t('copy_confirm')))return;
-  // Mevcut haftanın vardiyalarını temizle (atamalar CASCADE ile silinir)
+  // Eski (mevcut hafta) vardiya id'leri — kopyalama BAŞARILI olduktan SONRA silinir (veri kaybı önlenir)
   const{data:curShifts}=await sb.from('shifts').select('id').eq('week_start',curWs);
-  const curIds=(curShifts||[]).map(s=>s.id);
-  if(curIds.length)await sb.from('shifts').delete().in('id',curIds);
+  const oldIds=(curShifts||[]).map(s=>s.id);
   // Önceki haftanın atamalarını al
   const prevIds=prevShifts.map(s=>s.id);
   const{data:prevAssigns}=await sb.from('shift_assignments').select('*').in('shift_id',prevIds);
-  // Vardiyaları + atamaları kopyala (mail gönderilmez — manuel kalır)
+  // Önce yeni vardiyaları + atamaları oluştur (mail gönderilmez — manuel kalır)
+  let copied=0;
   for(const s of prevShifts){
     const{data:ns,error}=await sb.from('shifts')
       .insert({week_start:curWs,day_index:s.day_index,start_time:s.start_time,end_time:s.end_time})
       .select().single();
     if(error||!ns)continue;
+    copied++;
     const mine=(prevAssigns||[]).filter(a=>a.shift_id===s.id);
     if(mine.length)await sb.from('shift_assignments').insert(mine.map(a=>({shift_id:ns.id,staff_id:a.staff_id})));
   }
+  // Kopyalama başarılıysa eski vardiyaları temizle (atamalar CASCADE ile silinir)
+  if(copied>0&&oldIds.length)await sb.from('shifts').delete().in('id',oldIds);
   loadShifts();
 }
 
