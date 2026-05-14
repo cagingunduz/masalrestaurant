@@ -213,13 +213,14 @@ footer p{line-height:1.7}
   .menu-cards{grid-template-columns:1fr;max-width:420px;margin:0 auto}
   .faq-grid{grid-template-columns:1fr}
   .experience{padding:3.5rem 1.5rem}
-  /* Mobiel: video als banner, tekst eronder (geen overlap) */
+  /* Mobiel: video bijna full-screen banner, daaronder knop + tekst */
   .video-section{background:var(--dark)}
-  .video-section video{height:auto;max-height:62vh}
+  .video-section video{height:88vh;object-fit:cover}
   .video-overlay{display:none}
-  .video-hero-content{position:static;transform:none;padding:2.4rem 1.5rem 2.8rem;width:100%}
-  .video-hero-content h1{font-size:1.9rem;margin-bottom:.7rem}
-  .video-hero-content p{font-size:1rem;margin-bottom:1.2rem}
+  .video-hero-content{position:static;transform:none;width:100%;padding:2.2rem 1.5rem 2.6rem;display:flex;flex-direction:column;align-items:center}
+  .video-hero-content .btn-primary{order:1;margin-bottom:1.8rem}
+  .video-hero-content h1{order:2;font-size:1.9rem;margin-bottom:.6rem}
+  .video-hero-content p{order:3;font-size:1rem;margin-bottom:0}
   .hours-grid{grid-template-columns:1fr}
   .reviews-grid{grid-template-columns:1fr}
   .reviews-section{padding:4rem 1.5rem}
