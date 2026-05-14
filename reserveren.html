@@ -801,7 +801,7 @@ async function submitForm(e){
   btn.disabled=true;
   const{data,error}=await sb.from('reservations').insert({
     name,phone,email,date:selectedDate,time:selectedTime,
-    persons:String(personCount),notes:(notes+occ).trim()
+    persons:String(personCount),notes:(notes+occ).trim(),status:'confirmed'
   }).select('id').single();
   btn.disabled=false;
   if(error){alert('Error: '+error.message);return}
@@ -810,7 +810,6 @@ async function submitForm(e){
 
   // ── SEND CONFIRMATION EMAIL ──────────────────────────────────────────────
   const cancelUrl=`${base}cancel.html?id=${rid}`;
-  const confirmUrl=`${base}confirm.html?id=${rid}`;
 
   const emailContent={
     nl:{
@@ -819,8 +818,6 @@ async function submitForm(e){
       intro:`Uw reservering bij Masal Restaurant & Café is succesvol ontvangen!`,
       detailsTitle:`Reserveringsdetails`,
       labelDate:`Datum`,labelTime:`Tijdstip`,labelPersons:`Aantal personen`,labelPhone:`Telefoon`,
-      confirmText:`Klik op onderstaande knop om uw reservering te bevestigen:`,
-      confirmBtn:`✓ Reservering bevestigen`,
       cancelText:`Wilt u annuleren?`,cancelLink:`Klik hier om te annuleren`,
       address:`📍 Talent Square 333, Tilburg`,
       closing:`Tot ziens bij Masal!`,
@@ -832,8 +829,6 @@ async function submitForm(e){
       intro:`Your reservation at Masal Restaurant & Café has been successfully received!`,
       detailsTitle:`Reservation details`,
       labelDate:`Date`,labelTime:`Time`,labelPersons:`Number of guests`,labelPhone:`Phone`,
-      confirmText:`Click the button below to confirm your reservation:`,
-      confirmBtn:`✓ Confirm reservation`,
       cancelText:`Want to cancel?`,cancelLink:`Click here to cancel`,
       address:`📍 Talent Square 333, Tilburg`,
       closing:`See you at Masal!`,
@@ -845,8 +840,6 @@ async function submitForm(e){
       intro:`Masal Restaurant & Café'deki rezervasyonunuz başarıyla alındı!`,
       detailsTitle:`Rezervasyon detayları`,
       labelDate:`Tarih`,labelTime:`Saat`,labelPersons:`Kişi sayısı`,labelPhone:`Telefon`,
-      confirmText:`Rezervasyonunuzu onaylamak için aşağıdaki butona tıklayın:`,
-      confirmBtn:`✓ Rezervasyonu onayla`,
       cancelText:`İptal etmek ister misiniz?`,cancelLink:`İptal için tıklayın`,
       address:`📍 Talent Square 333, Tilburg`,
       closing:`Masal'da görüşürüz!`,
@@ -874,10 +867,6 @@ async function submitForm(e){
           <tr style="border-bottom:1px solid #f0ece4"><td style="padding:.6rem .5rem;color:#888;font-size:.85rem">${ec.labelPersons}</td><td style="padding:.6rem .5rem;font-weight:600;color:#1a1a1a;font-size:.9rem">${personCount}</td></tr>
           <tr><td style="padding:.6rem .5rem;color:#888;font-size:.85rem">${ec.labelPhone}</td><td style="padding:.6rem .5rem;font-weight:600;color:#1a1a1a;font-size:.9rem">${phone}</td></tr>
         </table>
-        <p style="color:#555;font-size:.85rem;margin:0 0 .9rem">${ec.confirmText}</p>
-        <div style="text-align:center;margin-bottom:1.4rem">
-          <a href="${confirmUrl}" style="display:inline-block;background:#1e3a1e;color:#fff;padding:.75rem 2rem;border-radius:8px;text-decoration:none;font-weight:700;font-size:.95rem">${ec.confirmBtn}</a>
-        </div>
         <p style="color:#888;font-size:.8rem;text-align:center">${ec.cancelText} <a href="${cancelUrl}" style="color:#c6a55c">${ec.cancelLink}</a></p>
       </div>
       <div style="background:#f7f5f0;padding:1rem 2rem;border-top:1px solid #e5e1d8;text-align:center">

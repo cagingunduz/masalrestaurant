@@ -92,7 +92,7 @@ section{padding:7rem 3.5rem}
 .video-hero-content{position:absolute;bottom:7rem;left:50%;transform:translateX(-50%);text-align:center;z-index:2;width:100%;padding:0 2rem}
 .video-hero-content h1{font-family:'Playfair Display',serif;font-size:clamp(2.2rem,5vw,4rem);font-weight:500;color:#fff;line-height:1.15;margin-bottom:1rem}
 .video-hero-content h1 em{font-style:italic;color:var(--gold)}
-.video-hero-content p{font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:rgba(255,255,255,.75);margin-bottom:1.6rem}
+.video-hero-content p{font-family:'Cormorant Garamond',serif;font-size:1.1rem;line-height:1.6;color:rgba(255,255,255,.75);margin-bottom:1.6rem}
 .video-hero-content .btn-primary{opacity:1;animation:none;background:var(--gold);color:var(--dark);border-color:var(--gold);font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,.35)}
 .video-hero-content .btn-primary:hover{background:var(--gold-light);border-color:var(--gold-light);color:var(--dark);transform:translateY(-2px)}
 
@@ -214,14 +214,15 @@ footer p{line-height:1.7}
   .menu-cards{grid-template-columns:1fr;max-width:420px;margin:0 auto}
   .faq-grid{grid-template-columns:1fr}
   .experience{padding:3.5rem 1.5rem}
-  /* Mobiel: video bijna full-screen banner, daaronder knop + tekst */
-  .video-section{background:var(--dark)}
-  .video-section video{height:88vh;object-fit:cover}
-  .video-overlay{display:none}
-  .video-hero-content{position:static;transform:none;width:100%;padding:2.2rem 1.5rem 2.6rem;display:flex;flex-direction:column;align-items:center}
-  .video-hero-content .btn-primary{order:1;margin-bottom:1.8rem}
-  .video-hero-content h1{order:2;font-size:1.9rem;margin-bottom:.6rem}
-  .video-hero-content p{order:3;font-size:1rem;margin-bottom:0}
+  /* Mobiel: video bijna full-screen, tekst + knop eroverheen */
+  .video-section{height:92vh;min-height:520px}
+  .video-section video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .video-hero-content{position:absolute;inset:0;transform:none;width:100%;
+    display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+    gap:.55rem;padding:0 1.5rem 3rem}
+  .video-hero-content .btn-primary{order:1;margin:0 0 .5rem}
+  .video-hero-content h1{order:2;font-size:1.8rem;line-height:1.2;margin:0}
+  .video-hero-content p{order:3;font-size:.98rem;line-height:1.55;margin:0}
   .hours-grid{grid-template-columns:1fr}
   .reviews-grid{grid-template-columns:1fr}
   .reviews-section{padding:4rem 1.5rem}
