@@ -738,7 +738,7 @@ async function handleRes(e){
   const fd=new FormData(f);
   const payload={name:fd.get('name'),phone:fd.get('phone'),email:fd.get('email'),date:fd.get('date'),time:fd.get('time'),persons:fd.get('persons'),notes:fd.get('notes')};
   b.disabled=true;
-  const {error}=await sb.from('reservations').insert(payload);
+  const {error}=await sb.rpc('public_create_reservation',{p_name:payload.name,p_phone:payload.phone,p_email:payload.email,p_date:payload.date,p_time:payload.time,p_persons:String(payload.persons||''),p_notes:payload.notes});
   b.disabled=false;
   if(error){b.textContent='Fout: '+error.message;b.style.background='#c0392b';setTimeout(()=>{b.textContent=T[currentLang].res_submit;b.style.background=''},4000);return}
   b.textContent=T[currentLang].confirm_res;b.style.background='#4CAF50';
@@ -749,9 +749,9 @@ async function handleParty(e){
   e.preventDefault();
   const f=e.target;const b=f.querySelector('.btn-gold-solid');
   const fd=new FormData(f);
-  const payload={name:fd.get('name'),phone:fd.get('phone'),email:fd.get('email'),guests:parseInt(fd.get('guests'),10),event_date:fd.get('event_date'),event_type:fd.get('event_type'),decoration:fd.get('decoration'),cake:fd.get('cake'),wishes:fd.get('wishes')};
+  const payload={name:fd.get('name'),phone:fd.get('phone'),email:fd.get('email'),guests:fd.get('guests'),event_date:fd.get('event_date'),event_type:fd.get('event_type'),decoration:fd.get('decoration'),cake:fd.get('cake'),wishes:fd.get('wishes')};
   b.disabled=true;
-  const {error}=await sb.from('party_requests').insert(payload);
+  const {error}=await sb.rpc('public_create_party_request',{p_name:payload.name,p_phone:payload.phone,p_email:payload.email,p_guests:String(payload.guests||''),p_event_date:payload.event_date,p_event_type:payload.event_type,p_decoration:payload.decoration,p_cake:payload.cake,p_wishes:payload.wishes});
   b.disabled=false;
   if(error){b.textContent='Fout: '+error.message;b.style.background='#c0392b';setTimeout(()=>{b.textContent=T[currentLang].party_submit;b.style.background=''},4000);return}
   b.textContent=T[currentLang].confirm_party;b.style.background='#4CAF50';

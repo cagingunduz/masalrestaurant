@@ -685,21 +685,16 @@ async function buildTimeGrid(){
   const selDay=selectedDate?new Date(selectedDate+'T00:00:00').getDay():0;
   const isWeekend=selDay===0||selDay===6;
   const openMins=isWeekend?10*60:11*60;
-  // Kapasite limitleri — dolu saat aralıklarını belirle
-  const toMin=hm=>{const[hh,mm]=hm.split(':').map(Number);return hh*60+mm};
+  // Kapasite limitleri — dolu saat aralıklarını belirle (RPC: PII dönmez)
+  const toMin=hm=>{const[hh,mm]=String(hm).split(':').map(Number);return hh*60+mm};
   let fullRanges=[];
-  capLimits=[];capResv=[];
+  capData=[];
   if(selectedDate){
-    const [lr,rr]=await Promise.all([
-      sb.from('capacity_limits').select('*').eq('date',selectedDate),
-      sb.from('reservations').select('time,persons,status').eq('date',selectedDate)
-    ]);
-    capLimits=lr.data||[];capResv=rr.data||[];
-    capLimits.forEach(lim=>{
+    const {data:caps}=await sb.rpc('public_get_day_availability',{p_date:selectedDate});
+    capData=caps||[];
+    capData.forEach(lim=>{
       const ls=toMin(lim.start_time),le=toMin(lim.end_time);
-      const booked=capResv.filter(r=>r.status!=='cancelled'&&r.time&&toMin(r.time)>=ls&&toMin(r.time)<le)
-        .reduce((sum,r)=>sum+(parseInt(r.persons)||0),0);
-      if(booked>=lim.max_persons)fullRanges.push([ls,le]);
+      if(lim.booked>=lim.max_persons)fullRanges.push([ls,le]);
     });
   }
   let anyOpen=false;
@@ -725,19 +720,15 @@ function selectTime(ti,el){
 }
 
 /* ── CAPACITY ── */
-let capLimits=[],capResv=[];
+let capData=[];  // [{start_time,end_time,max_persons,booked}] — public_get_day_availability RPC
 const capToMin=hm=>{const[hh,mm]=String(hm).split(':').map(Number);return hh*60+mm};
 function capRemaining(time){
-  if(!time||!capLimits.length)return Infinity;
+  if(!time||!capData.length)return Infinity;
   const tm=capToMin(time);
   let rem=Infinity;
-  capLimits.forEach(lim=>{
+  capData.forEach(lim=>{
     const ls=capToMin(lim.start_time),le=capToMin(lim.end_time);
-    if(tm>=ls&&tm<le){
-      const booked=capResv.filter(r=>r.status!=='cancelled'&&r.time&&capToMin(r.time)>=ls&&capToMin(r.time)<le)
-        .reduce((s,r)=>s+(parseInt(r.persons)||0),0);
-      rem=Math.min(rem,lim.max_persons-booked);
-    }
+    if(tm>=ls&&tm<le) rem=Math.min(rem,lim.max_persons-lim.booked);
   });
   return rem;
 }
@@ -814,8 +805,10 @@ async function submitParty(e){
   if(!name||!phone||!email||!event_date||!event_type){alert(t('err_fields'));return}
   const btn=document.getElementById('partySubmitBtn');
   btn.disabled=true;
-  const{error}=await sb.from('party_requests').insert({
-    name,phone,email,guests:String(personCount),event_date,event_type,decoration,cake,wishes
+  const{error}=await sb.rpc('public_create_party_request',{
+    p_name:name,p_phone:phone,p_email:email,p_guests:String(personCount),
+    p_event_date:event_date,p_event_type:event_type,p_decoration:decoration,
+    p_cake:cake,p_wishes:wishes
   });
   btn.disabled=false;
   if(error){alert(t('err')+error.message);return}
@@ -848,23 +841,19 @@ async function submitForm(e){
   if(!selectedTime){alert(t('err_time'));return}
   // Kapasite son kontrol — güncel veriyle
   if(selectedDate){
-    const [lr,rr]=await Promise.all([
-      sb.from('capacity_limits').select('*').eq('date',selectedDate),
-      sb.from('reservations').select('time,persons,status').eq('date',selectedDate)
-    ]);
-    capLimits=lr.data||[];capResv=rr.data||[];
+    const {data:caps}=await sb.rpc('public_get_day_availability',{p_date:selectedDate});
+    capData=caps||[];
   }
   if(personCount>capRemaining(selectedTime)){alert(t('err_capacity'));return}
   const occ=selectedOccasion?'\n['+selectedOccasion+']':'';
   const btn=document.getElementById('submitBtn');
   btn.disabled=true;
-  const{data,error}=await sb.from('reservations').insert({
-    name,phone,email,date:selectedDate,time:selectedTime,
-    persons:String(personCount),notes:(notes+occ).trim(),status:'confirmed'
-  }).select('id').single();
+  const{data:rid,error}=await sb.rpc('public_create_reservation',{
+    p_name:name,p_phone:phone,p_email:email,p_date:selectedDate,
+    p_time:selectedTime,p_persons:String(personCount),p_notes:(notes+occ).trim()
+  });
   btn.disabled=false;
   if(error){alert(t('err')+error.message);return}
-  const rid=data?.id||'';
   const base=window.location.origin+window.location.pathname.replace(/\/[^/]*$/,'/');
 
   // ── SEND CONFIRMATION EMAIL ──────────────────────────────────────────────

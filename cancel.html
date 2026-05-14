@@ -90,17 +90,16 @@ function show(icon,title,msg,actionsHtml=''){
 
 async function doCancel(){
   show('⏳',L.loading,'');
-  const{error}=await sb.from('reservations').update({status:'cancelled'}).eq('id',id);
-  if(error){show('❌',L.err_title,L.err_msg,`<a href="index.html" class="btn ghost">${L.back}</a>`);return}
-  // Kim iptal etti bilgisini işaretle (kolon yoksa sessizce geçilir)
-  await sb.from('reservations').update({cancelled_by:'customer'}).eq('id',id);
+  const{data:res,error}=await sb.rpc('public_cancel_reservation',{p_id:id});
+  if(error||!res||res==='not_found'){show('❌',L.err_title,L.err_msg,`<a href="index.html" class="btn ghost">${L.back}</a>`);return}
+  if(res==='already'){show('ℹ️',L.already_title,L.already_msg,`<a href="index.html" class="btn ghost">${L.back}</a>`);return}
   show('✅',L.done_title,L.done_msg,`<a href="index.html" class="btn">${L.back}</a>`);
 }
 
 async function init(){
   if(!id){show('❌',L.err_title,L.err_msg,`<a href="index.html" class="btn ghost">${L.back}</a>`);return}
   show('⏳',L.loading,'');
-  const{data,error}=await sb.from('reservations').select('status,name,date,time').eq('id',id).single();
+  const{data,error}=await sb.rpc('public_get_reservation',{p_id:id});
   if(error||!data){show('❌',L.err_title,L.err_msg,`<a href="index.html" class="btn ghost">${L.back}</a>`);return}
   if(data.status==='cancelled'){show('ℹ️',L.already_title,L.already_msg,`<a href="index.html" class="btn ghost">${L.back}</a>`);return}
   show('🗓️',L.confirm_title,L.confirm_msg,

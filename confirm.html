@@ -87,12 +87,10 @@ function show(icon,title,msg,actionsHtml=''){
 async function init(){
   if(!id){show('❌',L.err_title,L.err_msg,`<a href="index.html" class="btn ghost">${L.back}</a>`);return}
   show('⏳',L.loading,'');
-  const{data,error}=await sb.from('reservations').select('status').eq('id',id).single();
-  if(error||!data){show('❌',L.err_title,L.err_msg,`<a href="index.html" class="btn ghost">${L.back}</a>`);return}
-  if(data.status==='confirmed'){show('✅',L.already_title,L.already_msg,`<a href="index.html" class="btn">${L.back}</a>`);return}
-  if(data.status==='cancelled'){show('❌',L.cancelled_title,L.cancelled_msg,`<a href="index.html" class="btn ghost">${L.back}</a>`);return}
-  const{error:upErr}=await sb.from('reservations').update({status:'confirmed'}).eq('id',id);
-  if(upErr){show('❌',L.err_title,L.err_msg,`<a href="index.html" class="btn ghost">${L.back}</a>`);return}
+  const{data:res,error}=await sb.rpc('public_confirm_reservation',{p_id:id});
+  if(error||!res||res==='not_found'){show('❌',L.err_title,L.err_msg,`<a href="index.html" class="btn ghost">${L.back}</a>`);return}
+  if(res==='already'){show('✅',L.already_title,L.already_msg,`<a href="index.html" class="btn">${L.back}</a>`);return}
+  if(res==='cancelled'){show('❌',L.cancelled_title,L.cancelled_msg,`<a href="index.html" class="btn ghost">${L.back}</a>`);return}
   show('✅',L.done_title,L.done_msg,`<a href="index.html" class="btn">${L.back}</a>`);
 }
 
