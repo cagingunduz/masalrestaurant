@@ -120,6 +120,7 @@ Deno.serve(async (req) => {
   }
 
   let sent = 0, failed = 0
+  const errors: unknown[] = []
   for (const r of rows || []) {
     const lang = (r.lang || 'nl').toLowerCase()
     const t = tpl[lang] || tpl.nl
@@ -130,20 +131,23 @@ Deno.serve(async (req) => {
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ANON_KEY}`, 'apikey': ANON_KEY },
         body: JSON.stringify({ to: r.email, subject: t.subject, body: '', htmlBody: html }),
       })
+      const bodyText = await resp.text().catch(() => '')
       if (resp.ok) {
         await supa.from('reservations')
           .update({ feedback_email_sent_at: new Date().toISOString() })
           .eq('id', r.id)
         sent++
       } else {
+        errors.push({ id: r.id, status: resp.status, body: bodyText.slice(0, 500) })
         failed++
       }
-    } catch {
+    } catch (e) {
+      errors.push({ id: r.id, exception: String((e as Error)?.message || e) })
       failed++
     }
   }
 
-  return new Response(JSON.stringify({ processed: (rows || []).length, sent, failed }), {
+  return new Response(JSON.stringify({ processed: (rows || []).length, sent, failed, errors }), {
     headers: { ...cors, 'Content-Type': 'application/json' },
   })
 })
