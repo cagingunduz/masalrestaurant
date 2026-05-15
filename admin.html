@@ -516,6 +516,9 @@ const SUPABASE_URL='https://mytqxxdzfrropqcrhipv.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15dHF4eGR6ZnJyb3BxY3JoaXB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MjgwMTUsImV4cCI6MjA5MTAwNDAxNX0.eKAts80PGm6TTYSllnYq79UaG0_ERJi7FBLnh2GgG4I';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
 
+// EU tarih formatı: 'YYYY-MM-DD' -> 'DD-MM-YYYY' (yalnızca gösterim — DB hâlâ ISO)
+const fmtDateEU=s=>{if(!s)return '';const m=String(s).match(/^(\d{4})-(\d{2})-(\d{2})/);return m?`${m[3]}-${m[2]}-${m[1]}`:String(s)};
+
 // Auth: Supabase Auth ile giriş (ADMIN_PASSWORD sabiti kaldırıldı — RLS hardening Aşama 2)
 const DAY_NAMES_NL=['Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag','Zondag'];
 const DAY_NAMES_TR=['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
@@ -805,7 +808,7 @@ async function loadReservations(){
     <thead><tr><th>${t('col_date')}</th><th>${t('col_time')}</th><th>${t('col_name')}</th><th>${t('col_phone')}</th><th>${t('col_email')}</th><th>${t('col_persons')}</th><th>${t('col_notes')}</th><th>${t('col_status')}</th><th>${t('col_actions')}</th></tr></thead>
     <tbody>${data.map(r=>`
       <tr${r.status==='cancelled'?' class="cancelled-row"':''}>
-        <td data-label="${t('col_date')}">${r.date||''}</td>
+        <td data-label="${t('col_date')}">${fmtDateEU(r.date)}</td>
         <td data-label="${t('col_time')}">${r.time||''}</td>
         <td data-label="${t('col_name')}">${esc(r.name)}</td>
         <td data-label="${t('col_phone')}"><a href="tel:${esc(r.phone)}">${esc(r.phone)}</a></td>
@@ -857,7 +860,7 @@ async function loadCapacity(){
         .reduce((sum,r)=>sum+(parseInt(r.persons)||0),0);
       const full=booked>=l.max_persons;
       return`<tr>
-        <td data-label="${t('col_date')}">${l.date}</td>
+        <td data-label="${t('col_date')}">${fmtDateEU(l.date)}</td>
         <td data-label="${t('cap_range')}">${String(l.start_time).slice(0,5)} – ${String(l.end_time).slice(0,5)}</td>
         <td data-label="${t('cap_maxlbl')}">${l.max_persons}</td>
         <td data-label="${t('cap_booked')}">${booked}</td>
@@ -899,7 +902,7 @@ async function loadParty(){
     <thead><tr><th>${t('col_date')}</th><th>${t('col_type')}</th><th>${t('col_name')}</th><th>${t('col_phone')}</th><th>${t('col_email')}</th><th>${t('col_guests')}</th><th>${t('col_decor')}</th><th>${t('col_cake')}</th><th>${t('col_wishes')}</th><th>${t('col_actions')}</th></tr></thead>
     <tbody>${data.map(r=>`
       <tr>
-        <td data-label="${t('col_date')}">${r.event_date||''}</td>
+        <td data-label="${t('col_date')}">${fmtDateEU(r.event_date)}</td>
         <td data-label="${t('col_type')}">${esc(r.event_type||'')}</td>
         <td data-label="${t('col_name')}">${esc(r.name)}</td>
         <td data-label="${t('col_phone')}"><a href="tel:${esc(r.phone)}">${esc(r.phone)}</a></td>
