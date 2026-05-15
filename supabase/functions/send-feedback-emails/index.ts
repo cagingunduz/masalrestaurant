@@ -101,12 +101,14 @@ Deno.serve(async (req) => {
   const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000)
   const cutoffStr = cutoff.toISOString().slice(0, 10)
 
+  // İptal edilmemiş tüm rezervasyonlar (new / confirmed / arrived dahil; cancelled hariç)
   const { data: rows, error } = await supa
     .from('reservations')
-    .select('id,name,email,date,lang')
+    .select('id,name,email,date,status,lang')
     .lte('date', cutoffStr)
-    .in('status', ['confirmed', 'arrived'])
+    .or('status.is.null,status.neq.cancelled')
     .not('email', 'is', null)
+    .neq('email', '')
     .is('feedback_email_sent_at', null)
     .limit(200)
 
