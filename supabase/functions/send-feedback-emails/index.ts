@@ -95,6 +95,7 @@ Deno.serve(async (req) => {
 
   const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
   const SERVICE_ROLE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  const ANON_KEY     = Deno.env.get('SUPABASE_ANON_KEY')!
   const supa = createClient(SUPABASE_URL, SERVICE_ROLE, { auth: { autoRefreshToken: false, persistSession: false } })
 
   // Cutoff: bugünden 1 gün önce (rezervasyon tarihi <= cutoff olanlar)
@@ -126,7 +127,7 @@ Deno.serve(async (req) => {
     try {
       const resp = await fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SERVICE_ROLE}` },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ANON_KEY}`, 'apikey': ANON_KEY },
         body: JSON.stringify({ to: r.email, subject: t.subject, body: '', htmlBody: html }),
       })
       if (resp.ok) {
