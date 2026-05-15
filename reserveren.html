@@ -853,7 +853,8 @@ async function submitForm(e){
   btn.disabled=true;
   const{data:rid,error}=await sb.rpc('public_create_reservation',{
     p_name:name,p_phone:phone,p_email:email,p_date:selectedDate,
-    p_time:selectedTime,p_persons:String(personCount),p_notes:(notes+occ).trim()
+    p_time:selectedTime,p_persons:String(personCount),p_notes:(notes+occ).trim(),
+    p_lang:lang
   });
   btn.disabled=false;
   if(error){alert(t('err')+error.message);return}
