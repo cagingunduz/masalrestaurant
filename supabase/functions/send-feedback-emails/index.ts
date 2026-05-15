@@ -10,7 +10,7 @@ const cors = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const GOOGLE_REVIEW_URL = 'https://www.google.com/maps/place/Masal+Restaurant/@51.5605993,5.0763486,17z/data=!3m1!4b1!4m8!3m7!1s0x47c6be3a619a7935:0x8d002d7c7ca90684!8m2!3d51.5605993!4d5.0763486!9m1!1b1'
+const GOOGLE_REVIEW_URL = "https://www.google.com/search?q=Masal+Restaurant+Tilburg"
 const FEEDBACK_EMAIL = 'info@masalrestaurant.nl'
 
 const tpl: Record<string, {
