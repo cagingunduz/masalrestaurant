@@ -70,7 +70,8 @@ main{flex:1;padding:2rem 2.5rem;overflow:auto}
 
 .persons-badge{display:inline-flex;align-items:center;gap:.35rem;color:var(--muted);font-size:.85rem;white-space:nowrap}
 .name-cell{font-weight:500}
-.notes-cell{font-size:.78rem;color:var(--muted);max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.notes-cell{font-size:.78rem;color:var(--muted);max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+.notes-cell.expanded{white-space:normal;word-break:break-word;overflow:visible;line-height:1.5}
 
 /* cancelled row */
 tr.cancelled-row td{color:rgba(255,255,255,.3)!important;text-decoration:line-through;background:linear-gradient(transparent calc(50% - 1px),#e74c3c calc(50% - 1px),#e74c3c calc(50% + 1px),transparent calc(50% + 1px))!important}
@@ -273,9 +274,9 @@ async function confirmRow(id,type){
   const table=type==='party'?'party_requests':'reservations';
   const dateCol=type==='party'?'event_date':'date';
   await sb.from(table).update({status:'confirmed'}).eq('id',id);
-  // Update button instantly
+  // Onaylandıktan sonra butonu kaldır (artık "Arrived" aşaması yok)
   const btn=document.getElementById('cb-'+id);
-  if(btn){btn.outerHTML=`<button id="ab-${id}" class="action-btn arrived" onclick="arrivedRow('${id}','${type}')">↓ ${t('btn_arrived')}</button>`}
+  if(btn)btn.remove();
   // Update dot
   const dot=document.getElementById('dot-'+id);
   if(dot){dot.className='status-dot confirmed'}
@@ -371,8 +372,8 @@ function renderTable(rows,showTime){
         <td><span class="type-badge ${isParty?'party':'res'}">${t(isParty?'type_party':'type_res')}</span></td>
         <td>${persons}</td>
         <td>${esc(r.phone||'')}</td>
-        <td><div class="status-cell"><span id="dot-${r.id}" class="status-dot ${r.status||'new'}"></span><span id="lbl-${r.id}">${t('status_'+(r.status||'new'))}</span>${isCancelled&&r.cancelled_by==='customer'?`<span class="by-cust">${t('by_customer')}</span>`:''}${(r.status||'new')==='new'?`<button id="cb-${r.id}" class="action-btn confirm" onclick="confirmRow('${r.id}','${r._type==='party'?'party':'res'}')">✓ ${t('btn_confirm')}</button>`:''}${r.status==='confirmed'?`<button id="ab-${r.id}" class="action-btn arrived" onclick="arrivedRow('${r.id}','${r._type==='party'?'party':'res'}')">↓ ${t('btn_arrived')}</button>`:''}</div></td>
-        <td><div class="notes-cell">${esc(notes||'—')}</div></td>
+        <td><div class="status-cell"><span id="dot-${r.id}" class="status-dot ${r.status||'new'}"></span><span id="lbl-${r.id}">${t('status_'+(r.status||'new'))}</span>${isCancelled&&r.cancelled_by==='customer'?`<span class="by-cust">${t('by_customer')}</span>`:''}${(r.status||'new')==='new'?`<button id="cb-${r.id}" class="action-btn confirm" onclick="confirmRow('${r.id}','${r._type==='party'?'party':'res'}')">✓ ${t('btn_confirm')}</button>`:''}</div></td>
+        <td><div class="notes-cell" onclick="this.classList.toggle('expanded')" title="${esc(notes||'')}">${esc(notes||'—')}</div></td>
       </tr>`;
     }).join('')}</tbody></table>`;
 }
