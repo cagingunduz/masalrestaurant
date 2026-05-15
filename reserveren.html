@@ -430,6 +430,9 @@ const SUPABASE_URL='https://mytqxxdzfrropqcrhipv.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15dHF4eGR6ZnJyb3BxY3JoaXB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MjgwMTUsImV4cCI6MjA5MTAwNDAxNX0.eKAts80PGm6TTYSllnYq79UaG0_ERJi7FBLnh2GgG4I';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
 
+// EU tarih formatı: 'YYYY-MM-DD' -> 'DD-MM-YYYY' (yalnızca gösterim — DB hâlâ ISO)
+const fmtDateEU=s=>{if(!s)return '';const m=String(s).match(/^(\d{4})-(\d{2})-(\d{2})/);return m?`${m[3]}-${m[2]}-${m[1]}`:String(s)};
+
 const TIMES=['10:00','10:30','11:00','11:30','12:00','12:30','13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30','19:00','19:30','20:00','20:30','21:00','21:30'];
 
 const OCCASIONS={
@@ -751,7 +754,7 @@ function checkCapacity(){
 function updateS2Sub(){
   const el=document.getElementById('s2sub');
   if(selectedDate&&el){
-    el.textContent=selectedDate;
+    el.textContent=fmtDateEU(selectedDate);
   }
 }
 
@@ -786,7 +789,7 @@ function toggleOcc(o,el){
 
 /* ── SUMMARY ── */
 function updateSummary(){
-  document.getElementById('sumDate').textContent=selectedDate||'—';
+  document.getElementById('sumDate').textContent=fmtDateEU(selectedDate)||'—';
   document.getElementById('sumTime').textContent=selectedTime||'—';
   document.getElementById('sumPersons').textContent=personCount;
 }
@@ -910,7 +913,7 @@ async function submitForm(e){
         <p style="color:#444;margin:0 0 1.2rem">${ec.greeting}</p>
         <h3 style="color:#1e3a1e;font-size:.85rem;text-transform:uppercase;letter-spacing:.5px;margin:0 0 .75rem">${ec.detailsTitle}</h3>
         <table style="width:100%;border-collapse:collapse;margin-bottom:1.4rem">
-          <tr style="border-bottom:1px solid #f0ece4"><td style="padding:.6rem .5rem;color:#888;font-size:.85rem;width:40%">${ec.labelDate}</td><td style="padding:.6rem .5rem;font-weight:600;color:#1a1a1a;font-size:.9rem">${selectedDate}</td></tr>
+          <tr style="border-bottom:1px solid #f0ece4"><td style="padding:.6rem .5rem;color:#888;font-size:.85rem;width:40%">${ec.labelDate}</td><td style="padding:.6rem .5rem;font-weight:600;color:#1a1a1a;font-size:.9rem">${fmtDateEU(selectedDate)}</td></tr>
           <tr style="border-bottom:1px solid #f0ece4"><td style="padding:.6rem .5rem;color:#888;font-size:.85rem">${ec.labelTime}</td><td style="padding:.6rem .5rem;font-weight:600;color:#1a1a1a;font-size:.9rem">${selectedTime}</td></tr>
           <tr style="border-bottom:1px solid #f0ece4"><td style="padding:.6rem .5rem;color:#888;font-size:.85rem">${ec.labelPersons}</td><td style="padding:.6rem .5rem;font-weight:600;color:#1a1a1a;font-size:.9rem">${personCount}</td></tr>
           <tr><td style="padding:.6rem .5rem;color:#888;font-size:.85rem">${ec.labelPhone}</td><td style="padding:.6rem .5rem;font-weight:600;color:#1a1a1a;font-size:.9rem">${phone}</td></tr>
@@ -948,7 +951,7 @@ async function submitForm(e){
       <p>${t('confirm_desc')}</p>
       <div class="success-detail">
         <div class="sum-row"><span class="sum-key">${t('lbl_name')}</span><span class="sum-val">${name}</span></div>
-        <div class="sum-row"><span class="sum-key">${t('lbl_date')}</span><span class="sum-val">${selectedDate}</span></div>
+        <div class="sum-row"><span class="sum-key">${t('lbl_date')}</span><span class="sum-val">${fmtDateEU(selectedDate)}</span></div>
         <div class="sum-row"><span class="sum-key">${t('lbl_time')}</span><span class="sum-val">${selectedTime}</span></div>
         <div class="sum-row"><span class="sum-key">${t('lbl_persons')}</span><span class="sum-val">${personCount}</span></div>
         <div class="sum-row"><span class="sum-key">${t('lbl_phone')}</span><span class="sum-val">${phone}</span></div>
