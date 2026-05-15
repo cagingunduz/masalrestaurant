@@ -104,6 +104,7 @@ section.active{display:block}
   <div class="login-box">
     <img class="login-logo" src="https://i0.wp.com/masalrestaurant.nl/wp-content/uploads/2021/11/Masal_Logo_DEF.png?fit=600%2C304&ssl=1" alt="Masal">
     <h2>Masal Display</h2>
+    <select id="loginAcct" style="width:100%;background:#2a2a2a;border:1.5px solid rgba(198,165,92,.2);color:#fff;border-radius:8px;padding:.8rem 1rem;font-size:1rem;margin-bottom:.9rem;outline:none;font-family:'Jost',sans-serif"></select>
     <input type="password" id="passInput" data-i18n-ph="login_pw" placeholder="Wachtwoord" onkeydown="if(event.key==='Enter')doLogin()">
     <button class="login-btn" onclick="doLogin()" data-i18n="login_btn">Inloggen</button>
     <div class="login-err" id="loginErr"></div>
@@ -145,26 +146,42 @@ section.active{display:block}
 <div class="refresh-bar"><span data-i18n="refresh_label">—</span> <span id="countdown">60</span>s</div>
 
 <script>
-// ── AUTH ──────────────────────────────────────────────────────────────────
-function doLogin(){
-  if(document.getElementById('passInput').value==='masal2017'){
-    sessionStorage.setItem('displayAuth','1');
-    document.getElementById('loginWrap').style.display='none';
-  } else {
-    document.getElementById('loginErr').textContent=t('login_err');
+// ── AUTH (Supabase Auth) ──────────────────────────────────────────────────
+async function doLogin(){
+  const email=document.getElementById('loginAcct').value;
+  const password=document.getElementById('passInput').value;
+  const errEl=document.getElementById('loginErr');
+  if(!email){errEl.textContent=t('login_err');return}
+  const{error}=await sb.auth.signInWithPassword({email,password});
+  if(error){
+    errEl.textContent=t('login_err');
     document.getElementById('passInput').value='';
     document.getElementById('passInput').focus();
+    return;
   }
+  document.getElementById('loginWrap').style.display='none';
+  loadAll();
 }
-if(sessionStorage.getItem('displayAuth')==='1'){
-  document.addEventListener('DOMContentLoaded',()=>{
-    document.getElementById('loginWrap').style.display='none';
-  });
-} else {
-  document.addEventListener('DOMContentLoaded',()=>{
+
+async function doLogout(){await sb.auth.signOut();location.reload()}
+
+async function populateDisplayAccounts(){
+  const{data:dir}=await sb.rpc('get_login_directory');
+  const sel=document.getElementById('loginAcct');
+  sel.innerHTML=(dir||[]).map(p=>`<option value="${p.email}">${p.name}</option>`).join('');
+}
+
+(async()=>{
+  const{data:{session}}=await sb.auth.getSession();
+  document.addEventListener('DOMContentLoaded',async()=>{
+    if(session){
+      document.getElementById('loginWrap').style.display='none';
+      return;
+    }
+    await populateDisplayAccounts();
     document.getElementById('passInput').focus();
   });
-}
+})();
 
 const SUPABASE_URL='https://mytqxxdzfrropqcrhipv.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15dHF4eGR6ZnJyb3BxY3JoaXB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MjgwMTUsImV4cCI6MjA5MTAwNDAxNX0.eKAts80PGm6TTYSllnYq79UaG0_ERJi7FBLnh2GgG4I';

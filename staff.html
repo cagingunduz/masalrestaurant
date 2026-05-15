@@ -268,6 +268,7 @@ header{background:var(--dark);color:#fff;padding:1rem 1.5rem;display:flex;align-
     </div>
     <p id="loginSubtitle">Şifrenizi girerek devam edin</p>
     <form onsubmit="login(event)">
+      <select id="loginAcct" required style="width:100%;padding:.9rem 1rem;border:1px solid #ddd;border-radius:8px;font-size:1rem;margin-bottom:1rem;outline:none;text-align:center;background:#fff;font-family:inherit"></select>
       <input type="password" id="loginPw" placeholder="••••••••" autocomplete="current-password" required>
       <button type="submit" class="login-btn" id="loginBtn">Giriş Yap</button>
       <div class="login-error" id="loginErr"></div>
@@ -585,32 +586,42 @@ function updateNotifTab(count){
 let me=null;
 let allProfiles=[];
 
-async function login(e){
-  e.preventDefault();
-  const pw=document.getElementById('loginPw').value.trim();
-  const btn=document.getElementById('loginBtn');
-  btn.disabled=true; btn.textContent=L().loginLoad;
-  document.getElementById('loginErr').textContent='';
-  const{data:profiles,error}=await sb.from('profiles').select('*');
-  if(error||!profiles?.length){document.getElementById('loginErr').textContent=L().connErr;btn.disabled=false;btn.textContent=L().loginBtn;return}
-  const match=profiles.find(p=>p.password===pw);
-  if(!match){document.getElementById('loginErr').textContent=L().loginErr;btn.disabled=false;btn.textContent=L().loginBtn;return}
-  sessionStorage.setItem('masalStaffId',match.id);
-  allProfiles=profiles;
-  showApp(match);
+async function populateStaffAccounts(){
+  const{data:dir}=await sb.rpc('get_login_directory');
+  const sel=document.getElementById('loginAcct');
+  sel.innerHTML=(dir||[]).map(p=>`<option value="${p.email}">${p.name}</option>`).join('');
 }
 
-function logout(){sessionStorage.removeItem('masalStaffId');location.reload()}
+async function login(e){
+  e.preventDefault();
+  const email=document.getElementById('loginAcct').value;
+  const pw=document.getElementById('loginPw').value.trim();
+  const btn=document.getElementById('loginBtn');
+  const errEl=document.getElementById('loginErr');
+  btn.disabled=true; btn.textContent=L().loginLoad;
+  errEl.textContent='';
+  if(!email){errEl.textContent=L().loginErr;btn.disabled=false;btn.textContent=L().loginBtn;return}
+  const{error:authErr}=await sb.auth.signInWithPassword({email,password:pw});
+  if(authErr){errEl.textContent=L().loginErr;btn.disabled=false;btn.textContent=L().loginBtn;return}
+  const{data:{user}}=await sb.auth.getUser();
+  const{data:profile}=await sb.from('profiles').select('*').eq('id',user.id).single();
+  if(!profile){errEl.textContent=L().connErr;await sb.auth.signOut();btn.disabled=false;btn.textContent=L().loginBtn;return}
+  const{data:all}=await sb.from('profiles').select('*');
+  allProfiles=all||[];
+  showApp(profile);
+}
+
+async function logout(){await sb.auth.signOut();location.reload()}
 
 async function initApp(){
   setLang(lang); // apply lang on load
-  const id=sessionStorage.getItem('masalStaffId');
-  if(!id)return;
-  const{data:profiles}=await sb.from('profiles').select('*');
-  if(!profiles)return;
-  allProfiles=profiles;
-  const match=profiles.find(p=>p.id===id);
-  if(match)showApp(match);
+  const{data:{session}}=await sb.auth.getSession();
+  if(!session){await populateStaffAccounts();return}
+  const{data:profile}=await sb.from('profiles').select('*').eq('id',session.user.id).single();
+  if(!profile){await sb.auth.signOut();await populateStaffAccounts();return}
+  const{data:all}=await sb.from('profiles').select('*');
+  allProfiles=all||[];
+  showApp(profile);
 }
 
 function showGuide(){

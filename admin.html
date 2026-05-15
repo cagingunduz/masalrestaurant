@@ -240,6 +240,7 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
     <img class="login-logo" src="https://i0.wp.com/masalrestaurant.nl/wp-content/uploads/2021/11/Masal_Logo_DEF.png?fit=600%2C304&ssl=1" alt="Masal">
     <p data-i18n="login_subtitle">Voer uw wachtwoord in om door te gaan</p>
     <form onsubmit="login(event)">
+      <select id="loginAcct" required style="width:100%;padding:.85rem 1rem;border:1px solid #ddd;border-radius:8px;font-size:.95rem;background:#fff;margin-bottom:.7rem;font-family:inherit"></select>
       <input type="password" id="pw" data-i18n-ph="password" placeholder="Wachtwoord" autocomplete="current-password" required>
       <button type="submit" data-i18n="login_btn">Inloggen</button>
       <div class="login-error" id="loginErr"></div>
@@ -515,7 +516,7 @@ const SUPABASE_URL='https://mytqxxdzfrropqcrhipv.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15dHF4eGR6ZnJyb3BxY3JoaXB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MjgwMTUsImV4cCI6MjA5MTAwNDAxNX0.eKAts80PGm6TTYSllnYq79UaG0_ERJi7FBLnh2GgG4I';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
 
-const ADMIN_PASSWORD='masal2017';
+// Auth: Supabase Auth ile giriş (ADMIN_PASSWORD sabiti kaldırıldı — RLS hardening Aşama 2)
 const DAY_NAMES_NL=['Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag','Zondag'];
 const DAY_NAMES_TR=['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
 
@@ -629,21 +630,29 @@ let currentWeek=null;
 let profiles=[];
 let selectedStaff=new Set();
 
-// === AUTH ===
-function login(e){
+// === AUTH (Supabase Auth) ===
+async function login(e){
   e.preventDefault();
+  const email=document.getElementById('loginAcct').value;
   const pw=document.getElementById('pw').value;
-  if(pw===ADMIN_PASSWORD){
-    sessionStorage.setItem('masalAdmin','1');
-    showApp();
-  }else{
-    document.getElementById('loginErr').textContent=t('login_error');
-  }
+  const errEl=document.getElementById('loginErr');
+  if(!email){errEl.textContent=t('login_error');return}
+  const{error}=await sb.auth.signInWithPassword({email,password:pw});
+  if(error){errEl.textContent=t('login_error');return}
+  showApp();
 }
 
-function logout(){
-  sessionStorage.removeItem('masalAdmin');
+async function logout(){
+  await sb.auth.signOut();
   location.reload();
+}
+
+async function populateAdminAccounts(){
+  const{data:dir}=await sb.rpc('get_login_directory');
+  const admins=(dir||[]).filter(p=>p.role==='admin');
+  const sel=document.getElementById('loginAcct');
+  if(!admins.length){sel.innerHTML='<option disabled selected>—</option>';return}
+  sel.innerHTML=admins.map(a=>`<option value="${a.email}">${a.name}</option>`).join('');
 }
 
 async function showApp(){
@@ -681,7 +690,11 @@ async function showApp(){
   updateSwapBadge();
 }
 
-if(sessionStorage.getItem('masalAdmin')==='1'){showApp()}
+(async()=>{
+  const{data:{session}}=await sb.auth.getSession();
+  if(session){showApp();return}
+  populateAdminAccounts();
+})();
 
 // === TABS ===
 function switchTab(name){
