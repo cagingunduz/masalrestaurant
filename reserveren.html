@@ -353,6 +353,8 @@ input.ctr-num:focus{border-bottom:2px solid var(--gold)}
 
     <div class="summary-box" style="margin-bottom:1.4rem">
       <div class="sum-title" data-i18n="p_capacity">Capaciteit</div>
+      <div class="sum-row"><span class="sum-key" data-i18n="lbl_date">Datum</span><span class="sum-val" id="partyDateDisplay">—</span></div>
+      <div class="sum-row"><span class="sum-key" data-i18n="lbl_time">Tijd</span><span class="sum-val" id="partyTimeDisplay">—</span></div>
       <div class="sum-row"><span class="sum-key" data-i18n="lbl_persons">Personen</span><span class="sum-val" id="partyPersonsDisplay">—</span></div>
     </div>
 
@@ -611,6 +613,8 @@ function goParty(){
   [1,2,3,4].forEach(i=>document.getElementById('card'+i).style.display='none');
   document.getElementById('cardParty').style.display='block';
   document.getElementById('partyPersonsDisplay').textContent=personCount;
+  document.getElementById('partyDateDisplay').textContent=fmtDateEU(selectedDate)||'—';
+  document.getElementById('partyTimeDisplay').textContent=selectedTime||'—';
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -821,8 +825,10 @@ async function submitParty(e){
   if(!name||!phone||!email||!event_type){alert(t('err_fields'));return}
   const btn=document.getElementById('partySubmitBtn');
   btn.disabled=true;
+  // Tarih ve saati önceki adımlardan al (Step 1 + Step 2'de seçildi)
   const{error}=await sb.rpc('public_create_party_request',{
     p_name:name,p_phone:phone,p_email:email,p_guests:String(personCount),
+    p_event_date:selectedDate||null, p_event_time:selectedTime||null,
     p_event_type:event_type,p_decoration:decoration,
     p_cake:cake,p_wishes:wishes,p_lang:lang
   });
