@@ -10,48 +10,70 @@ const cors = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const GOOGLE_REVIEW_URL = "https://www.google.com/maps/place/Masal+Restaurant/@51.5605993,5.0763486,17z/data=!3m1!4b1!4m6!3m5!1s0x47c6be3a619a7935:0x8d002d7c7ca90684!8m2!3d51.5605993!4d5.0763486?write_review=true"
+const GOOGLE_REVIEW_URL = "https://www.google.com/maps/place/Masal+Restaurant/@51.5605993,5.0737737,546m/data=!3m2!1e3!4b1!4m6!3m5!1s0x47c6be3a619a7935:0x8d002d7c7ca90684!8m2!3d51.5605993!4d5.0763486!16s%2Fg%2F11dfj04mz7?entry=ttu"
 const FEEDBACK_FORM_BASE = "https://masalrestaurant.nl/feedback.html"
+
+function fmtDateEU(s: string): string {
+  if (!s) return ''
+  const m = String(s).match(/^(\d{4})-(\d{2})-(\d{2})/)
+  return m ? `${m[3]}-${m[2]}-${m[1]}` : String(s)
+}
 
 const tpl: Record<string, {
   subject: string
   greeting: (name: string) => string
-  body: string
-  question: string
+  intro: (date: string) => string
+  about: string
+  goodAsk: string
+  improveAsk: string
   positive: string
   negative: string
-  closing: string
+  thanks: string
+  welcome: string
   team: string
+  header: string
 }> = {
   nl: {
     subject: 'Hoe was uw bezoek bij Masal?',
     greeting: (n) => `Beste ${n},`,
-    body: 'Wij hopen dat u genoten heeft van uw bezoek aan Masal Restaurant & Café. Uw mening is voor ons heel belangrijk!',
-    question: 'Hoe was uw ervaring?',
-    positive: 'Laat een review achter op Google',
-    negative: 'Iets niet naar wens? Laat het ons weten',
-    closing: 'Bedankt en tot ziens!',
-    team: 'Het team van Masal Restaurant & Café',
+    intro: (d) => `We hopen dat u heeft genoten van uw bezoek aan Restaurant Masal${d ? ` op ${d}` : ''}.`,
+    about: 'Bij Masal draait alles om sfeer, gastvrijheid en goed eten. We doen er elke dag alles aan om onze gasten een fijne ervaring te geven.',
+    goodAsk: 'Was u tevreden en heeft u genoten? Dan zouden we het enorm waarderen als u dat met anderen deelt.',
+    improveAsk: 'Is er iets dat beter kon? Laat het ons dan vooral weten, daar leren we van.',
+    positive: 'Ja, ik heb genoten',
+    negative: 'Ik heb feedback',
+    thanks: 'Bedankt dat u de tijd neemt om ons te helpen verbeteren.',
+    welcome: 'Hopelijk mogen we u snel weer verwelkomen bij Restaurant Masal.',
+    team: 'Team Restaurant Masal',
+    header: 'Hoe was uw bezoek?',
   },
   en: {
     subject: 'How was your visit to Masal?',
     greeting: (n) => `Dear ${n},`,
-    body: 'We hope you enjoyed your visit to Masal Restaurant & Café. Your opinion means a lot to us!',
-    question: 'How was your experience?',
-    positive: 'Leave a Google review',
-    negative: 'Something not right? Let us know',
-    closing: 'Thank you, and see you next time!',
-    team: 'The Masal Restaurant & Café team',
+    intro: (d) => `We hope you enjoyed your visit to Restaurant Masal${d ? ` on ${d}` : ''}.`,
+    about: 'At Masal, everything revolves around atmosphere, hospitality and great food. Every day we do our utmost to give our guests a wonderful experience.',
+    goodAsk: 'Were you happy with your visit? We would really appreciate it if you shared your experience with others.',
+    improveAsk: 'Is there anything that could have been better? Please let us know — that\'s how we learn.',
+    positive: 'Yes, I enjoyed it',
+    negative: 'I have feedback',
+    thanks: 'Thank you for taking the time to help us improve.',
+    welcome: 'We hope to welcome you back at Restaurant Masal soon.',
+    team: 'Team Restaurant Masal',
+    header: 'How was your visit?',
   },
   tr: {
     subject: "Masal'daki ziyaretiniz nasıldı?",
     greeting: (n) => `Sayın ${n},`,
-    body: "Masal Restaurant & Café'deki ziyaretinizden keyif aldığınızı umuyoruz. Görüşünüz bizim için çok değerli!",
-    question: 'Deneyiminiz nasıldı?',
-    positive: "Google'da yorum bırakın",
-    negative: 'Bir aksaklık mı oldu? Bize bildirin',
-    closing: 'Teşekkürler, tekrar görüşmek üzere!',
-    team: 'Masal Restaurant & Café ekibi',
+    intro: (d) => `${d ? `${d} tarihindeki` : ''} Restaurant Masal ziyaretinizden keyif aldığınızı umuyoruz.`,
+    about: 'Masal\'da her şey atmosfer, misafirperverlik ve güzel yemek üzerine kuruludur. Her gün misafirlerimize harika bir deneyim sunmak için elimizden geleni yapıyoruz.',
+    goodAsk: 'Memnun kaldıysanız ve keyif aldıysanız, bunu başkalarıyla paylaşırsanız çok memnun oluruz.',
+    improveAsk: 'Daha iyi olabilecek bir şey var mıydı? Mutlaka bize bildirin — biz de bundan öğreniyoruz.',
+    positive: 'Evet, keyif aldım',
+    negative: 'Geri bildirimim var',
+    thanks: 'İyileşmemize yardımcı olmak için zaman ayırdığınız için teşekkür ederiz.',
+    welcome: 'En kısa zamanda Restaurant Masal\'da tekrar görüşmek üzere.',
+    team: 'Restaurant Masal Ekibi',
+    header: 'Ziyaretiniz nasıldı?',
   },
 }
 
@@ -59,35 +81,41 @@ function escHtml(s: string) {
   return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!))
 }
 
-function buildHtml(name: string, lang: string, resId: string) {
+function buildHtml(name: string, lang: string, resId: string, visitDate: string) {
   const t = tpl[lang] || tpl.nl
   const safeName = escHtml(name || '')
+  const dateStr = fmtDateEU(visitDate)
   const feedbackUrl = `${FEEDBACK_FORM_BASE}?id=${encodeURIComponent(resId)}&lang=${encodeURIComponent(lang)}`
-  return `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="margin:0;padding:0;background:#f7f5f0;font-family:-apple-system,system-ui,sans-serif">
-  <div style="max-width:520px;margin:0 auto;padding:2rem 1rem">
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="margin:0;padding:0;background:#f7f5f0;font-family:-apple-system,system-ui,sans-serif;color:#333">
+  <div style="max-width:560px;margin:0 auto;padding:2rem 1rem">
     <div style="text-align:center;margin-bottom:1.5rem">
       <img src="https://i0.wp.com/masalrestaurant.nl/wp-content/uploads/2021/11/Masal_Logo_DEF.png?fit=600%2C304&ssl=1" width="87" height="44" alt="Masal Restaurant" style="display:block;width:87px;height:44px;margin:0 auto;border:0;outline:none">
     </div>
     <div style="background:#fff;border-radius:14px;overflow:hidden;border:1px solid #e5e1d8">
       <div style="background:#1e3a1e;padding:1.5rem 2rem;text-align:center">
-        <div style="font-size:2.2rem">&#11088;</div>
-        <h2 style="color:#c6a55c;font-family:Georgia,serif;margin:.4rem 0 0;font-size:1.25rem">${t.question}</h2>
+        <div style="font-size:2rem;margin-bottom:.3rem">&#11088;</div>
+        <h2 style="color:#c6a55c;font-family:Georgia,serif;margin:0;font-size:1.3rem;font-weight:500">${t.header}</h2>
       </div>
-      <div style="padding:1.8rem 2rem">
-        <p style="color:#444;margin:0 0 .8rem">${t.greeting(safeName)}</p>
-        <p style="color:#555;font-size:.95rem;line-height:1.6;margin:0 0 1.6rem">${t.body}</p>
-        <div style="text-align:center;margin-bottom:1rem">
-          <a href="${GOOGLE_REVIEW_URL}" style="display:inline-block;background:#c6a55c;color:#111;padding:.85rem 2rem;border-radius:8px;text-decoration:none;font-weight:700;font-size:.95rem">&#11088; ${t.positive}</a>
+      <div style="padding:2rem 2rem 1.6rem;color:#333;font-size:.95rem;line-height:1.65">
+        <p style="margin:0 0 1.2rem">${t.greeting(safeName)}</p>
+        <p style="margin:0 0 1.1rem">${t.intro(dateStr)}</p>
+        <p style="margin:0 0 1.1rem">${t.about}</p>
+        <p style="margin:0 0 1.6rem">${t.goodAsk}</p>
+        <div style="text-align:center;margin:0 0 1.4rem">
+          <a href="${GOOGLE_REVIEW_URL}" style="display:inline-block;background:#c6a55c;color:#fff;padding:.95rem 2.4rem;border-radius:8px;text-decoration:none;font-weight:700;font-size:1rem">${t.positive} &#11088;</a>
         </div>
-        <div style="text-align:center">
-          <a href="${feedbackUrl}" style="display:inline-block;background:transparent;color:#1e3a1e;border:1.5px solid #1e3a1e;padding:.7rem 1.6rem;border-radius:8px;text-decoration:none;font-weight:600;font-size:.85rem">${t.negative}</a>
+        <p style="margin:0 0 1rem;color:#555">${t.improveAsk}</p>
+        <div style="text-align:center;margin:0 0 .5rem">
+          <a href="${feedbackUrl}" style="display:inline-block;background:#231f1c;color:#fff;padding:.7rem 1.8rem;border-radius:8px;text-decoration:none;font-weight:600;font-size:.88rem">${t.negative}</a>
         </div>
       </div>
-      <div style="background:#f7f5f0;padding:1rem 2rem;border-top:1px solid #e5e1d8;text-align:center">
-        <p style="margin:0;color:#555;font-size:.82rem">${t.closing}<br><strong>${t.team}</strong></p>
+      <div style="background:#fafafa;padding:1.2rem 2rem;border-top:1px solid #efece5;color:#444;font-size:.88rem;line-height:1.6">
+        <p style="margin:0 0 .6rem">${t.thanks}</p>
+        <p style="margin:0 0 .8rem">${t.welcome}</p>
+        <p style="margin:0;font-weight:600;color:#333">${t.team}</p>
       </div>
     </div>
-    <p style="text-align:center;color:#aaa;font-size:.72rem;margin-top:1rem">Masal Restaurant & Cafe &middot; <a href="https://masalrestaurant.nl" style="color:#aaa">masalrestaurant.nl</a></p>
+    <p style="text-align:center;color:#aaa;font-size:.72rem;margin-top:1rem">Masal Restaurant &middot; <a href="https://masalrestaurant.nl" style="color:#aaa">masalrestaurant.nl</a></p>
   </div></body></html>`
 }
 
@@ -127,7 +155,7 @@ Deno.serve(async (req) => {
   for (const r of rows || []) {
     const lang = (r.lang || 'nl').toLowerCase()
     const t = tpl[lang] || tpl.nl
-    const html = buildHtml(r.name as string, lang, r.id as string)
+    const html = buildHtml(r.name as string, lang, r.id as string, r.date as string)
     try {
       const resp = await fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
         method: 'POST',
