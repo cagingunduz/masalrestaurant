@@ -184,7 +184,7 @@ const T={
     type_res:'Reservering',type_party:'Feest/Parti',
     btn_confirm:'Bevestigen',btn_confirmed:'✓ Bevestigd',status_arrived:'Aanwezig',btn_arrived:'Aanwezig',
     empty_today:'Geen reserveringen voor vandaag',empty_upcoming:'Geen reserveringen',
-    refresh_label:'Automatisch vernieuwen over',
+    refresh_label:'Automatisch vernieuwen over',no_date:'Datum nog te bepalen',
     login_btn:'Inloggen',login_pw:'Wachtwoord',login_err:'Ongeldig wachtwoord',
     days:['Zondag','Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag'],
     months:['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec']
@@ -197,7 +197,7 @@ const T={
     type_res:'Reservation',type_party:'Party',
     btn_confirm:'Confirm',btn_confirmed:'✓ Confirmed',status_arrived:'Arrived',btn_arrived:'Arrived',
     empty_today:'No reservations for today',empty_upcoming:'No reservations found',
-    refresh_label:'Auto refresh in',
+    refresh_label:'Auto refresh in',no_date:'Date pending',
     login_btn:'Log in',login_pw:'Password',login_err:'Invalid password',
     days:['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
     months:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
@@ -210,7 +210,7 @@ const T={
     type_res:'Rezervasyon',type_party:'Parti / Etkinlik',
     btn_confirm:'Onayla',btn_confirmed:'✓ Onaylandı',status_arrived:'Geldi',btn_arrived:'Geldi',
     empty_today:'Bugün rezervasyon yok',empty_upcoming:'Rezervasyon bulunamadı',
-    refresh_label:'Otomatik yenileme',
+    refresh_label:'Otomatik yenileme',no_date:'Tarih belirsiz',
     login_btn:'Giriş yap',login_pw:'Şifre',login_err:'Geçersiz şifre',
     days:['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'],
     months:['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara']
@@ -328,7 +328,7 @@ async function loadUpcoming(){
   const td=todayStr();
   const [{data:res,error:e1},{data:party,error:e2}]=await Promise.all([
     sb.from('reservations').select('*').gte('date',td).order('date').order('time'),
-    sb.from('party_requests').select('*').gte('event_date',td).order('event_date')
+    sb.from('party_requests').select('*').or(`event_date.is.null,event_date.gte.${td}`).order('event_date',{ascending:true,nullsFirst:true})
   ]);
   const c=document.getElementById('upcomingContent');
   if(e1){c.innerHTML=`<div class="empty"><p>${esc(e1.message)}</p></div>`;return}
@@ -345,7 +345,7 @@ async function loadUpcoming(){
   allRows.forEach(r=>{if(!groups[r._date])groups[r._date]=[];groups[r._date].push(r)});
   c.innerHTML=Object.entries(groups).map(([date,rows])=>`
     <div class="date-group">
-      <div class="date-group-label">${fmtDateEU(date)}</div>
+      <div class="date-group-label">${date?fmtDateEU(date):t('no_date')}</div>
       ${renderTable(rows,true)}
     </div>`).join('');
 }
@@ -396,7 +396,7 @@ async function loadPast(){
   allRows.forEach(r=>{if(!groups[r._date])groups[r._date]=[];groups[r._date].push(r)});
   c.innerHTML=Object.entries(groups).map(([date,rows])=>`
     <div class="date-group">
-      <div class="date-group-label">${fmtDateEU(date)}</div>
+      <div class="date-group-label">${date?fmtDateEU(date):t('no_date')}</div>
       ${renderTable(rows,false)}
     </div>`).join('');
 }
