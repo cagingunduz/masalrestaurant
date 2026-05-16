@@ -834,6 +834,81 @@ async function submitParty(e){
   });
   btn.disabled=false;
   if(error){alert(t('err')+error.message);return}
+
+  // ── SEND PARTY REQUEST EMAIL ─────────────────────────────────────────────
+  const partyEmail={
+    nl:{
+      subject:'Aanvraag ontvangen — Masal Restaurant & Café',
+      greeting:`Beste ${name},`,
+      intro:'Uw aanvraag voor een feest/evenement is succesvol ontvangen!',
+      followup:'Wij nemen zo snel mogelijk persoonlijk contact met u op om de details te bespreken.',
+      detailsTitle:'Details',
+      lblPersons:'Aantal gasten',lblDate:'Datum',lblTime:'Tijdstip',lblType:'Soort feest',
+      lblDecor:'Aankleding',lblCake:'Taart',lblWishes:'Wensen',lblPhone:'Telefoon',
+      closing:'Tot ziens bij Masal!',team:'Het team van Masal Restaurant & Café',
+    },
+    en:{
+      subject:'Request received — Masal Restaurant & Café',
+      greeting:`Dear ${name},`,
+      intro:'Your event request has been successfully received!',
+      followup:'We will contact you personally as soon as possible to discuss the details.',
+      detailsTitle:'Details',
+      lblPersons:'Number of guests',lblDate:'Date',lblTime:'Time',lblType:'Event type',
+      lblDecor:'Decoration',lblCake:'Cake',lblWishes:'Wishes',lblPhone:'Phone',
+      closing:'See you at Masal!',team:'The Masal Restaurant & Café team',
+    },
+    tr:{
+      subject:'Talebiniz alındı — Masal Restaurant & Café',
+      greeting:`Sayın ${name},`,
+      intro:'Etkinlik talebiniz başarıyla alındı!',
+      followup:'Detayları görüşmek için en kısa sürede sizinle iletişime geçeceğiz.',
+      detailsTitle:'Detaylar',
+      lblPersons:'Kişi sayısı',lblDate:'Tarih',lblTime:'Saat',lblType:'Etkinlik türü',
+      lblDecor:'Dekorasyon',lblCake:'Pasta',lblWishes:'İstekler',lblPhone:'Telefon',
+      closing:"Masal'da görüşürüz!",team:'Masal Restaurant & Café ekibi',
+    }
+  };
+  const pc=partyEmail[lang]||partyEmail.nl;
+  const detailRow=(k,v)=>v?`<tr style="border-bottom:1px solid #f0ece4"><td style="padding:.6rem .5rem;color:#888;font-size:.85rem;width:40%">${k}</td><td style="padding:.6rem .5rem;font-weight:600;color:#1a1a1a;font-size:.9rem">${v}</td></tr>`:'';
+  const htmlBody=`<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="margin:0;padding:0;background:#f7f5f0;font-family:-apple-system,system-ui,sans-serif">
+  <div style="max-width:520px;margin:0 auto;padding:2rem 1rem">
+    <div style="text-align:center;margin-bottom:1.5rem">
+      <img src="https://i0.wp.com/masalrestaurant.nl/wp-content/uploads/2021/11/Masal_Logo_DEF.png?fit=600%2C304&ssl=1" width="87" height="44" alt="Masal" style="display:block;width:87px;height:44px;margin:0 auto;border:0">
+    </div>
+    <div style="background:#fff;border-radius:14px;overflow:hidden;border:1px solid #e5e1d8">
+      <div style="background:#1e3a1e;padding:1.5rem 2rem;text-align:center">
+        <div style="font-size:2.2rem">🎉</div>
+        <h2 style="color:#c6a55c;font-family:Georgia,serif;margin:.4rem 0 0;font-size:1.25rem">${pc.intro}</h2>
+      </div>
+      <div style="padding:1.8rem 2rem">
+        <p style="color:#444;margin:0 0 1.2rem">${pc.greeting}</p>
+        <p style="color:#555;font-size:.92rem;line-height:1.55;margin:0 0 1.2rem">${pc.followup}</p>
+        <h3 style="color:#1e3a1e;font-size:.85rem;text-transform:uppercase;letter-spacing:.5px;margin:0 0 .75rem">${pc.detailsTitle}</h3>
+        <table style="width:100%;border-collapse:collapse;margin-bottom:.8rem">
+          ${detailRow(pc.lblPersons, personCount)}
+          ${detailRow(pc.lblDate, fmtDateEU(selectedDate))}
+          ${detailRow(pc.lblTime, selectedTime)}
+          ${detailRow(pc.lblType, event_type)}
+          ${detailRow(pc.lblDecor, decoration)}
+          ${detailRow(pc.lblCake, cake)}
+          ${detailRow(pc.lblWishes, wishes)}
+          ${detailRow(pc.lblPhone, phone)}
+        </table>
+      </div>
+      <div style="background:#f7f5f0;padding:1rem 2rem;border-top:1px solid #e5e1d8;text-align:center">
+        <p style="margin:0;color:#555;font-size:.82rem">${pc.closing}<br><strong>${pc.team}</strong></p>
+      </div>
+    </div>
+    <p style="text-align:center;color:#aaa;font-size:.72rem;margin-top:1rem">Masal Restaurant &amp; Café · <a href="https://masalrestaurant.nl" style="color:#aaa">masalrestaurant.nl</a></p>
+  </div></body></html>`;
+  try{
+    await fetch(`${SUPABASE_URL}/functions/v1/send-email`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${SUPABASE_ANON}`},
+      body:JSON.stringify({to:email,subject:pc.subject,body:'',htmlBody})
+    });
+  }catch(e){console.error('Party email exception:',e)}
+
   document.body.innerHTML=`
   <div class="page" style="padding-top:4rem">
     <div class="success-wrap" style="display:block">
