@@ -421,6 +421,15 @@ input.ctr-num:focus{border-bottom:2px solid var(--gold)}
           <textarea id="pWishes" data-i18n-ph="f_notes_ph" placeholder="Bijzondere wensen..."></textarea>
         </div>
       </div>
+      <div class="field-row">
+        <div class="field full">
+          <label class="cb-row">
+            <input type="checkbox" id="pConsentMail" class="cb-input" checked>
+            <span class="cb-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span class="cb-text" data-i18n="consent_mail">Ik wil graag een vervolgbericht ontvangen om mijn ervaring te delen (Google review uitnodiging — vrijwillig).</span>
+          </label>
+        </div>
+      </div>
       <button type="submit" class="btn-primary" id="partySubmitBtn">
         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
         <span data-i18n="p_submit">Aanvraag Versturen</span>
@@ -836,11 +845,12 @@ async function submitParty(e){
   const btn=document.getElementById('partySubmitBtn');
   btn.disabled=true;
   // Tarih ve saati önceki adımlardan al (Step 1 + Step 2'de seçildi)
+  const consent=document.getElementById('pConsentMail')?.checked || false;
   const{error}=await sb.rpc('public_create_party_request',{
     p_name:name,p_phone:phone,p_email:email,p_guests:String(personCount),
     p_event_date:selectedDate||null, p_event_time:selectedTime||null,
     p_event_type:event_type,p_decoration:decoration,
-    p_cake:cake,p_wishes:wishes,p_lang:lang
+    p_cake:cake,p_wishes:wishes,p_lang:lang, p_consent_marketing:consent
   });
   btn.disabled=false;
   if(error){alert(t('err')+error.message);return}
