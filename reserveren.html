@@ -317,17 +317,17 @@ input.ctr-num:focus{border-bottom:2px solid var(--gold)}
       <div class="field-row">
         <div class="field">
           <label data-i18n="f_name">Naam</label>
-          <input type="text" id="resName" placeholder="Volledige naam" required>
+          <input type="text" id="resName" data-i18n-ph="ph_name" placeholder="Volledige naam" required>
         </div>
         <div class="field">
           <label data-i18n="f_phone">Telefoon</label>
-          <input type="tel" id="resPhone" placeholder="+31 6 ..." required>
+          <input type="tel" id="resPhone" data-i18n-ph="ph_phone" placeholder="+31 6 ..." required>
         </div>
       </div>
       <div class="field-row">
         <div class="field full">
           <label>E-mail</label>
-          <input type="email" id="resEmail" placeholder="naam@email.com" required>
+          <input type="email" id="resEmail" data-i18n-ph="ph_email" placeholder="naam@email.com" required>
         </div>
       </div>
       <div class="field-row">
@@ -372,17 +372,17 @@ input.ctr-num:focus{border-bottom:2px solid var(--gold)}
       <div class="field-row">
         <div class="field">
           <label data-i18n="f_name">Naam</label>
-          <input type="text" id="pName" placeholder="Volledige naam" required>
+          <input type="text" id="pName" data-i18n-ph="ph_name" placeholder="Volledige naam" required>
         </div>
         <div class="field">
           <label data-i18n="f_phone">Telefoon</label>
-          <input type="tel" id="pPhone" placeholder="+31 6 ..." required>
+          <input type="tel" id="pPhone" data-i18n-ph="ph_phone" placeholder="+31 6 ..." required>
         </div>
       </div>
       <div class="field-row">
         <div class="field full">
           <label>E-mail</label>
-          <input type="email" id="pEmail" placeholder="naam@email.com" required>
+          <input type="email" id="pEmail" data-i18n-ph="ph_email" placeholder="naam@email.com" required>
         </div>
       </div>
       <div class="field-row">
@@ -491,6 +491,7 @@ const T={
     f_name:'Naam',f_phone:'Telefoon',f_notes:'Bijzonderheden',f_date:'Datum',err:'Fout: ',
     no_slots:'Geen beschikbare tijden op deze datum. Kies a.u.b. een andere dag.',
     consent_mail:'Ik wil graag een vervolgbericht ontvangen om mijn ervaring te delen (Google review uitnodiging — vrijwillig).',
+    ph_name:'Volledige naam',ph_phone:'+31 6 ...',ph_email:'naam@email.com',
     f_notes_ph:'Allergieën, speciale wensen...',
     btn_next:'Volgende',btn_back:'Terug',
     res_submit:'Reservering Bevestigen',
@@ -526,6 +527,7 @@ const T={
     f_name:'Name',f_phone:'Phone',f_notes:'Special requests',f_date:'Date',err:'Error: ',
     no_slots:'No available times on this date. Please choose another day.',
     consent_mail:'I would like to receive a follow-up message to share my experience (Google review invitation — optional).',
+    ph_name:'Full name',ph_phone:'+31 6 ...',ph_email:'name@email.com',
     f_notes_ph:'Allergies, special wishes...',
     btn_next:'Next',btn_back:'Back',
     res_submit:'Confirm Reservation',
@@ -561,6 +563,7 @@ const T={
     f_name:'Ad Soyad',f_phone:'Telefon',f_notes:'Özel istekler',f_date:'Tarih',err:'Hata: ',
     no_slots:'Bu tarihte uygun saat yok. Lütfen başka bir gün seçin.',
     consent_mail:'Deneyimimi paylaşabilmem için sonradan bir e-posta almak istiyorum (Google yorum daveti — isteğe bağlı).',
+    ph_name:'Ad Soyad',ph_phone:'+31 6 ...',ph_email:'ad@email.com',
     f_notes_ph:'Alerji, özel gün, diğer istekler...',
     btn_next:'Devam',btn_back:'Geri',
     res_submit:'Rezervasyonu Onayla',
