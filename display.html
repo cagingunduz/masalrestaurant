@@ -309,7 +309,7 @@ async function loadToday(){
   // Merge: reservations + parties, sort by time
   const allRows=[
     ...(res||[]).map(r=>({...r,_type:'res',_sortTime:r.time||'99:99'})),
-    ...(party||[]).map(r=>({...r,_type:'party',_sortTime:'99:98'})) // party at bottom if no time
+    ...(party||[]).map(r=>({...r,_type:'party',_sortTime:r.event_time?String(r.event_time).slice(0,5):'99:98'})) // event_time varsa o saatte, yoksa en altta
   ].sort((a,b)=>a._sortTime.localeCompare(b._sortTime));
 
   const persons=(res||[]).reduce((a,r)=>a+(parseInt(r.persons)||0),0);
@@ -335,7 +335,7 @@ async function loadUpcoming(){
 
   const allRows=[
     ...(res||[]).map(r=>({...r,_type:'res',_date:r.date,_sortTime:r.time||'99:99'})),
-    ...(party||[]).map(r=>({...r,_type:'party',_date:r.event_date||'',_sortTime:'99:98'}))
+    ...(party||[]).map(r=>({...r,_type:'party',_date:r.event_date||'',_sortTime:r.event_time?String(r.event_time).slice(0,5):'99:98'}))
   ].sort((a,b)=>a._date.localeCompare(b._date)||a._sortTime.localeCompare(b._sortTime));
 
   if(!allRows.length){c.innerHTML=`<div class="empty"><p>${t('empty_upcoming')}</p></div>`;return}
@@ -367,7 +367,7 @@ function renderTable(rows,showTime){
       const notes=isParty?(r.wishes||''):(r.notes||'');
       const isCancelled=r.status==='cancelled';
       return`<tr${isCancelled?' class="cancelled-row"':''}>
-        ${showTime?`<td>${isParty?'<span class="time-badge" style="opacity:.4">—</span>':timeLabel(r.time,r._date)}</td>`:''}
+        ${showTime?`<td>${isParty?(r.event_time?`<span class="time-badge">${String(r.event_time).slice(0,5)}</span>`:'<span class="time-badge" style="opacity:.4">—</span>'):timeLabel(r.time,r._date)}</td>`:''}
         <td><div class="name-cell">${esc(r.name)}</div></td>
         <td><span class="type-badge ${isParty?'party':'res'}">${t(isParty?'type_party':'type_res')}</span></td>
         <td>${persons}</td>
@@ -389,7 +389,7 @@ async function loadPast(){
   if(e1){c.innerHTML=`<div class="empty"><p>${esc(e1.message)}</p></div>`;return}
   const allRows=[
     ...(res||[]).map(r=>({...r,_type:'res',_date:r.date,_sortTime:r.time||'99:99'})),
-    ...(party||[]).map(r=>({...r,_type:'party',_date:r.event_date||'',_sortTime:'99:98'}))
+    ...(party||[]).map(r=>({...r,_type:'party',_date:r.event_date||'',_sortTime:r.event_time?String(r.event_time).slice(0,5):'99:98'}))
   ].sort((a,b)=>b._date.localeCompare(a._date)||b._sortTime.localeCompare(a._sortTime));
   if(!allRows.length){c.innerHTML=`<div class="empty"><p>${t('empty_upcoming')}</p></div>`;return}
   const groups={};
