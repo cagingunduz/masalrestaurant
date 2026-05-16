@@ -10,8 +10,8 @@ const cors = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const GOOGLE_REVIEW_URL = "https://www.google.com/search?q=Masal+Restaurant+Tilburg"
-const FEEDBACK_EMAIL = 'info@masalrestaurant.nl'
+const GOOGLE_REVIEW_URL = "https://www.google.com/maps/place/Masal+Restaurant/@51.5605993,5.0763486,17z/data=!3m1!4b1!4m6!3m5!1s0x47c6be3a619a7935:0x8d002d7c7ca90684!8m2!3d51.5605993!4d5.0763486?write_review=true"
+const FEEDBACK_FORM_BASE = "https://masalrestaurant.nl/feedback.html"
 
 const tpl: Record<string, {
   subject: string
@@ -59,9 +59,10 @@ function escHtml(s: string) {
   return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!))
 }
 
-function buildHtml(name: string, lang: string) {
+function buildHtml(name: string, lang: string, resId: string) {
   const t = tpl[lang] || tpl.nl
   const safeName = escHtml(name || '')
+  const feedbackUrl = `${FEEDBACK_FORM_BASE}?id=${encodeURIComponent(resId)}&lang=${encodeURIComponent(lang)}`
   return `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="margin:0;padding:0;background:#f7f5f0;font-family:-apple-system,system-ui,sans-serif">
   <div style="max-width:520px;margin:0 auto;padding:2rem 1rem">
     <div style="text-align:center;margin-bottom:1.5rem">
@@ -69,24 +70,24 @@ function buildHtml(name: string, lang: string) {
     </div>
     <div style="background:#fff;border-radius:14px;overflow:hidden;border:1px solid #e5e1d8">
       <div style="background:#1e3a1e;padding:1.5rem 2rem;text-align:center">
-        <div style="font-size:2.2rem">⭐</div>
+        <div style="font-size:2.2rem">&#11088;</div>
         <h2 style="color:#c6a55c;font-family:Georgia,serif;margin:.4rem 0 0;font-size:1.25rem">${t.question}</h2>
       </div>
       <div style="padding:1.8rem 2rem">
         <p style="color:#444;margin:0 0 .8rem">${t.greeting(safeName)}</p>
         <p style="color:#555;font-size:.95rem;line-height:1.6;margin:0 0 1.6rem">${t.body}</p>
-        <div style="text-align:center;margin-bottom:1.1rem">
-          <a href="${GOOGLE_REVIEW_URL}" style="display:inline-block;background:#c6a55c;color:#111;padding:.85rem 2rem;border-radius:8px;text-decoration:none;font-weight:700;font-size:.95rem">⭐ ${t.positive}</a>
+        <div style="text-align:center;margin-bottom:1rem">
+          <a href="${GOOGLE_REVIEW_URL}" style="display:inline-block;background:#c6a55c;color:#111;padding:.85rem 2rem;border-radius:8px;text-decoration:none;font-weight:700;font-size:.95rem">&#11088; ${t.positive}</a>
         </div>
         <div style="text-align:center">
-          <a href="mailto:${FEEDBACK_EMAIL}?subject=Feedback%20Masal" style="display:inline-block;color:#888;text-decoration:underline;font-size:.85rem">${t.negative}</a>
+          <a href="${feedbackUrl}" style="display:inline-block;background:transparent;color:#1e3a1e;border:1.5px solid #1e3a1e;padding:.7rem 1.6rem;border-radius:8px;text-decoration:none;font-weight:600;font-size:.85rem">${t.negative}</a>
         </div>
       </div>
       <div style="background:#f7f5f0;padding:1rem 2rem;border-top:1px solid #e5e1d8;text-align:center">
         <p style="margin:0;color:#555;font-size:.82rem">${t.closing}<br><strong>${t.team}</strong></p>
       </div>
     </div>
-    <p style="text-align:center;color:#aaa;font-size:.72rem;margin-top:1rem">Masal Restaurant & Café · <a href="https://masalrestaurant.nl" style="color:#aaa">masalrestaurant.nl</a></p>
+    <p style="text-align:center;color:#aaa;font-size:.72rem;margin-top:1rem">Masal Restaurant & Cafe &middot; <a href="https://masalrestaurant.nl" style="color:#aaa">masalrestaurant.nl</a></p>
   </div></body></html>`
 }
 
@@ -103,12 +104,13 @@ Deno.serve(async (req) => {
   const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000)
   const cutoffStr = cutoff.toISOString().slice(0, 10)
 
-  // İptal edilmemiş tüm rezervasyonlar (new / confirmed / arrived dahil; cancelled hariç)
+  // İptal edilmemiş + consent_marketing=true (GDPR — sadece izin verenler) + henüz mail gitmemiş
   const { data: rows, error } = await supa
     .from('reservations')
     .select('id,name,email,date,status,lang')
     .lte('date', cutoffStr)
     .or('status.is.null,status.neq.cancelled')
+    .eq('consent_marketing', true)
     .not('email', 'is', null)
     .neq('email', '')
     .is('feedback_email_sent_at', null)
@@ -125,7 +127,7 @@ Deno.serve(async (req) => {
   for (const r of rows || []) {
     const lang = (r.lang || 'nl').toLowerCase()
     const t = tpl[lang] || tpl.nl
-    const html = buildHtml(r.name as string, lang)
+    const html = buildHtml(r.name as string, lang, r.id as string)
     try {
       const resp = await fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
         method: 'POST',

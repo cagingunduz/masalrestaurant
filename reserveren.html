@@ -87,7 +87,9 @@ a{text-decoration:none;color:inherit}
 .counter-row{display:flex;align-items:center;gap:2.5rem}
 .ctr-btn{width:48px;height:48px;border-radius:50%;border:1px solid var(--border2);background:var(--card2);cursor:pointer;font-size:1.5rem;color:var(--muted);display:flex;align-items:center;justify-content:center;transition:all .2s;line-height:1}
 .ctr-btn:hover{border-color:var(--gold);color:var(--gold);background:rgba(198,165,92,.07)}
-.ctr-num{font-family:'Playfair Display',serif;font-size:4rem;color:var(--text);min-width:80px;text-align:center;line-height:1}
+.ctr-num{font-family:'Playfair Display',serif;font-size:4rem;color:var(--text);min-width:80px;width:140px;text-align:center;line-height:1;border:none;background:transparent;outline:none;padding:0;-moz-appearance:textfield;appearance:textfield}
+input.ctr-num::-webkit-inner-spin-button,input.ctr-num::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+input.ctr-num:focus{border-bottom:2px solid var(--gold)}
 .person-hint{font-size:.72rem;color:var(--muted2);margin-top:1.2rem}
 
 /* ── OCCASION CHIPS ── */
@@ -261,9 +263,9 @@ a{text-decoration:none;color:inherit}
     <div class="person-block">
       <div class="person-label-sm" data-i18n="s3_label">Aantal personen</div>
       <div class="counter-row">
-        <button class="ctr-btn" onclick="changeCount(-1)">−</button>
-        <div class="ctr-num" id="ctrNum">2</div>
-        <button class="ctr-btn" onclick="changeCount(1)">+</button>
+        <button class="ctr-btn" type="button" onclick="changeCount(-1)">−</button>
+        <input class="ctr-num" id="ctrNum" type="number" min="1" max="500" value="2" inputmode="numeric" oninput="syncCount(this)" onblur="syncCount(this)">
+        <button class="ctr-btn" type="button" onclick="changeCount(1)">+</button>
       </div>
     </div>
     <div id="capWarn" class="cap-warn" style="display:none"></div>
@@ -325,6 +327,14 @@ a{text-decoration:none;color:inherit}
           <textarea id="resNotes" data-i18n-ph="f_notes_ph" placeholder="Allergieën, speciale wensen..."></textarea>
         </div>
       </div>
+      <div class="field-row">
+        <div class="field full">
+          <label style="display:flex;align-items:flex-start;gap:.65rem;cursor:pointer;margin:.4rem 0 0">
+            <input type="checkbox" id="consentMail" style="margin-top:.25rem;flex-shrink:0;accent-color:var(--gold)">
+            <span data-i18n="consent_mail" style="font-size:.78rem;color:var(--muted);line-height:1.5;letter-spacing:.3px">Ik wil graag een vervolgbericht ontvangen om mijn ervaring te delen (Google review uitnodiging — vrijwillig).</span>
+          </label>
+        </div>
+      </div>
       <button type="submit" class="btn-primary" id="submitBtn">
         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
         <span data-i18n="res_submit">Reservering Bevestigen</span>
@@ -364,11 +374,7 @@ a{text-decoration:none;color:inherit}
         </div>
       </div>
       <div class="field-row">
-        <div class="field">
-          <label data-i18n="f_date">Datum</label>
-          <input type="date" id="pDate" required>
-        </div>
-        <div class="field">
+        <div class="field full">
           <label data-i18n="f_event_type">Soort feest</label>
           <select id="pType" required>
             <option value="" data-i18n="f_select">Selecteer...</option>
@@ -463,6 +469,7 @@ const T={
     sum_title:'Reservering overzicht',
     f_name:'Naam',f_phone:'Telefoon',f_notes:'Bijzonderheden',f_date:'Datum',err:'Fout: ',
     no_slots:'Geen beschikbare tijden op deze datum. Kies a.u.b. een andere dag.',
+    consent_mail:'Ik wil graag een vervolgbericht ontvangen om mijn ervaring te delen (Google review uitnodiging — vrijwillig).',
     f_notes_ph:'Allergieën, speciale wensen...',
     btn_next:'Volgende',btn_back:'Terug',
     res_submit:'Reservering Bevestigen',
@@ -497,6 +504,7 @@ const T={
     sum_title:'Reservation summary',
     f_name:'Name',f_phone:'Phone',f_notes:'Special requests',f_date:'Date',err:'Error: ',
     no_slots:'No available times on this date. Please choose another day.',
+    consent_mail:'I would like to receive a follow-up message to share my experience (Google review invitation — optional).',
     f_notes_ph:'Allergies, special wishes...',
     btn_next:'Next',btn_back:'Back',
     res_submit:'Confirm Reservation',
@@ -531,6 +539,7 @@ const T={
     sum_title:'Rezervasyon özeti',
     f_name:'Ad Soyad',f_phone:'Telefon',f_notes:'Özel istekler',f_date:'Tarih',err:'Hata: ',
     no_slots:'Bu tarihte uygun saat yok. Lütfen başka bir gün seçin.',
+    consent_mail:'Deneyimimi paylaşabilmem için sonradan bir e-posta almak istiyorum (Google yorum daveti — isteğe bağlı).',
     f_notes_ph:'Alerji, özel gün, diğer istekler...',
     btn_next:'Devam',btn_back:'Geri',
     res_submit:'Rezervasyonu Onayla',
@@ -602,10 +611,6 @@ function goParty(){
   [1,2,3,4].forEach(i=>document.getElementById('card'+i).style.display='none');
   document.getElementById('cardParty').style.display='block';
   document.getElementById('partyPersonsDisplay').textContent=personCount;
-  // set min date
-  const now=new Date();
-  const s=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
-  document.getElementById('pDate').min=s;
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -759,14 +764,23 @@ function updateS2Sub(){
 }
 
 /* ── PERSONS ── */
-function changeCount(d){
-  personCount=Math.max(1,Math.min(500,personCount+d));
-  document.getElementById('ctrNum').textContent=personCount;
+function syncCount(el){
+  let v=parseInt(el.value,10);
+  if(isNaN(v)||v<1)v=1;
+  if(v>500)v=500;
+  personCount=v;
+  if(document.activeElement!==el)el.value=v; // odak dışındaysa düzelt
   const isParty=personCount>25;
   document.getElementById('partyBanner').style.display=isParty?'flex':'none';
   document.getElementById('btnPartySwitch').style.display=isParty?'block':'none';
   document.querySelector('#card3 .btn-primary').style.display=isParty?'none':'flex';
   checkCapacity();
+}
+function changeCount(d){
+  const el=document.getElementById('ctrNum');
+  const cur=parseInt(el.value,10)||personCount;
+  el.value=Math.max(1,Math.min(500,cur+d));
+  syncCount(el);
 }
 
 /* ── OCCASIONS ── */
@@ -800,18 +814,17 @@ async function submitParty(e){
   const name=document.getElementById('pName').value.trim();
   const phone=document.getElementById('pPhone').value.trim();
   const email=document.getElementById('pEmail').value.trim();
-  const event_date=document.getElementById('pDate').value;
   const event_type=document.getElementById('pType').value;
   const decoration=document.getElementById('pDecor').value;
   const cake=document.getElementById('pCake').value;
   const wishes=document.getElementById('pWishes').value.trim();
-  if(!name||!phone||!email||!event_date||!event_type){alert(t('err_fields'));return}
+  if(!name||!phone||!email||!event_type){alert(t('err_fields'));return}
   const btn=document.getElementById('partySubmitBtn');
   btn.disabled=true;
   const{error}=await sb.rpc('public_create_party_request',{
     p_name:name,p_phone:phone,p_email:email,p_guests:String(personCount),
-    p_event_date:event_date,p_event_type:event_type,p_decoration:decoration,
-    p_cake:cake,p_wishes:wishes
+    p_event_type:event_type,p_decoration:decoration,
+    p_cake:cake,p_wishes:wishes,p_lang:lang
   });
   btn.disabled=false;
   if(error){alert(t('err')+error.message);return}
@@ -823,7 +836,6 @@ async function submitParty(e){
       <p>${t('p_confirm_desc')}</p>
       <div class="success-detail">
         <div class="sum-row"><span class="sum-key">${t('lbl_name')}</span><span class="sum-val">${name}</span></div>
-        <div class="sum-row"><span class="sum-key">${t('lbl_date')}</span><span class="sum-val">${event_date}</span></div>
         <div class="sum-row"><span class="sum-key">${t('lbl_persons')}</span><span class="sum-val">${personCount}</span></div>
         <div class="sum-row"><span class="sum-key">${t('f_event_type')}</span><span class="sum-val">${event_type}</span></div>
         <div class="sum-row"><span class="sum-key">${t('lbl_phone')}</span><span class="sum-val">${phone}</span></div>
@@ -851,10 +863,11 @@ async function submitForm(e){
   const occ=selectedOccasion?'\n['+selectedOccasion+']':'';
   const btn=document.getElementById('submitBtn');
   btn.disabled=true;
+  const consent=document.getElementById('consentMail')?.checked || false;
   const{data:rid,error}=await sb.rpc('public_create_reservation',{
     p_name:name,p_phone:phone,p_email:email,p_date:selectedDate,
     p_time:selectedTime,p_persons:String(personCount),p_notes:(notes+occ).trim(),
-    p_lang:lang
+    p_lang:lang, p_consent_marketing:consent
   });
   btn.disabled=false;
   if(error){alert(t('err')+error.message);return}
@@ -865,7 +878,7 @@ async function submitForm(e){
 
   const emailContent={
     nl:{
-      subject:`Reservering bevestigd — Masal Restaurant & Café`,
+      subject:`Reservering ontvangen — Masal Restaurant & Café`,
       greeting:`Beste ${name},`,
       intro:`Uw reservering bij Masal Restaurant & Café is succesvol ontvangen!`,
       detailsTitle:`Reserveringsdetails`,
@@ -876,7 +889,7 @@ async function submitForm(e){
       team:`Het team van Masal Restaurant & Café`,
     },
     en:{
-      subject:`Reservation confirmed — Masal Restaurant & Café`,
+      subject:`Reservation received — Masal Restaurant & Café`,
       greeting:`Dear ${name},`,
       intro:`Your reservation at Masal Restaurant & Café has been successfully received!`,
       detailsTitle:`Reservation details`,
@@ -887,7 +900,7 @@ async function submitForm(e){
       team:`The Masal Restaurant & Café team`,
     },
     tr:{
-      subject:`Rezervasyon onayı — Masal Restaurant & Café`,
+      subject:`Rezervasyon alındı — Masal Restaurant & Café`,
       greeting:`Sayın ${name},`,
       intro:`Masal Restaurant & Café'deki rezervasyonunuz başarıyla alındı!`,
       detailsTitle:`Rezervasyon detayları`,

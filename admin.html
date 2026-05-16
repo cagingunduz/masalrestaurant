@@ -271,6 +271,7 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
     <div class="tab" data-tab="party" data-i18n="tab_party" onclick="switchTab('party')">Feest aanvragen</div>
     <div class="tab" data-tab="shifts" data-i18n="tab_shifts" onclick="switchTab('shifts')">Shifts</div>
     <div class="tab" data-tab="capacity" data-i18n="tab_capacity" onclick="switchTab('capacity')">Capaciteitslimiet</div>
+    <div class="tab" data-tab="feedback" data-i18n="tab_feedback" onclick="switchTab('feedback')">Feedback</div>
     <div class="tab" data-tab="haccp" onclick="switchTab('haccp')">HACCP</div>
     <div class="tab" data-tab="swaps" data-i18n="tab_swaps" onclick="switchTab('swaps')" id="swapsTab">Vardiya Değişimleri</div>
   </div>
@@ -352,6 +353,15 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
         <button class="btn" onclick="addCapacity()" data-i18n="cap_add">+ Toevoegen</button>
       </div>
       <div id="capContainer"></div>
+    </section>
+
+    <!-- FEEDBACK SUBMISSIONS -->
+    <section class="section" id="sec-feedback">
+      <div class="toolbar">
+        <h2 data-i18n="tab_feedback">Feedback</h2>
+        <button class="btn ghost" onclick="loadFeedback()" data-i18n="refresh">Vernieuwen</button>
+      </div>
+      <div id="feedbackContainer"></div>
     </section>
 
     <!-- SWAP REQUESTS -->
@@ -531,6 +541,7 @@ const I18N={
     tab_capacity:'Capaciteitslimiet',cap_start:'Begintijd',cap_end:'Eindtijd',cap_maxlbl:'Max. personen',cap_add:'+ Toevoegen',
     cap_range:'Tijdsbereik',cap_booked:'Geboekt',cap_full:'Vol',cap_open:'Beschikbaar',cap_empty:'Geen capaciteitslimieten ingesteld',
     cap_invalid:'Vul een geldige datum, tijden en max. personen in.',cap_confirm_delete:'Limiet verwijderen?',
+    tab_feedback:'Feedback',fb_empty:'Nog geen feedback ontvangen',fb_rating:'Beoordeling',fb_cats:'Categorieën',fb_message:'Bericht',fb_confirm_delete:'Feedback verwijderen?',
     filter_all:'Alle',status_new:'Nieuw',status_confirmed:'Bevestigd',status_cancelled:'Geannuleerd',
     refresh:'Vernieuwen',prev:'← Vorige',next:'Volgende →',
     new_shift:'Nieuwe shift',edit_shift:'Shift bewerken',
@@ -569,6 +580,7 @@ const I18N={
     tab_capacity:'Kapasite Limiti',cap_start:'Başlangıç',cap_end:'Bitiş',cap_maxlbl:'Maks. kişi',cap_add:'+ Ekle',
     cap_range:'Saat aralığı',cap_booked:'Dolu kişi',cap_full:'Dolu',cap_open:'Müsait',cap_empty:'Tanımlı kapasite limiti yok',
     cap_invalid:'Geçerli tarih, saat ve maks. kişi girin.',cap_confirm_delete:'Limit silinsin mi?',
+    tab_feedback:'Geri Bildirimler',fb_empty:'Henüz geri bildirim yok',fb_rating:'Puan',fb_cats:'Kategoriler',fb_message:'Mesaj',fb_confirm_delete:'Geri bildirim silinsin mi?',
     filter_all:'Tümü',status_new:'Yeni',status_confirmed:'Onaylandı',status_cancelled:'İptal',
     refresh:'Yenile',prev:'← Önceki',next:'Sonraki →',
     date:'Tarih',start_time:'Başlangıç',end_time:'Bitiş',
@@ -694,6 +706,7 @@ function switchTab(name){
   if(name==='party')loadParty();
   if(name==='shifts')loadShifts();
   if(name==='capacity')loadCapacity();
+  if(name==='feedback')loadFeedback();
   if(name==='haccp')loadHaccp();
   if(name==='swaps')loadSwaps();
 }
@@ -877,6 +890,35 @@ async function deleteCapacity(id){
   if(!confirm(t('cap_confirm_delete')))return;
   await sb.from('capacity_limits').delete().eq('id',id);
   loadCapacity();
+}
+
+// === FEEDBACK SUBMISSIONS ===
+async function loadFeedback(){
+  const c=document.getElementById('feedbackContainer');
+  const{data,error}=await sb.from('feedback_submissions').select('*').order('created_at',{ascending:false});
+  if(error){c.innerHTML=`<div class="empty">${t('err')}${error.message}</div>`;return}
+  if(!data||!data.length){c.innerHTML=`<div class="empty">${t('fb_empty')}</div>`;return}
+  c.innerHTML=`<table>
+    <thead><tr><th>${t('col_date')}</th><th>${t('col_name')}</th><th>${t('col_email')}</th><th>${t('fb_rating')}</th><th>${t('fb_cats')}</th><th>${t('fb_message')}</th><th>${t('col_actions')}</th></tr></thead>
+    <tbody>${data.map(f=>{
+      const stars=f.rating?'★'.repeat(f.rating)+'☆'.repeat(5-f.rating):'—';
+      const cats=(f.categories||[]).join(', ')||'—';
+      return`<tr>
+        <td data-label="${t('col_date')}">${(f.created_at||'').slice(0,16).replace('T',' ')}</td>
+        <td data-label="${t('col_name')}">${esc(f.name||'—')}</td>
+        <td data-label="${t('col_email')}">${f.email?`<a href="mailto:${esc(f.email)}">${esc(f.email)}</a>`:'—'}</td>
+        <td data-label="${t('fb_rating')}" style="color:#c6a55c;letter-spacing:1px">${stars}</td>
+        <td data-label="${t('fb_cats')}" style="font-size:.8rem">${esc(cats)}</td>
+        <td data-label="${t('fb_message')}" style="max-width:340px;white-space:pre-wrap;line-height:1.4">${esc(f.message||'')}</td>
+        <td data-label="${t('col_actions')}"><button class="btn small danger" onclick="deleteFeedback('${f.id}')">×</button></td>
+      </tr>`;
+    }).join('')}</tbody></table>`;
+}
+
+async function deleteFeedback(id){
+  if(!confirm(t('fb_confirm_delete')))return;
+  await sb.from('feedback_submissions').delete().eq('id',id);
+  loadFeedback();
 }
 
 // === PARTY REQUESTS ===

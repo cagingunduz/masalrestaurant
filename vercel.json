@@ -1,0 +1,12 @@
+{
+  "redirects": [
+    { "source": "/reserveren", "destination": "/reserveren.html", "permanent": true },
+    { "source": "/reserveren/", "destination": "/reserveren.html", "permanent": true },
+    { "source": "/reserveren/:slug*", "destination": "/reserveren.html", "permanent": true },
+    { "source": "/reservering", "destination": "/reserveren.html", "permanent": true },
+    { "source": "/reservering/", "destination": "/reserveren.html", "permanent": true },
+    { "source": "/feesten-en-partijen", "destination": "/reserveren.html", "permanent": true },
+    { "source": "/feesten-en-partijen/", "destination": "/reserveren.html", "permanent": true },
+    { "source": "/feesten", "destination": "/reserveren.html", "permanent": true }
+  ]
+}
