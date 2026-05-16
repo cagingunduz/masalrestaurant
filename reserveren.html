@@ -106,6 +106,15 @@ input.ctr-num:focus{border-bottom:2px solid var(--gold)}
 .field label{font-size:.68rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);font-weight:500}
 .field input,.field textarea{background:var(--card2);border:1px solid var(--border2);padding:.85rem 1rem;font-family:'Jost',sans-serif;font-size:.9rem;color:var(--text);border-radius:8px;outline:none;transition:border-color .25s}
 .field input:focus,.field textarea:focus{border-color:var(--gold)}
+/* Özel onay kutusu — site temasına uygun */
+.cb-row{display:flex;align-items:flex-start;gap:.75rem;cursor:pointer;margin:.5rem 0 0;user-select:none}
+.cb-row .cb-input{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+.cb-row .cb-box{flex-shrink:0;width:20px;height:20px;border:1.5px solid rgba(198,165,92,.5);border-radius:5px;display:flex;align-items:center;justify-content:center;background:transparent;transition:background .2s,border-color .2s;margin-top:.15rem}
+.cb-row:hover .cb-box{border-color:var(--gold)}
+.cb-row .cb-input:checked+.cb-box{background:var(--gold);border-color:var(--gold)}
+.cb-row .cb-box svg{width:13px;height:13px;color:#111;opacity:0;transition:opacity .15s}
+.cb-row .cb-input:checked+.cb-box svg{opacity:1}
+.cb-row .cb-text{font-size:.78rem;color:var(--muted);line-height:1.5;letter-spacing:.3px}
 .field input::placeholder,.field textarea::placeholder{color:var(--muted2)}
 .field textarea{resize:vertical;min-height:80px;line-height:1.6}
 
@@ -329,9 +338,10 @@ input.ctr-num:focus{border-bottom:2px solid var(--gold)}
       </div>
       <div class="field-row">
         <div class="field full">
-          <label style="display:flex;align-items:flex-start;gap:.65rem;cursor:pointer;margin:.4rem 0 0">
-            <input type="checkbox" id="consentMail" checked style="margin-top:.25rem;flex-shrink:0;accent-color:var(--gold)">
-            <span data-i18n="consent_mail" style="font-size:.78rem;color:var(--muted);line-height:1.5;letter-spacing:.3px">Ik wil graag een vervolgbericht ontvangen om mijn ervaring te delen (Google review uitnodiging — vrijwillig).</span>
+          <label class="cb-row">
+            <input type="checkbox" id="consentMail" class="cb-input" checked>
+            <span class="cb-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span class="cb-text" data-i18n="consent_mail">Ik wil graag een vervolgbericht ontvangen om mijn ervaring te delen (Google review uitnodiging — vrijwillig).</span>
           </label>
         </div>
       </div>
