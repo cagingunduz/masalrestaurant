@@ -1060,9 +1060,13 @@ async function loadShifts(){
       const isPartial=!!partialRanges;
       if(cell){
         const h=hrsNum(cell.start,cell.end);weekTotal+=h;
+        // Sabahçı vardiya: bitiş 17:00 veya daha erken ise hücre açık yeşil
+        const endStr=String(cell.end||'').slice(0,5);
+        const isMorning=endStr && endStr<='17:00';
+        const cellBg=isMorning?'style="background:rgba(129,199,132,0.4)"':bg;
         const data=`'${p.id}',${i},'${cell.shiftId}','${cell.start}','${cell.end}'`;
         const partialBadge=isPartial?`<span class="sv-partial" title="${(partialRanges).map(r=>r.from+'–'+r.to).join(', ')}">✕ ${partialRanges.map(r=>r.from.slice(0,5)+'–'+r.to.slice(0,5)).join(' ')}</span>`:'';
-        return`<td class="sched-td${isWknd?' wknd':''}${isUnavail?' unavail-td':''}${isPartial?' partial-td':''}" ${bg}><div class="sched-cell filled" onclick="openCellModal(${data})"><span class="sv-time">${cell.start.slice(0,5)}–${cell.end.slice(0,5)}</span><span class="sv-hrs">${hrsLabel(h)}</span>${partialBadge}</div></td>`;
+        return`<td class="sched-td${isWknd?' wknd':''}${isUnavail?' unavail-td':''}${isPartial?' partial-td':''}" ${cellBg}><div class="sched-cell filled" onclick="openCellModal(${data})"><span class="sv-time">${cell.start.slice(0,5)}–${cell.end.slice(0,5)}</span><span class="sv-hrs">${hrsLabel(h)}</span>${partialBadge}</div></td>`;
       }else{
         const data=`'${p.id}',${i},null,null,'09:00','17:00'`;
         if(isUnavail){
