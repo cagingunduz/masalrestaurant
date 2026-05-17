@@ -665,9 +665,14 @@ function changeWeek(dir){currentWeek=addDays(currentWeek,dir*7);loadShifts()}
 async function loadShifts(){
   document.getElementById('weekLabel').textContent=weekLabel(currentWeek);
   const ws=fmtDate(currentWeek);
-  const{data:shifts}=await sb.from('shifts').select('*,shift_assignments(staff_id)').eq('week_start',ws);
+  // Sadece "Haber Ver" ile bildirimi gönderilmiş vardiyalar görünür
+  const[{data:shifts},{data:notifs=[]}]=await Promise.all([
+    sb.from('shifts').select('*,shift_assignments(staff_id)').eq('week_start',ws),
+    sb.from('shift_notifications').select('shift_id').eq('week_start',ws).eq('staff_id',me.id)
+  ]);
+  const notified=new Set((notifs||[]).map(n=>n.shift_id));
   const myShifts={};
-  (shifts||[]).forEach(s=>{if(s.shift_assignments?.some(a=>a.staff_id===me.id))myShifts[s.day_index]={start:s.start_time,end:s.end_time}});
+  (shifts||[]).filter(s=>notified.has(s.id)).forEach(s=>{if(s.shift_assignments?.some(a=>a.staff_id===me.id))myShifts[s.day_index]={start:s.start_time,end:s.end_time}});
   const D=L().days; const M=L().months;
   let html=''; let total=0;
   for(let i=0;i<7;i++){
@@ -689,10 +694,15 @@ function changeWeekTable(dir){tableWeek=addDays(tableWeek,dir*7);loadTable()}
 async function loadTable(){
   document.getElementById('weekLabelTable').textContent=weekLabel(tableWeek);
   const ws=fmtDate(tableWeek);
-  const{data:shifts=[]}=await sb.from('shifts').select('*').eq('week_start',ws);
+  // Sadece "Haber Ver"ile yayınlanan vardiyalar görünür (shift_notifications kayıtlı olanlar)
+  const[{data:shifts=[]},{data:notifs=[]}]=await Promise.all([
+    sb.from('shifts').select('*').eq('week_start',ws),
+    sb.from('shift_notifications').select('shift_id,staff_id').eq('week_start',ws)
+  ]);
+  const notifSet=new Set((notifs||[]).map(n=>`${n.shift_id}_${n.staff_id}`));
   const ids=(shifts||[]).map(s=>s.id);
   let assigns=[];
-  if(ids.length){const{data}=await sb.from('shift_assignments').select('*').in('shift_id',ids);assigns=data||[]}
+  if(ids.length){const{data}=await sb.from('shift_assignments').select('*').in('shift_id',ids);assigns=(data||[]).filter(a=>notifSet.has(`${a.shift_id}_${a.staff_id}`))}
   const matrix={};
   const staff=allProfiles.filter(p=>p.role!=='admin');
   staff.forEach(p=>{matrix[p.id]={}});
@@ -944,10 +954,15 @@ let swapSubmitting=false;
 
 async function openSwapModal(){
   const ws=fmtDate(currentWeek);
-  const{data:shifts}=await sb.from('shifts').select('*,shift_assignments(staff_id)').eq('week_start',ws);
-  swapShiftsCache=shifts||[];
+  // Sadece bildirimi gönderilen vardiyalar swap için seçilebilir
+  const[{data:shifts},{data:notifs=[]}]=await Promise.all([
+    sb.from('shifts').select('*,shift_assignments(staff_id)').eq('week_start',ws),
+    sb.from('shift_notifications').select('shift_id,staff_id').eq('week_start',ws)
+  ]);
+  const notifSet=new Set((notifs||[]).map(n=>`${n.shift_id}_${n.staff_id}`));
+  swapShiftsCache=(shifts||[]).filter(s=>(s.shift_assignments||[]).some(a=>notifSet.has(`${s.id}_${a.staff_id}`)));
   const D=L().days;
-  const myShifts=(shifts||[]).filter(s=>s.shift_assignments?.some(a=>a.staff_id===me.id));
+  const myShifts=swapShiftsCache.filter(s=>s.shift_assignments?.some(a=>a.staff_id===me.id&&notifSet.has(`${s.id}_${me.id}`)));
   document.getElementById('swapMyShift').innerHTML=myShifts.length
     ?myShifts.map(s=>`<option value="${s.id}">${D[s.day_index]}: ${s.start_time.slice(0,5)}–${s.end_time.slice(0,5)}</option>`).join('')
     :`<option value="">${L().swapNoShifts}</option>`;
