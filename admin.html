@@ -800,12 +800,21 @@ async function sendEmail(to,subject,body){
 // === RESERVATIONS ===
 async function loadReservations(){
   const filter=document.getElementById('resFilter').value;
-  let q=sb.from('reservations').select('*').order('date',{ascending:false}).order('time',{ascending:false});
+  let q=sb.from('reservations').select('*');
   if(filter!=='all')q=q.eq('status',filter);
   const {data,error}=await q;
   const c=document.getElementById('resContainer');
   if(error){c.innerHTML=`<div class="empty">${t('err')}${error.message}</div>`;return}
   if(!data||!data.length){c.innerHTML=`<div class="empty">${t('no_reservations')}</div>`;return}
+  // Sıralama: bugün + gelecek (yakın → uzak), sonra geçmiş (yakın → uzak geri)
+  const today=fmtDate(new Date());
+  data.sort((a,b)=>{
+    const aF=(a.date||'')>=today, bF=(b.date||'')>=today;
+    if(aF&&!bF)return -1;
+    if(!aF&&bF)return 1;
+    if(aF) return (a.date||'').localeCompare(b.date||'')||(a.time||'').localeCompare(b.time||'');
+    return (b.date||'').localeCompare(a.date||'')||(b.time||'').localeCompare(a.time||'');
+  });
   c.innerHTML=`<table>
     <thead><tr><th>${t('col_date')}</th><th>${t('col_time')}</th><th>${t('col_name')}</th><th>${t('col_phone')}</th><th>${t('col_email')}</th><th>${t('col_persons')}</th><th>${t('col_notes')}</th><th>${t('col_status')}</th><th>${t('col_actions')}</th></tr></thead>
     <tbody>${data.map(r=>`
