@@ -65,10 +65,10 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
 /* Shifts — Excel table */
 .week-label{font-size:.88rem;font-weight:500;color:#444;background:#f7f5f0;padding:.35rem .9rem;border-radius:6px;border:1px solid #e5e1d8;white-space:nowrap}
 .sched-wrap{overflow-x:auto;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.04)}
-.sched-table{width:100%;border-collapse:collapse;background:#fff;min-width:720px}
-.sched-th{background:#fafafa;text-align:center;padding:.3rem .25rem;font-size:.6rem;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);border-bottom:2px solid #eee;border-right:1px solid #eee;white-space:nowrap;min-width:82px}
-.sched-th.staff-th{text-align:left;min-width:125px;padding-left:.8rem;border-right:2px solid #e0dbd0}
-.sched-th.total-th{min-width:64px;border-right:none;border-left:2px solid #e0dbd0;background:#fdf9f4}
+.sched-table{width:100%;border-collapse:collapse;background:#fff;min-width:760px;table-layout:fixed}
+.sched-th{background:#fafafa;text-align:center;padding:.3rem .25rem;font-size:.6rem;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);border-bottom:2px solid #eee;border-right:1px solid #eee;white-space:nowrap;width:auto}
+.sched-th.staff-th{text-align:left;width:135px;padding-left:.8rem;border-right:2px solid #e0dbd0}
+.sched-th.total-th{width:58px;border-right:none;border-left:2px solid #e0dbd0;background:#fdf9f4}
 .sched-th.wknd{background:#fff9ef}
 .sched-tr:hover .sched-td:not([style*="background"]){background:#fcfbf7}
 .sched-td{padding:0;border-bottom:1px solid #f0ece4;border-right:1px solid #f0ece4;position:relative}
@@ -1126,7 +1126,7 @@ async function loadShifts(){
         if(isFull&&shiftColors.full)cellBg=`style="background:${shiftColors.full}"`;
         else if(isMorning)cellBg=`style="background:${shiftColors.morning||'#d8f5d3'}"`;
         else if(shiftColors.evening)cellBg=`style="background:${shiftColors.evening}"`;
-        else cellBg=bg;
+        else cellBg='';
         const data=`'${p.id}',${i},'${cell.shiftId}','${cell.start}','${cell.end}'`;
         const partialBadge=isPartial?`<span class="sv-partial" title="${(partialRanges).map(r=>r.from+'–'+r.to).join(', ')}">✕ ${partialRanges.map(r=>r.from.slice(0,5)+'–'+r.to.slice(0,5)).join(' ')}</span>`:'';
         const hNum=h%1===0?h:h.toFixed(1);
@@ -1134,13 +1134,13 @@ async function loadShifts(){
       }else{
         const data=`'${p.id}',${i},null,null,'09:00','17:00'`;
         if(isUnavail){
-          return`<td class="sched-td${isWknd?' wknd':''} unavail-td" ${bg}><div class="sched-cell unavail" title="${currentLang==='tr'?'Müsait değil':'Niet beschikbaar'}">✕</div></td>`;
+          return`<td class="sched-td${isWknd?' wknd':''} unavail-td"><div class="sched-cell unavail" title="${currentLang==='tr'?'Müsait değil':'Niet beschikbaar'}">✕</div></td>`;
         }
         if(isPartial){
           const rangeText=partialRanges.map(r=>r.from.slice(0,5)+'–'+r.to.slice(0,5)).join(', ');
-          return`<td class="sched-td${isWknd?' wknd':''} partial-td" ${bg}><div class="sched-cell empty partial-empty" onclick="openCellModal(${data})" title="Müsait değil: ${rangeText}">+<span class="sv-partial">✕ ${rangeText}</span></div></td>`;
+          return`<td class="sched-td${isWknd?' wknd':''} partial-td"><div class="sched-cell empty partial-empty" onclick="openCellModal(${data})" title="Müsait değil: ${rangeText}">+<span class="sv-partial">✕ ${rangeText}</span></div></td>`;
         }
-        return`<td class="sched-td${isWknd?' wknd':''}" ${bg}><div class="sched-cell empty" onclick="openCellModal(${data})">+</div></td>`;
+        return`<td class="sched-td${isWknd?' wknd':''}"><div class="sched-cell empty" onclick="openCellModal(${data})">+</div></td>`;
       }
     }).join('');
     grandTotal+=weekTotal;
@@ -1152,7 +1152,7 @@ async function loadShifts(){
         ${p.department?`<span class="staff-dept">${esc(p.department)}</span>`:''}
       </td>
       ${cells}
-      <td class="sched-td total-td" ${bg}>${weekTotal>0?hrsLabel(weekTotal):'–'}</td>
+      <td class="sched-td total-td">${weekTotal>0?hrsLabel(weekTotal):'–'}</td>
     </tr>`;
   }).join(''):`<tr><td colspan="9" class="empty" style="padding:2rem">${t('no_staff')}</td></tr>`;
 
