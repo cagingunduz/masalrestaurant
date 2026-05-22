@@ -65,16 +65,16 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
 /* Shifts — Excel table */
 .week-label{font-size:.88rem;font-weight:500;color:#444;background:#f7f5f0;padding:.35rem .9rem;border-radius:6px;border:1px solid #e5e1d8;white-space:nowrap}
 .sched-wrap{overflow-x:auto;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.04)}
-.sched-table{width:100%;border-collapse:collapse;background:#fff;min-width:880px;table-layout:fixed}
+.sched-table{width:100%;border-collapse:collapse;background:#fff;min-width:740px;table-layout:fixed}
 .sched-th{background:#fafafa;text-align:center;padding:.3rem .25rem;font-size:.6rem;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);border-bottom:2px solid #eee;border-right:1px solid #eee;white-space:nowrap;width:auto}
-.sched-th.staff-th{text-align:left;width:185px;padding-left:.8rem;border-right:2px solid #e0dbd0}
-.sched-th.total-th{width:60px;border-right:none;border-left:2px solid #e0dbd0;background:#fdf9f4}
+.sched-th.staff-th{text-align:left;width:145px;padding-left:.8rem;border-right:2px solid #e0dbd0}
+.sched-th.total-th{width:56px;border-right:none;border-left:2px solid #e0dbd0;background:#fdf9f4}
 .sched-th.wknd{background:#fff9ef}
 .sched-tr:hover .sched-td:not([style*="background"]){background:#fcfbf7}
 .sched-td{padding:0;border-bottom:1px solid #f0ece4;border-right:1px solid #f0ece4;position:relative;height:1px}
-.sched-td.staff-td{padding:.3rem .6rem;background:#fafafa;border-right:2px solid #e0dbd0;white-space:normal;word-break:break-word;line-height:1.25;font-size:.8rem;font-weight:500;vertical-align:middle}
-.staff-row{display:flex;align-items:center;justify-content:space-between;gap:.4rem}
-.staff-name{display:flex;align-items:center;gap:.4rem;min-width:0;word-break:break-word;line-height:1.2}
+.sched-td.staff-td{padding:.25rem .5rem;background:#fafafa;border-right:2px solid #e0dbd0;font-size:.78rem;font-weight:500;vertical-align:middle}
+.staff-row{display:flex;align-items:center;justify-content:space-between;gap:.3rem}
+.staff-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.2}
 .staff-actions{flex-shrink:0;white-space:nowrap;display:flex;align-items:center}
 .staff-dept{display:inline-block;font-size:.62rem;font-weight:500;color:#9a8e76;letter-spacing:.3px;background:rgba(0,0,0,.05);padding:.06rem .4rem;border-radius:4px;margin-top:.25rem;text-transform:uppercase}
 .sched-td.total-td{text-align:center;background:#fdf9f4;border-left:2px solid #e0dbd0;border-right:none;padding:.4rem .3rem;font-size:.8rem;font-weight:600;color:var(--gold-dark);vertical-align:middle}
@@ -327,15 +327,15 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
       <div style="display:flex;gap:1.2rem;align-items:center;margin-bottom:.5rem;flex-wrap:wrap;font-size:.78rem;color:var(--muted)">
         <span data-i18n="shift_colors" style="font-weight:600">Vardiya renkleri:</span>
         <label style="display:flex;align-items:center;gap:.45rem;cursor:pointer">09:00–17:00
-          <input type="color" id="colorMorning" onchange="saveShiftColor('morning',this.value)" style="width:38px;height:26px;border:1px solid #ddd;border-radius:5px;cursor:pointer;padding:1px;background:#fff">
+          <input type="color" id="colorMorning" onchange="pickShiftColor('morning',this.value)" style="width:38px;height:26px;border:1px solid #ddd;border-radius:5px;cursor:pointer;padding:1px;background:#fff">
         </label>
         <label style="display:flex;align-items:center;gap:.45rem;cursor:pointer">17:00–22:00
-          <input type="color" id="colorEvening" onchange="saveShiftColor('evening',this.value)" style="width:38px;height:26px;border:1px solid #ddd;border-radius:5px;cursor:pointer;padding:1px;background:#fff">
+          <input type="color" id="colorEvening" onchange="pickShiftColor('evening',this.value)" style="width:38px;height:26px;border:1px solid #ddd;border-radius:5px;cursor:pointer;padding:1px;background:#fff">
         </label>
         <label style="display:flex;align-items:center;gap:.45rem;cursor:pointer">09:00–22:00
-          <input type="color" id="colorFull" onchange="saveShiftColor('full',this.value)" style="width:38px;height:26px;border:1px solid #ddd;border-radius:5px;cursor:pointer;padding:1px;background:#fff">
+          <input type="color" id="colorFull" onchange="pickShiftColor('full',this.value)" style="width:38px;height:26px;border:1px solid #ddd;border-radius:5px;cursor:pointer;padding:1px;background:#fff">
         </label>
-        <button class="btn ghost small" onclick="saveShiftColor('evening','')" data-i18n="shift_colors_reset" title="Akşam vardiyalarını personel rengine döndür">↺ Personel rengi</button>
+        <button class="btn small" onclick="saveAllShiftColors()" data-i18n="shift_colors_save" style="background:#27ae60;border-color:#27ae60">💾 Kaydet</button>
       </div>
       <div class="sched-wrap">
         <table class="sched-table" id="schedTable"></table>
@@ -566,7 +566,7 @@ const I18N={
     cap_range:'Tijdsbereik',cap_booked:'Geboekt',cap_full:'Vol',cap_open:'Beschikbaar',cap_empty:'Geen capaciteitslimieten ingesteld',
     cap_invalid:'Vul een geldige datum, tijden en max. personen in.',cap_confirm_delete:'Limiet verwijderen?',
     tab_feedback:'Feedback',fb_empty:'Nog geen feedback ontvangen',fb_rating:'Beoordeling',fb_cats:'Categorieën',fb_message:'Bericht',fb_confirm_delete:'Feedback verwijderen?',
-    shift_colors:'Dienstkleuren:',shift_colors_reset:'↺ Medewerkerkleur',move_to_staff:'Verplaats naar andere medewerker',
+    shift_colors:'Dienstkleuren:',shift_colors_save:'💾 Opslaan',shift_colors_saved:'Kleuren opgeslagen ✓',move_to_staff:'Verplaats naar andere medewerker',
     haccp_drag:'Versleep om te ordenen',haccp_max_val:'Max. waarde (°C)',haccp_min_val:'Min. waarde (°C)',haccp_name_required:'Naam (NL) is verplicht',haccp_confirm_delete:'Verwijderen?',
     edit:'Bewerken',haccp_edit_title:'Locatie bewerken',haccp_clear_all:'🗑 Waarden wissen',haccp_clear_confirm:'Alle ingevoerde waarden van deze week wissen?',
     filter_all:'Alle',status_new:'Nieuw',status_confirmed:'Bevestigd',status_cancelled:'Geannuleerd',
@@ -608,7 +608,7 @@ const I18N={
     cap_range:'Saat aralığı',cap_booked:'Dolu kişi',cap_full:'Dolu',cap_open:'Müsait',cap_empty:'Tanımlı kapasite limiti yok',
     cap_invalid:'Geçerli tarih, saat ve maks. kişi girin.',cap_confirm_delete:'Limit silinsin mi?',
     tab_feedback:'Geri Bildirimler',fb_empty:'Henüz geri bildirim yok',fb_rating:'Puan',fb_cats:'Kategoriler',fb_message:'Mesaj',fb_confirm_delete:'Geri bildirim silinsin mi?',
-    shift_colors:'Vardiya renkleri:',shift_colors_reset:'↺ Personel rengi',move_to_staff:'Başka personele taşı',
+    shift_colors:'Vardiya renkleri:',shift_colors_save:'💾 Kaydet',shift_colors_saved:'Renkler kaydedildi ✓',move_to_staff:'Başka personele taşı',
     haccp_drag:'Sıralamak için sürükle',haccp_max_val:'Maks. değer (°C)',haccp_min_val:'Min. değer (°C)',haccp_name_required:'Ad (NL) zorunlu',haccp_confirm_delete:'Silinsin mi?',
     edit:'Düzenle',haccp_edit_title:'Satır düzenle',haccp_clear_all:'🗑 Değerleri temizle',haccp_clear_confirm:'Bu haftanın tüm girilen değerleri silinsin mi?',
     filter_all:'Tümü',status_new:'Yeni',status_confirmed:'Onaylandı',status_cancelled:'İptal',
@@ -1052,21 +1052,39 @@ function hexTint(hex,a){if(!hex||!hex.startsWith('#'))return '';const r=parseInt
 // Vardiya renkleri (zaman aralığına göre) — app_settings tablosundan
 let shiftColors={morning:'#d8f5d3',evening:'',full:'#cfe3f5'};
 async function loadAppSettings(){
+  // localStorage yedeği (migration çalışmasa da kalıcı)
+  try{const ls=JSON.parse(localStorage.getItem('shiftColors')||'null');if(ls)Object.assign(shiftColors,ls);}catch(e){}
+  // DB varsa üzerine yazar (cihazlar arası ortak)
   const{data}=await sb.from('app_settings').select('*');
   (data||[]).forEach(r=>{
-    if(r.key==='shift_color_morning')shiftColors.morning=r.value||'#d8f5d3';
+    if(r.key==='shift_color_morning'&&r.value)shiftColors.morning=r.value;
     if(r.key==='shift_color_evening')shiftColors.evening=r.value||'';
-    if(r.key==='shift_color_full')shiftColors.full=r.value||'';
+    if(r.key==='shift_color_full'&&r.value)shiftColors.full=r.value;
   });
   const cm=document.getElementById('colorMorning');if(cm)cm.value=shiftColors.morning||'#d8f5d3';
   const ce=document.getElementById('colorEvening');if(ce)ce.value=shiftColors.evening||'#c6a55c';
   const cf=document.getElementById('colorFull');if(cf)cf.value=shiftColors.full||'#cfe3f5';
 }
-async function saveShiftColor(which,val){
+// Renk seçiciden değişince: anlık uygula (henüz kalıcı değil)
+function pickShiftColor(which,val){
   shiftColors[which]=val;
-  const key=which==='morning'?'shift_color_morning':(which==='full'?'shift_color_full':'shift_color_evening');
-  await sb.from('app_settings').upsert({key,value:val},{onConflict:'key'});
-  const ce=document.getElementById('colorEvening');if(which==='evening'&&ce&&val)ce.value=val;
+  loadShifts();
+}
+// Kaydet butonu — localStorage + DB'ye yazar
+async function saveAllShiftColors(){
+  localStorage.setItem('shiftColors',JSON.stringify(shiftColors));
+  try{
+    await sb.from('app_settings').upsert([
+      {key:'shift_color_morning',value:shiftColors.morning||''},
+      {key:'shift_color_evening',value:shiftColors.evening||''},
+      {key:'shift_color_full',value:shiftColors.full||''}
+    ],{onConflict:'key'});
+  }catch(e){}
+  alert(t('shift_colors_saved'));
+}
+function resetEveningColor(){
+  shiftColors.evening='';
+  localStorage.setItem('shiftColors',JSON.stringify(shiftColors));
   loadShifts();
 }
 
