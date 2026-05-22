@@ -73,13 +73,14 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
 .sched-tr:hover .sched-td:not([style*="background"]){background:#fcfbf7}
 .sched-td{padding:0;border-bottom:1px solid #f0ece4;border-right:1px solid #f0ece4;position:relative}
 .sched-td.staff-td{padding:.3rem .7rem;background:#fafafa;border-right:2px solid #e0dbd0;white-space:nowrap;font-size:.8rem;font-weight:500;vertical-align:middle}
-.staff-dept{display:block;font-size:.7rem;font-weight:400;color:#aaa;margin-top:.1rem;letter-spacing:.3px}
+.staff-dept{display:inline-block;font-size:.62rem;font-weight:500;color:#9a8e76;letter-spacing:.3px;background:rgba(0,0,0,.05);padding:.06rem .4rem;border-radius:4px;margin-left:.4rem;vertical-align:middle;text-transform:uppercase}
 .sched-td.total-td{text-align:center;background:#fdf9f4;border-left:2px solid #e0dbd0;border-right:none;padding:.4rem .3rem;font-size:.8rem;font-weight:600;color:var(--gold-dark);vertical-align:middle}
 .sched-td.wknd{background:#fffcf5}
-.sched-cell{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:40px;cursor:pointer;padding:.25rem .2rem;transition:background .12s;text-align:center;gap:1px}
+.sched-cell{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:34px;cursor:pointer;padding:.2rem;transition:background .12s;text-align:center;gap:1px}
 .sched-cell:hover{background:#fdf8f0}
-.sv-time{font-size:.75rem;font-weight:600;color:#222;letter-spacing:.2px}
-.sv-hrs{font-size:.6rem;color:var(--muted)}
+.sv-time{font-size:.74rem;font-weight:600;color:#222;letter-spacing:.1px;white-space:nowrap}
+.sv-hrs{font-size:.66rem;color:var(--muted);font-weight:400}
+#sec-shifts .toolbar{margin-bottom:.6rem}
 .sched-cell.empty{color:#d0cbc0;font-size:1.3rem;line-height:1}
 .sched-cell.empty:hover{color:var(--gold)}
 .sched-td.unavail-td{background:repeating-linear-gradient(135deg,#fff5f5,#fff5f5 4px,#ffeaea 4px,#ffeaea 8px)!important}
@@ -320,7 +321,7 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
           <button class="btn small" onclick="notifyShifts()" id="notifyBtn" data-i18n="notify_btn" style="background:#27ae60;border-color:#27ae60">📧 Haber Ver</button>
         </div>
       </div>
-      <div style="display:flex;gap:1.4rem;align-items:center;margin-bottom:.8rem;flex-wrap:wrap;font-size:.82rem;color:var(--muted)">
+      <div style="display:flex;gap:1.2rem;align-items:center;margin-bottom:.5rem;flex-wrap:wrap;font-size:.78rem;color:var(--muted)">
         <span data-i18n="shift_colors" style="font-weight:600">Vardiya renkleri:</span>
         <label style="display:flex;align-items:center;gap:.45rem;cursor:pointer">09:00–17:00
           <input type="color" id="colorMorning" onchange="saveShiftColor('morning',this.value)" style="width:38px;height:26px;border:1px solid #ddd;border-radius:5px;cursor:pointer;padding:1px;background:#fff">
@@ -1117,7 +1118,8 @@ async function loadShifts(){
         const cellBg=isMorning?`style="background:${shiftColors.morning||'#d8f5d3'}"`:(shiftColors.evening?`style="background:${shiftColors.evening}"`:bg);
         const data=`'${p.id}',${i},'${cell.shiftId}','${cell.start}','${cell.end}'`;
         const partialBadge=isPartial?`<span class="sv-partial" title="${(partialRanges).map(r=>r.from+'–'+r.to).join(', ')}">✕ ${partialRanges.map(r=>r.from.slice(0,5)+'–'+r.to.slice(0,5)).join(' ')}</span>`:'';
-        return`<td class="sched-td${isWknd?' wknd':''}${isUnavail?' unavail-td':''}${isPartial?' partial-td':''}" ${cellBg}><div class="sched-cell filled" onclick="openCellModal(${data})"><span class="sv-time">${cell.start.slice(0,5)}–${cell.end.slice(0,5)}</span><span class="sv-hrs">${hrsLabel(h)}</span>${partialBadge}</div></td>`;
+        const hNum=h%1===0?h:h.toFixed(1);
+        return`<td class="sched-td${isWknd?' wknd':''}${isUnavail?' unavail-td':''}${isPartial?' partial-td':''}" ${cellBg}><div class="sched-cell filled" onclick="openCellModal(${data})"><span class="sv-time">${cell.start.slice(0,5)}–${cell.end.slice(0,5)} <span class="sv-hrs">(${hNum})</span></span>${partialBadge}</div></td>`;
       }else{
         const data=`'${p.id}',${i},null,null,'09:00','17:00'`;
         if(isUnavail){
