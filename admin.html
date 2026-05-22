@@ -320,6 +320,16 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
           <button class="btn small" onclick="notifyShifts()" id="notifyBtn" data-i18n="notify_btn" style="background:#27ae60;border-color:#27ae60">📧 Haber Ver</button>
         </div>
       </div>
+      <div style="display:flex;gap:1.4rem;align-items:center;margin-bottom:.8rem;flex-wrap:wrap;font-size:.82rem;color:var(--muted)">
+        <span data-i18n="shift_colors" style="font-weight:600">Vardiya renkleri:</span>
+        <label style="display:flex;align-items:center;gap:.45rem;cursor:pointer">09:00–17:00
+          <input type="color" id="colorMorning" onchange="saveShiftColor('morning',this.value)" style="width:38px;height:26px;border:1px solid #ddd;border-radius:5px;cursor:pointer;padding:1px;background:#fff">
+        </label>
+        <label style="display:flex;align-items:center;gap:.45rem;cursor:pointer">17:00–22:00
+          <input type="color" id="colorEvening" onchange="saveShiftColor('evening',this.value)" style="width:38px;height:26px;border:1px solid #ddd;border-radius:5px;cursor:pointer;padding:1px;background:#fff">
+        </label>
+        <button class="btn ghost small" onclick="saveShiftColor('evening','')" data-i18n="shift_colors_reset" title="Akşam vardiyalarını personel rengine döndür">↺ Personel rengi</button>
+      </div>
       <div class="sched-wrap">
         <table class="sched-table" id="schedTable"></table>
       </div>
@@ -544,6 +554,7 @@ const I18N={
     cap_range:'Tijdsbereik',cap_booked:'Geboekt',cap_full:'Vol',cap_open:'Beschikbaar',cap_empty:'Geen capaciteitslimieten ingesteld',
     cap_invalid:'Vul een geldige datum, tijden en max. personen in.',cap_confirm_delete:'Limiet verwijderen?',
     tab_feedback:'Feedback',fb_empty:'Nog geen feedback ontvangen',fb_rating:'Beoordeling',fb_cats:'Categorieën',fb_message:'Bericht',fb_confirm_delete:'Feedback verwijderen?',
+    shift_colors:'Dienstkleuren:',shift_colors_reset:'↺ Medewerkerkleur',
     filter_all:'Alle',status_new:'Nieuw',status_confirmed:'Bevestigd',status_cancelled:'Geannuleerd',
     refresh:'Vernieuwen',prev:'← Vorige',next:'Volgende →',
     new_shift:'Nieuwe shift',edit_shift:'Shift bewerken',
@@ -583,6 +594,7 @@ const I18N={
     cap_range:'Saat aralığı',cap_booked:'Dolu kişi',cap_full:'Dolu',cap_open:'Müsait',cap_empty:'Tanımlı kapasite limiti yok',
     cap_invalid:'Geçerli tarih, saat ve maks. kişi girin.',cap_confirm_delete:'Limit silinsin mi?',
     tab_feedback:'Geri Bildirimler',fb_empty:'Henüz geri bildirim yok',fb_rating:'Puan',fb_cats:'Kategoriler',fb_message:'Mesaj',fb_confirm_delete:'Geri bildirim silinsin mi?',
+    shift_colors:'Vardiya renkleri:',shift_colors_reset:'↺ Personel rengi',
     filter_all:'Tümü',status_new:'Yeni',status_confirmed:'Onaylandı',status_cancelled:'İptal',
     refresh:'Yenile',prev:'← Önceki',next:'Sonraki →',
     date:'Tarih',start_time:'Başlangıç',end_time:'Bitiş',
@@ -672,6 +684,8 @@ async function showApp(){
   // Load all profiles for staff assignment
   const {data:p}=await sb.from('profiles').select('*').order('name');
   profiles=p||[];
+  // Vardiya renk ayarlarını yükle
+  loadAppSettings();
   // Default tab
   loadReservations();
   // Init shifts week to current Monday
@@ -1019,6 +1033,25 @@ function hrsNum(s,e){const[sh,sm]=s.split(':').map(Number);const[eh,em]=e.split(
 function hrsLabel(n){const u=t('hour_unit');return n<=0?'':n%1===0?n+' '+u:n.toFixed(1)+' '+u}
 function hexTint(hex,a){if(!hex||!hex.startsWith('#'))return '';const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return`rgba(${r},${g},${b},${a})`}
 
+// Vardiya renkleri (zaman aralığına göre) — app_settings tablosundan
+let shiftColors={morning:'#d8f5d3',evening:''};
+async function loadAppSettings(){
+  const{data}=await sb.from('app_settings').select('*');
+  (data||[]).forEach(r=>{
+    if(r.key==='shift_color_morning')shiftColors.morning=r.value||'#d8f5d3';
+    if(r.key==='shift_color_evening')shiftColors.evening=r.value||'';
+  });
+  const cm=document.getElementById('colorMorning');if(cm)cm.value=shiftColors.morning||'#d8f5d3';
+  const ce=document.getElementById('colorEvening');if(ce)ce.value=shiftColors.evening||'#c6a55c';
+}
+async function saveShiftColor(which,val){
+  shiftColors[which]=val;
+  const key=which==='morning'?'shift_color_morning':'shift_color_evening';
+  await sb.from('app_settings').upsert({key,value:val},{onConflict:'key'});
+  const ce=document.getElementById('colorEvening');if(which==='evening'&&ce&&val)ce.value=val;
+  loadShifts();
+}
+
 async function loadShifts(){
   if(!currentWeek)currentWeek=mondayOf(new Date());
   updateWeekLabel();
@@ -1069,10 +1102,10 @@ async function loadShifts(){
       const isPartial=!!partialRanges;
       if(cell){
         const h=hrsNum(cell.start,cell.end);weekTotal+=h;
-        // Sabahçı vardiya: bitiş 17:00 veya daha erken ise hücre açık yeşil
+        // Vardiya rengi: sabahçı (<=17:00) → morning rengi; akşamcı → evening rengi (ayarlıysa) yoksa personel rengi
         const endStr=String(cell.end||'').slice(0,5);
         const isMorning=endStr && endStr<='17:00';
-        const cellBg=isMorning?'style="background:#d8f5d3"':bg;
+        const cellBg=isMorning?`style="background:${shiftColors.morning||'#d8f5d3'}"`:(shiftColors.evening?`style="background:${shiftColors.evening}"`:bg);
         const data=`'${p.id}',${i},'${cell.shiftId}','${cell.start}','${cell.end}'`;
         const partialBadge=isPartial?`<span class="sv-partial" title="${(partialRanges).map(r=>r.from+'–'+r.to).join(', ')}">✕ ${partialRanges.map(r=>r.from.slice(0,5)+'–'+r.to.slice(0,5)).join(' ')}</span>`:'';
         return`<td class="sched-td${isWknd?' wknd':''}${isUnavail?' unavail-td':''}${isPartial?' partial-td':''}" ${cellBg}><div class="sched-cell filled" onclick="openCellModal(${data})"><span class="sv-time">${cell.start.slice(0,5)}–${cell.end.slice(0,5)}</span><span class="sv-hrs">${hrsLabel(h)}</span>${partialBadge}</div></td>`;
