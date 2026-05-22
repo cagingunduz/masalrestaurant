@@ -137,9 +137,9 @@ header{background:var(--dark);color:#fff;padding:1rem 1.5rem;display:flex;align-
 .nc-btn.reject{background:#f8d7da;color:#721c24}
 
 /* SWAP FAB */
-.swap-fab{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--gold);color:#fff;border:none;border-radius:50%;width:52px;height:52px;font-size:1.4rem;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.2);z-index:40;display:none}
-.swap-fab.visible{display:flex;align-items:center;justify-content:center}
-.swap-fab:hover{background:var(--gold-dark)}
+.swap-fab{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--gold);color:#fff;border:none;border-radius:30px;padding:.9rem 1.6rem;font-size:.92rem;font-weight:600;letter-spacing:.3px;cursor:pointer;box-shadow:0 6px 22px rgba(198,165,92,.5);z-index:40;display:none;gap:.5rem;transition:transform .2s,background .2s}
+.swap-fab.visible{display:inline-flex;align-items:center;justify-content:center}
+.swap-fab:hover{background:var(--gold-dark);transform:translateY(-2px)}
 
 /* MODAL */
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:flex-end;justify-content:center;z-index:100}
@@ -239,7 +239,7 @@ header{background:var(--dark);color:#fff;padding:1rem 1.5rem;display:flex;align-
   .modal-actions button{min-height:44px;font-size:.9rem}
 
   /* Swap FAB */
-  .swap-fab{bottom:1.2rem;right:1.2rem;width:50px;height:50px;font-size:1.3rem}
+  .swap-fab{bottom:1.2rem;right:1.2rem;padding:.8rem 1.3rem;font-size:.88rem}
 
   /* Guide card */
   .guide-card{padding:1rem}
@@ -290,7 +290,7 @@ header{background:var(--dark);color:#fff;padding:1rem 1.5rem;display:flex;align-
     <div class="tab active" data-tab="shifts" onclick="switchTab('shifts')" id="tabShifts">Vardiyam</div>
     <div class="tab" data-tab="table" onclick="switchTab('table')" id="tabTable">Tablo</div>
     <div class="tab" data-tab="avail" onclick="switchTab('avail')" id="tabAvail">Müsaitlik</div>
-    <div class="tab" data-tab="notif" onclick="switchTab('notif')" id="tabNotif">Bildirimler</div>
+    <div class="tab" data-tab="notif" onclick="switchTab('notif')" id="tabNotif">Vardiya Değişimi</div>
     <div class="tab" data-tab="settings" onclick="switchTab('settings')" id="tabSettings">Ayarlar</div>
   </nav>
 
@@ -393,7 +393,7 @@ header{background:var(--dark);color:#fff;padding:1rem 1.5rem;display:flex;align-
   </div>
 </div>
 
-<button class="swap-fab" id="swapFab" onclick="openSwapModal()">⇄</button>
+<button class="swap-fab" id="swapFab" onclick="openSwapModal()">⇄ <span id="swapFabLabel">Vardiya Değiştir</span></button>
 
 <div class="modal-bg" id="swapModal">
   <div class="modal">
@@ -425,7 +425,7 @@ const I18N={
   nl:{
     loginSub:'Voer uw wachtwoord in',loginBtn:'Inloggen',loginErr:'Ongeldig wachtwoord',loginLoad:'Laden…',connErr:'Verbindingsfout',errPrefix:'Fout: ',
     logout:'Uitloggen',
-    tabShifts:'Mijn Rooster',tabTable:'Rooster',tabAvail:'Beschikbaarheid',tabNotif:'Meldingen',
+    tabShifts:'Mijn Rooster',tabTable:'Rooster',tabAvail:'Beschikbaarheid',tabNotif:'Dienstruil',swapFabBtn:'Dienst ruilen',
     prev:'← Vorige',next:'Volgende →',
     noShift:'Geen dienst',weekTotal:'Totaal per week',
     tabSettings:'Instellingen',
@@ -457,7 +457,7 @@ const I18N={
   en:{
     loginSub:'Enter your password to continue',loginBtn:'Log In',loginErr:'Incorrect password',loginLoad:'Loading…',connErr:'Connection error',errPrefix:'Error: ',
     logout:'Log Out',
-    tabShifts:'My Shifts',tabTable:'Schedule',tabAvail:'Availability',tabNotif:'Notifications',
+    tabShifts:'My Shifts',tabTable:'Schedule',tabAvail:'Availability',tabNotif:'Shift Swaps',swapFabBtn:'Swap shift',
     prev:'← Previous',next:'Next →',
     noShift:'No shift',weekTotal:'Weekly total',
     tabSettings:'Settings',
@@ -489,7 +489,7 @@ const I18N={
   tr:{
     loginSub:'Şifrenizi girerek devam edin',loginBtn:'Giriş Yap',loginErr:'Şifre hatalı',loginLoad:'Yükleniyor…',connErr:'Bağlantı hatası',errPrefix:'Hata: ',
     logout:'Çıkış',
-    tabShifts:'Vardiyam',tabTable:'Tablo',tabAvail:'Müsaitlik',tabNotif:'Bildirimler',
+    tabShifts:'Vardiyam',tabTable:'Tablo',tabAvail:'Müsaitlik',tabNotif:'Vardiya Değişimi',swapFabBtn:'Vardiya Değiştir',
     prev:'← Önceki',next:'Sonraki →',
     noShift:'Vardiya yok',weekTotal:'Haftalık toplam',
     tabSettings:'Ayarlar',
@@ -549,6 +549,7 @@ function applyLangToUI(){
   document.getElementById('tabTable').textContent=L().tabTable;
   document.getElementById('tabAvail').textContent=L().tabAvail;
   document.getElementById('tabSettings').textContent=L().tabSettings;
+  const sfl=document.getElementById('swapFabLabel');if(sfl)sfl.textContent=L().swapFabBtn;
   updateNotifTab(0);
   document.getElementById('btnPrevShifts').textContent=L().prev;
   document.getElementById('btnNextShifts').textContent=L().next;
