@@ -2,12 +2,13 @@
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Masal Admin</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{--gold:#c6a55c;--gold-dark:#9c7e3e;--dark:#1a1a1a;--bg:#f7f5f0;--muted:#888}
 *{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--bg)}
 body{font-family:-apple-system,system-ui,sans-serif;background:var(--bg);color:#222;min-height:100vh}
 .login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:2rem}
 .login-box{background:#fff;padding:2.5rem;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.1);max-width:380px;width:100%;text-align:center}
@@ -19,7 +20,7 @@ body{font-family:-apple-system,system-ui,sans-serif;background:var(--bg);color:#
 .login-box button:hover{background:var(--gold-dark)}
 .login-error{color:#c0392b;font-size:.85rem;margin-top:.5rem;min-height:1.2em}
 
-header{background:var(--dark);color:#fff;padding:1.2rem 2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:60}
+header{background:var(--dark);color:#fff;padding:1.2rem 2rem;padding-left:max(2rem,env(safe-area-inset-left));padding-right:max(2rem,env(safe-area-inset-right));display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:60}
 header .logo{height:40px;width:auto;filter:brightness(0) invert(1)}
 header .user{display:flex;align-items:center;gap:1rem;font-size:.9rem;color:#bbb}
 header button{background:transparent;border:1px solid var(--gold);color:var(--gold);padding:.4rem .9rem;border-radius:6px;cursor:pointer;font-size:.8rem;letter-spacing:1px;text-transform:uppercase}
@@ -33,7 +34,7 @@ header button:hover{background:var(--gold);color:#fff}
 .tab:hover{color:#222}
 .tab.active{color:var(--gold-dark);border-bottom-color:var(--gold)}
 
-main{padding:2rem}
+main{padding:2rem;padding-left:max(2rem,env(safe-area-inset-left));padding-right:max(2rem,env(safe-area-inset-right))}
 .section{display:none}
 .section.active{display:block}
 .toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;gap:1rem;flex-wrap:wrap}
@@ -190,7 +191,7 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
   .sched-table tr{display:table-row!important;background:none;border-radius:0;box-shadow:none;padding:0;border:none}
   .sched-table td,.sched-table th{display:table-cell!important;border:revert}
   .sched-th{padding:.45rem .2rem;font-size:.58rem}
-  .sched-cell,.sched-cell.unavail{height:46px;padding:.1rem .06rem}
+  .sched-cell,.sched-cell.unavail{height:42px;padding:.08rem .05rem}
   .sched-td.staff-td{overflow:hidden}
   /* Saat metni dar hücrede taşmasın: tek/iki satır, küçük font; (saat) gizli */
   .sv-time{font-size:.6rem;white-space:normal;line-height:1.05;word-break:break-word}
