@@ -454,6 +454,10 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
         </div>
       </div>
     </div>
+    <div id="cellMoveWrap" style="margin-top:1.1rem;display:none">
+      <label data-i18n="move_to_staff" style="display:block;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:.3rem">Başka personele taşı</label>
+      <select id="cellStaff" class="select" style="width:100%"></select>
+    </div>
     <div class="modal-actions">
       <button class="btn danger small" id="cellDeleteBtn" onclick="deleteCellShift()" style="margin-right:auto;display:none" data-i18n="delete">Wissen</button>
       <button class="btn ghost" onclick="closeCellModal()" data-i18n="cancel">Annuleren</button>
@@ -554,7 +558,7 @@ const I18N={
     cap_range:'Tijdsbereik',cap_booked:'Geboekt',cap_full:'Vol',cap_open:'Beschikbaar',cap_empty:'Geen capaciteitslimieten ingesteld',
     cap_invalid:'Vul een geldige datum, tijden en max. personen in.',cap_confirm_delete:'Limiet verwijderen?',
     tab_feedback:'Feedback',fb_empty:'Nog geen feedback ontvangen',fb_rating:'Beoordeling',fb_cats:'Categorieën',fb_message:'Bericht',fb_confirm_delete:'Feedback verwijderen?',
-    shift_colors:'Dienstkleuren:',shift_colors_reset:'↺ Medewerkerkleur',
+    shift_colors:'Dienstkleuren:',shift_colors_reset:'↺ Medewerkerkleur',move_to_staff:'Verplaats naar andere medewerker',
     filter_all:'Alle',status_new:'Nieuw',status_confirmed:'Bevestigd',status_cancelled:'Geannuleerd',
     refresh:'Vernieuwen',prev:'← Vorige',next:'Volgende →',
     new_shift:'Nieuwe shift',edit_shift:'Shift bewerken',
@@ -594,7 +598,7 @@ const I18N={
     cap_range:'Saat aralığı',cap_booked:'Dolu kişi',cap_full:'Dolu',cap_open:'Müsait',cap_empty:'Tanımlı kapasite limiti yok',
     cap_invalid:'Geçerli tarih, saat ve maks. kişi girin.',cap_confirm_delete:'Limit silinsin mi?',
     tab_feedback:'Geri Bildirimler',fb_empty:'Henüz geri bildirim yok',fb_rating:'Puan',fb_cats:'Kategoriler',fb_message:'Mesaj',fb_confirm_delete:'Geri bildirim silinsin mi?',
-    shift_colors:'Vardiya renkleri:',shift_colors_reset:'↺ Personel rengi',
+    shift_colors:'Vardiya renkleri:',shift_colors_reset:'↺ Personel rengi',move_to_staff:'Başka personele taşı',
     filter_all:'Tümü',status_new:'Yeni',status_confirmed:'Onaylandı',status_cancelled:'İptal',
     refresh:'Yenile',prev:'← Önceki',next:'Sonraki →',
     date:'Tarih',start_time:'Başlangıç',end_time:'Bitiş',
@@ -1262,6 +1266,16 @@ async function openCellModal(staffId,dayIndex,shiftId,start,end){
   document.getElementById('cellStart').value=start||'09:00';
   document.getElementById('cellEnd').value=end||'17:00';
   document.getElementById('cellDeleteBtn').style.display=shiftId?'inline-block':'none';
+  // Personel taşıma — sadece mevcut bir vardiyada göster
+  const moveWrap=document.getElementById('cellMoveWrap');
+  const sel=document.getElementById('cellStaff');
+  if(shiftId){
+    const staff=profiles.filter(x=>x.role!=='admin'||profiles.length===1);
+    sel.innerHTML=staff.map(x=>`<option value="${x.id}"${x.id===staffId?' selected':''}>${esc(x.name||'?')}</option>`).join('');
+    moveWrap.style.display='block';
+  }else{
+    moveWrap.style.display='none';
+  }
   document.getElementById('cellModal').classList.add('open');
 }
 function closeCellModal(){document.getElementById('cellModal').classList.remove('open');cellState={}}
@@ -1279,15 +1293,24 @@ async function saveCellShift(){
   if(!start_time||!end_time){alert(t('time_required'));return}
   if(shiftId){
     await sb.from('shifts').update({start_time,end_time}).eq('id',shiftId);
-    sendShiftNotification(staffId,dayIndex,start_time,end_time,true);
+    // Personel değiştiyse vardiyayı başka kişiye taşı
+    const newStaff=document.getElementById('cellStaff').value;
+    if(newStaff && newStaff!==staffId){
+      await sb.from('shift_assignments').delete().eq('shift_id',shiftId).eq('staff_id',staffId);
+      await sb.from('shift_assignments').insert({shift_id:shiftId,staff_id:newStaff});
+      // Bu vardiyaya ait tüm bildirim kayıtlarını sil — yeni kişiye "Haber Ver" ile tekrar bildirilsin
+      await sb.from('shift_notifications').delete().eq('shift_id',shiftId);
+      sendShiftNotification(newStaff,dayIndex,start_time,end_time,false);
+    }else{
+      await sb.from('shift_notifications').delete().eq('shift_id',shiftId).eq('staff_id',staffId);
+      sendShiftNotification(staffId,dayIndex,start_time,end_time,true);
+    }
   }else{
     const{data,error}=await sb.from('shifts').insert({week_start:fmtDate(currentWeek),day_index:dayIndex,start_time,end_time}).select().single();
     if(error){alert(t('err')+error.message);return}
     await sb.from('shift_assignments').insert({shift_id:data.id,staff_id:staffId});
     sendShiftNotification(staffId,dayIndex,start_time,end_time,false);
   }
-  // Vardiya güncellendiyse eski bildirim kaydını sil (değişiklik tekrar bildirilsin)
-  if(shiftId) await sb.from('shift_notifications').delete().eq('shift_id',shiftId).eq('staff_id',staffId);
   closeCellModal();loadShifts();
 }
 
