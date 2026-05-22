@@ -65,14 +65,14 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
 /* Shifts — Excel table */
 .week-label{font-size:.88rem;font-weight:500;color:#444;background:#f7f5f0;padding:.35rem .9rem;border-radius:6px;border:1px solid #e5e1d8;white-space:nowrap}
 .sched-wrap{overflow-x:auto;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.04)}
-.sched-table{width:100%;border-collapse:collapse;background:#fff;min-width:760px;table-layout:fixed}
+.sched-table{width:100%;border-collapse:collapse;background:#fff;min-width:880px;table-layout:fixed}
 .sched-th{background:#fafafa;text-align:center;padding:.3rem .25rem;font-size:.6rem;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);border-bottom:2px solid #eee;border-right:1px solid #eee;white-space:nowrap;width:auto}
-.sched-th.staff-th{text-align:left;width:135px;padding-left:.8rem;border-right:2px solid #e0dbd0}
-.sched-th.total-th{width:58px;border-right:none;border-left:2px solid #e0dbd0;background:#fdf9f4}
+.sched-th.staff-th{text-align:left;width:185px;padding-left:.8rem;border-right:2px solid #e0dbd0}
+.sched-th.total-th{width:60px;border-right:none;border-left:2px solid #e0dbd0;background:#fdf9f4}
 .sched-th.wknd{background:#fff9ef}
 .sched-tr:hover .sched-td:not([style*="background"]){background:#fcfbf7}
 .sched-td{padding:0;border-bottom:1px solid #f0ece4;border-right:1px solid #f0ece4;position:relative}
-.sched-td.staff-td{padding:.3rem .7rem;background:#fafafa;border-right:2px solid #e0dbd0;white-space:nowrap;font-size:.8rem;font-weight:500;vertical-align:middle}
+.sched-td.staff-td{padding:.3rem .6rem;background:#fafafa;border-right:2px solid #e0dbd0;white-space:normal;word-break:break-word;line-height:1.25;font-size:.8rem;font-weight:500;vertical-align:middle}
 .staff-dept{display:inline-block;font-size:.62rem;font-weight:500;color:#9a8e76;letter-spacing:.3px;background:rgba(0,0,0,.05);padding:.06rem .4rem;border-radius:4px;margin-left:.4rem;vertical-align:middle;text-transform:uppercase}
 .sched-td.total-td{text-align:center;background:#fdf9f4;border-left:2px solid #e0dbd0;border-right:none;padding:.4rem .3rem;font-size:.8rem;font-weight:600;color:var(--gold-dark);vertical-align:middle}
 .sched-td.wknd{background:#fffcf5}
@@ -1152,7 +1152,7 @@ async function loadShifts(){
         ${p.department?`<span class="staff-dept">${esc(p.department)}</span>`:''}
       </td>
       ${cells}
-      <td class="sched-td total-td">${weekTotal>0?hrsLabel(weekTotal):'–'}</td>
+      <td class="sched-td total-td" ${bg}>${weekTotal>0?hrsLabel(weekTotal):'–'}</td>
     </tr>`;
   }).join(''):`<tr><td colspan="9" class="empty" style="padding:2rem">${t('no_staff')}</td></tr>`;
 
