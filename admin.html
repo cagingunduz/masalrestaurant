@@ -73,7 +73,10 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
 .sched-tr:hover .sched-td:not([style*="background"]){background:#fcfbf7}
 .sched-td{padding:0;border-bottom:1px solid #f0ece4;border-right:1px solid #f0ece4;position:relative;height:1px}
 .sched-td.staff-td{padding:.3rem .6rem;background:#fafafa;border-right:2px solid #e0dbd0;white-space:normal;word-break:break-word;line-height:1.25;font-size:.8rem;font-weight:500;vertical-align:middle}
-.staff-dept{display:inline-block;font-size:.62rem;font-weight:500;color:#9a8e76;letter-spacing:.3px;background:rgba(0,0,0,.05);padding:.06rem .4rem;border-radius:4px;margin-left:.4rem;vertical-align:middle;text-transform:uppercase}
+.staff-row{display:flex;align-items:center;justify-content:space-between;gap:.4rem}
+.staff-name{display:flex;align-items:center;gap:.4rem;min-width:0;word-break:break-word;line-height:1.2}
+.staff-actions{flex-shrink:0;white-space:nowrap;display:flex;align-items:center}
+.staff-dept{display:inline-block;font-size:.62rem;font-weight:500;color:#9a8e76;letter-spacing:.3px;background:rgba(0,0,0,.05);padding:.06rem .4rem;border-radius:4px;margin-top:.25rem;text-transform:uppercase}
 .sched-td.total-td{text-align:center;background:#fdf9f4;border-left:2px solid #e0dbd0;border-right:none;padding:.4rem .3rem;font-size:.8rem;font-weight:600;color:var(--gold-dark);vertical-align:middle}
 .sched-td.wknd{background:#fffcf5}
 .sched-cell{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:28px;height:100%;box-sizing:border-box;cursor:pointer;padding:.15rem;transition:background .12s;text-align:center;gap:0}
@@ -1146,10 +1149,14 @@ async function loadShifts(){
     grandTotal+=weekTotal;
     return`<tr class="sched-tr">
       <td class="sched-td staff-td" ${bg}>
-        <span class="staff-dot" style="background:${p.color||'#aaa'}"></span>&nbsp;${esc(p.name||'?')}
-        <button class="del-staff-btn" onclick="openEditStaff('${p.id}',event)" title="Bewerken" style="color:#888">✎</button>
-        <button class="del-staff-btn" onclick="deleteStaff('${p.id}',event)" title="${t('confirm_delete_staff')}">✕</button>
-        ${p.department?`<span class="staff-dept">${esc(p.department)}</span>`:''}
+        <div class="staff-row">
+          <span class="staff-name"><span class="staff-dot" style="background:${p.color||'#aaa'}"></span>${esc(p.name||'?')}</span>
+          <span class="staff-actions">
+            <button class="del-staff-btn" onclick="openEditStaff('${p.id}',event)" title="Bewerken" style="color:#888">✎</button>
+            <button class="del-staff-btn" onclick="deleteStaff('${p.id}',event)" title="${t('confirm_delete_staff')}">✕</button>
+          </span>
+        </div>
+        ${p.department?`<div class="staff-dept">${esc(p.department)}</div>`:''}
       </td>
       ${cells}
       <td class="sched-td total-td" ${bg}>${weekTotal>0?hrsLabel(weekTotal):'–'}</td>
