@@ -1174,6 +1174,10 @@ const EMAIL_L={
     swapRejectedSubject:'Dienstruil geweigerd',
     swapApprovedBody:(r,t)=>`Hallo,\n\nDe manager heeft de dienstruil goedgekeurd.\n\n${r} ⇄ ${t}\n\nJe rooster is bijgewerkt. Bekijk het hier:\n👉 masalrestaurant.vercel.app/staff.html\n\nMet vriendelijke groet,\nMasal Restaurant`,
     swapRejectedBody:(r,t)=>`Hallo,\n\nDe manager heeft het verzoek tot dienstruil geweigerd.\n\n${r} ⇄ ${t}\n\nDetails:\n👉 masalrestaurant.vercel.app/staff.html\n\nMet vriendelijke groet,\nMasal Restaurant`,
+    moveRemovedSubject:'Dienst gewijzigd',
+    moveRemovedBody:(name,day,time,other)=>`Hallo ${name},\n\nJe dienst op ${day} (${time}) is verwijderd en overgedragen aan ${other}.\n\nBekijk je rooster:\n👉 masalrestaurant.vercel.app/staff.html\n\nMasal Restaurant`,
+    moveAssignedSubject:'Nieuwe dienst toegewezen',
+    moveAssignedBody:(name,day,time,other)=>`Hallo ${name},\n\nEr is een dienst aan je toegewezen: ${day} (${time}), overgenomen van ${other}.\n\nBekijk je rooster:\n👉 masalrestaurant.vercel.app/staff.html\n\nMasal Restaurant`,
   },
   en:{
     days:['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'],
@@ -1184,6 +1188,10 @@ const EMAIL_L={
     swapRejectedSubject:'Shift swap declined',
     swapApprovedBody:(r,t)=>`Hello,\n\nThe manager has approved the shift swap.\n\n${r} ⇄ ${t}\n\nYour schedule has been updated. View it here:\n👉 masalrestaurant.vercel.app/staff.html\n\nBest regards,\nMasal Restaurant`,
     swapRejectedBody:(r,t)=>`Hello,\n\nThe manager has declined the shift swap request.\n\n${r} ⇄ ${t}\n\nDetails:\n👉 masalrestaurant.vercel.app/staff.html\n\nBest regards,\nMasal Restaurant`,
+    moveRemovedSubject:'Shift changed',
+    moveRemovedBody:(name,day,time,other)=>`Hello ${name},\n\nYour shift on ${day} (${time}) has been removed and reassigned to ${other}.\n\nView your schedule:\n👉 masalrestaurant.vercel.app/staff.html\n\nMasal Restaurant`,
+    moveAssignedSubject:'New shift assigned',
+    moveAssignedBody:(name,day,time,other)=>`Hello ${name},\n\nA shift has been assigned to you: ${day} (${time}), taken over from ${other}.\n\nView your schedule:\n👉 masalrestaurant.vercel.app/staff.html\n\nMasal Restaurant`,
   },
   tr:{
     days:['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'],
@@ -1194,6 +1202,10 @@ const EMAIL_L={
     swapRejectedSubject:'Vardiya değişimi reddedildi',
     swapApprovedBody:(r,t)=>`Merhaba,\n\nYönetici vardiya değişiminizi onayladı.\n\n${r} ⇄ ${t}\n\nVardiyalarınız güncellendi. Detaylar için:\n👉 masalrestaurant.vercel.app/staff.html\n\nİyi çalışmalar,\nMasal Restaurant`,
     swapRejectedBody:(r,t)=>`Merhaba,\n\nYönetici vardiya değişim talebini reddetti.\n\n${r} ⇄ ${t}\n\nDetaylar için:\n👉 masalrestaurant.vercel.app/staff.html\n\nİyi çalışmalar,\nMasal Restaurant`,
+    moveRemovedSubject:'Vardiya değişikliği',
+    moveRemovedBody:(name,day,time,other)=>`Merhaba ${name},\n\n${day} günü (${time}) vardiyan kaldırıldı ve ${other} kişisine aktarıldı.\n\nProgramını görmek için:\n👉 masalrestaurant.vercel.app/staff.html\n\nMasal Restaurant`,
+    moveAssignedSubject:'Yeni vardiya atandı',
+    moveAssignedBody:(name,day,time,other)=>`Merhaba ${name},\n\nSana yeni bir vardiya atandı: ${day} (${time}), ${other} kişisinden devralındı.\n\nProgramını görmek için:\n👉 masalrestaurant.vercel.app/staff.html\n\nMasal Restaurant`,
   }
 };
 function EL(p){return EMAIL_L[p.email_lang]||EMAIL_L.nl}
@@ -1308,6 +1320,7 @@ async function saveCellShift(){
       // Bu vardiyaya ait tüm bildirim kayıtlarını sil — yeni kişiye "Haber Ver" ile tekrar bildirilsin
       await sb.from('shift_notifications').delete().eq('shift_id',shiftId);
       sendShiftNotification(newStaff,dayIndex,start_time,end_time,false);
+      notifyShiftMove(staffId,newStaff,dayIndex,start_time,end_time);
     }else{
       await sb.from('shift_notifications').delete().eq('shift_id',shiftId).eq('staff_id',staffId);
       sendShiftNotification(staffId,dayIndex,start_time,end_time,true);
@@ -1335,6 +1348,21 @@ async function sendShiftNotification(staffId,dayIndex,start,end,isUpdate){
       body:JSON.stringify({to:p.push_token,title,body,sound:'default'}),
     });
   }catch(e){/* bildirim hatası sessizce geç */}
+}
+
+// Vardiya başka personele taşınınca iki tarafa da e-posta gönder
+async function notifyShiftMove(oldId,newId,dayIndex,start,end){
+  const pById={};profiles.forEach(p=>{pById[p.id]=p});
+  const oldP=pById[oldId], newP=pById[newId];
+  const time=`${start.slice(0,5)}–${end.slice(0,5)}`;
+  if(oldP?.contact_email){
+    const el=EL(oldP);
+    await sendEmail(oldP.contact_email, el.moveRemovedSubject, el.moveRemovedBody(oldP.name||'', el.days[dayIndex], time, newP?.name||'-'));
+  }
+  if(newP?.contact_email){
+    const el=EL(newP);
+    await sendEmail(newP.contact_email, el.moveAssignedSubject, el.moveAssignedBody(newP.name||'', el.days[dayIndex], time, oldP?.name||'-'));
+  }
 }
 
 async function deleteCellShift(){
