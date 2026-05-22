@@ -699,13 +699,12 @@ async function showApp(){
   profiles=p||[];
   // Vardiya renk ayarlarını yükle
   loadAppSettings();
-  // Default tab
-  loadReservations();
-  // Init shifts week to current Monday
+  // Hafta başlangıçlarını sekme açılmadan önce ayarla
   currentWeek=mondayOf(new Date());
   updateWeekLabel();
-  // Init HACCP week
   haccpCurrentWeek=mondayOf(new Date());
+  // Son kalınan sekmeye dön (F5 sonrası)
+  switchTab(localStorage.getItem('masalAdminTab')||'reservations');
   // Realtime: auto-reload shifts and reservations on changes
   sb.channel('admin-rt')
     .on('postgres_changes',{event:'*',schema:'public',table:'shifts'},()=>{
@@ -729,6 +728,7 @@ if(sessionStorage.getItem('masalAdmin')==='1'){showApp()}
 
 // === TABS ===
 function switchTab(name){
+  localStorage.setItem('masalAdminTab',name);
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===name));
   document.querySelectorAll('.section').forEach(s=>s.classList.toggle('active',s.id==='sec-'+name));
   if(name==='reservations')loadReservations();
