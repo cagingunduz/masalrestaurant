@@ -78,7 +78,7 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
 .staff-dept{display:inline-block;font-size:.62rem;font-weight:500;color:#9a8e76;letter-spacing:.3px;background:rgba(0,0,0,.05);padding:.06rem .4rem;border-radius:4px;text-transform:uppercase}
 .sched-td.total-td{text-align:center;background:#fdf9f4;border-left:2px solid #e0dbd0;border-right:none;padding:.4rem .3rem;font-size:.8rem;font-weight:600;color:var(--gold-dark);vertical-align:middle}
 .sched-td.wknd{background:#fffcf5}
-.sched-cell{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:36px;height:100%;box-sizing:border-box;cursor:pointer;padding:.15rem;transition:background .12s;text-align:center;gap:0;overflow:hidden}
+.sched-cell{display:flex;flex-direction:column;align-items:center;justify-content:center;height:40px;box-sizing:border-box;cursor:pointer;padding:.15rem;transition:background .12s;text-align:center;gap:0;overflow:hidden}
 .sched-cell:hover{background:#fdf8f0}
 .sv-time{font-size:.7rem;font-weight:600;color:#222;letter-spacing:0;white-space:nowrap}
 .sv-hrs{font-size:.64rem;color:var(--muted);font-weight:400}
@@ -86,7 +86,7 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
 .sched-cell.empty{color:#d0cbc0;font-size:1.3rem;line-height:1}
 .sched-cell.empty:hover{color:var(--gold)}
 .sched-td.unavail-td{background:repeating-linear-gradient(135deg,#fff5f5,#fff5f5 4px,#ffeaea 4px,#ffeaea 8px)!important}
-.sched-cell.unavail{color:#e0a0a0;font-size:1rem;display:flex;align-items:center;justify-content:center;min-height:40px;cursor:default}
+.sched-cell.unavail{color:#e0a0a0;font-size:1rem;display:flex;align-items:center;justify-content:center;height:40px;cursor:default}
 .sched-td.partial-td{background:repeating-linear-gradient(135deg,#fffdf5,#fffdf5 4px,#fff8e6 4px,#fff8e6 8px)!important}
 .sv-partial{display:block;font-size:.6rem;color:#e67e22;font-weight:500;margin-top:2px;line-height:1.2;white-space:nowrap}
 .sched-cell.partial-empty{color:#f0a500}
@@ -190,7 +190,8 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
   .sched-table tr{display:table-row!important;background:none;border-radius:0;box-shadow:none;padding:0;border:none}
   .sched-table td,.sched-table th{display:table-cell!important;border:revert}
   .sched-th{padding:.45rem .2rem;font-size:.58rem}
-  .sched-cell{min-height:40px;padding:.1rem .06rem}
+  .sched-cell,.sched-cell.unavail{height:46px;padding:.1rem .06rem}
+  .sched-td.staff-td{overflow:hidden}
   /* Saat metni dar hücrede taşmasın: tek/iki satır, küçük font; (saat) gizli */
   .sv-time{font-size:.6rem;white-space:normal;line-height:1.05;word-break:break-word}
   .sv-hrs{display:none}
@@ -1081,13 +1082,16 @@ function pickShiftColor(which,val){
 // Kaydet butonu — localStorage + DB'ye yazar
 async function saveAllShiftColors(){
   localStorage.setItem('shiftColors',JSON.stringify(shiftColors));
-  try{
-    await sb.from('app_settings').upsert([
-      {key:'shift_color_morning',value:shiftColors.morning||''},
-      {key:'shift_color_evening',value:shiftColors.evening||''},
-      {key:'shift_color_full',value:shiftColors.full||''}
-    ],{onConflict:'key'});
-  }catch(e){}
+  // supabase-js hata FIRLATMAZ, {error} döndürür — onu kontrol etmemiz şart
+  const{error}=await sb.from('app_settings').upsert([
+    {key:'shift_color_morning',value:shiftColors.morning||''},
+    {key:'shift_color_evening',value:shiftColors.evening||''},
+    {key:'shift_color_full',value:shiftColors.full||''}
+  ],{onConflict:'key'});
+  if(error){
+    alert('⚠️ Renkler veritabanına kaydedilemedi:\n'+(error.message||error.code||error)+'\n\nBu cihazda saklandı ama diğer cihazlara yansımaz. (app_settings RLS/grant düzeltmesini çalıştırın.)');
+    return;
+  }
   alert(t('shift_colors_saved'));
 }
 function resetEveningColor(){
