@@ -185,22 +185,12 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
 
   /* Schedule table stays scrollable */
   .sched-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:8px}
-  .sched-table{display:table!important;min-width:580px}
+  /* Tabloyu TEK PARÇA uniform küçült (köşeden çekip küçültme gibi) — iç stiller masaüstüyle birebir aynı kalır */
+  .sched-table{display:table!important;zoom:.62}
   .sched-table thead{display:table-header-group!important}
   .sched-table tbody{display:table-row-group!important;flex-direction:unset}
   .sched-table tr{display:table-row!important;background:none;border-radius:0;box-shadow:none;padding:0;border:none}
   .sched-table td,.sched-table th{display:table-cell!important;border:revert}
-  .sched-th{padding:.45rem .2rem;font-size:.58rem}
-  .sched-cell,.sched-cell.unavail{height:42px;padding:.08rem .05rem}
-  .sched-td.staff-td{overflow:hidden}
-  /* Saat metni dar hücrede taşmasın: tek/iki satır, küçük font; (saat) gizli */
-  .sv-time{font-size:.6rem;white-space:normal;line-height:1.05;word-break:break-word}
-  .sv-hrs{display:none}
-  /* Personel hücresi kompakt */
-  .sched-td.staff-td{padding:.25rem .45rem}
-  .staff-name{font-size:.82rem;line-height:1.1}
-  .staff-meta{margin-top:.15rem}
-  .staff-dept{font-size:.58rem;padding:.05rem .35rem}
   /* Kart görünümü etiketini (td:before) shift/HACCP tablolarında kapat — üst üste binmeyi önler */
   .sched-table td:before,.sched-table th:before{content:none!important;display:none!important}
   #haccpTable td:before,#haccpTable th:before{content:none!important;display:none!important}
