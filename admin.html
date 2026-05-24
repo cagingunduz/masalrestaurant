@@ -9,7 +9,7 @@
 :root{--gold:#c6a55c;--gold-dark:#9c7e3e;--dark:#1a1a1a;--bg:#f7f5f0;--muted:#888}
 *{box-sizing:border-box;margin:0;padding:0}
 html{background:var(--bg);-webkit-text-size-adjust:100%;text-size-adjust:100%}
-body{font-family:-apple-system,system-ui,sans-serif;background:var(--bg);color:#222;min-height:100vh}
+body{font-family:-apple-system,system-ui,sans-serif;background:var(--bg);color:#222;min-height:100vh;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:2rem}
 .login-box{background:#fff;padding:2.5rem;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.1);max-width:380px;width:100%;text-align:center}
 .login-box .login-logo{height:60px;width:auto;margin-bottom:.3rem;filter:invert(72%) sepia(40%) saturate(400%) hue-rotate(5deg) brightness(95%)}
@@ -74,6 +74,7 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
 .sched-tr:hover .sched-td:not([style*="background"]){background:#fcfbf7}
 .sched-td{padding:0;border-bottom:1px solid #f0ece4;border-right:1px solid #f0ece4;position:relative;height:1px}
 .sched-td.staff-td{padding:.12rem .5rem;background:#fafafa;border-right:2px solid #e0dbd0;font-size:.78rem;font-weight:500;vertical-align:middle}
+.staff-inner{width:100%}
 .staff-name{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.1}
 .staff-meta{display:flex;align-items:center;gap:.25rem;margin-top:.04rem}
 .staff-dept{display:inline-block;font-size:.62rem;font-weight:500;color:#9a8e76;letter-spacing:.3px;background:rgba(0,0,0,.05);padding:.06rem .4rem;border-radius:4px;text-transform:uppercase}
@@ -196,7 +197,9 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
   .sched-th.total-th{width:46px}
   .sched-cell,.sched-cell.unavail{height:27px}
   .sched-cell.empty{font-size:1rem}
-  .sched-td.staff-td{padding:.08rem .35rem}
+  /* Personel hücresini de gün hücreleri gibi sabit yükseklikli + taşma kesilir → satırlar birebir eşit */
+  .sched-td.staff-td{padding:0 .35rem;vertical-align:middle}
+  .staff-inner{height:27px;overflow:hidden;display:flex;flex-direction:column;justify-content:center}
   .staff-name{font-size:.68rem;line-height:1.05}
   .staff-dot{width:6px;height:6px;margin-right:.25rem}
   .staff-meta{margin-top:.02rem;gap:.15rem}
@@ -1185,11 +1188,13 @@ async function loadShifts(){
     grandTotal+=weekTotal;
     return`<tr class="sched-tr">
       <td class="sched-td staff-td" ${bg}>
-        <div class="staff-name"><span class="staff-dot" style="background:${p.color||'#aaa'}"></span>${esc(p.name||'?')}</div>
-        <div class="staff-meta">
-          ${p.department?`<span class="staff-dept">${esc(p.department)}</span>`:''}
-          <button class="del-staff-btn" onclick="openEditStaff('${p.id}',event)" title="Bewerken" style="color:#888">✎</button>
-          <button class="del-staff-btn" onclick="deleteStaff('${p.id}',event)" title="${t('confirm_delete_staff')}">✕</button>
+        <div class="staff-inner">
+          <div class="staff-name"><span class="staff-dot" style="background:${p.color||'#aaa'}"></span>${esc(p.name||'?')}</div>
+          <div class="staff-meta">
+            ${p.department?`<span class="staff-dept">${esc(p.department)}</span>`:''}
+            <button class="del-staff-btn" onclick="openEditStaff('${p.id}',event)" title="Bewerken" style="color:#888">✎</button>
+            <button class="del-staff-btn" onclick="deleteStaff('${p.id}',event)" title="${t('confirm_delete_staff')}">✕</button>
+          </div>
         </div>
       </td>
       ${cells}
