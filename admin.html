@@ -72,7 +72,7 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
 .sched-th.total-th{width:56px;border-right:none;border-left:2px solid #e0dbd0;background:#fdf9f4}
 .sched-th.wknd{background:#fff9ef}
 .sched-tr:hover .sched-td:not([style*="background"]){background:#fcfbf7}
-.sched-td{padding:0;border-bottom:1px solid #f0ece4;border-right:1px solid #f0ece4;position:relative;height:1px}
+.sched-td{padding:0;border-bottom:1px solid #f0ece4;border-right:1px solid #f0ece4;position:relative}
 .sched-td.staff-td{padding:.12rem .5rem;background:#fafafa;border-right:2px solid #e0dbd0;font-size:.78rem;font-weight:500;vertical-align:middle}
 .staff-inner{width:100%}
 .staff-name{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.1}
@@ -195,11 +195,11 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
   .sched-th{font-size:.5rem;padding:.3rem .12rem}
   .sched-th.staff-th{width:88px;padding-left:.45rem}
   .sched-th.total-th{width:46px}
-  .sched-cell,.sched-cell.unavail{height:27px}
+  .sched-cell,.sched-cell.unavail{height:27px;max-height:27px}
   .sched-cell.empty{font-size:1rem}
   /* Personel hücresini de gün hücreleri gibi sabit yükseklikli + taşma kesilir → satırlar birebir eşit */
   .sched-td.staff-td{padding:0 .35rem;vertical-align:middle}
-  .staff-inner{height:27px;overflow:hidden;display:flex;flex-direction:column;justify-content:center}
+  .staff-inner{height:27px;max-height:27px;overflow:hidden;display:flex;flex-direction:column;justify-content:center}
   .staff-name{font-size:.68rem;line-height:1.05}
   .staff-dot{width:6px;height:6px;margin-right:.25rem}
   .staff-meta{margin-top:.02rem;gap:.15rem}
