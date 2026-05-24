@@ -8,7 +8,7 @@
 <style>
 :root{--gold:#c6a55c;--gold-dark:#9c7e3e;--dark:#1a1a1a;--bg:#f7f5f0;--muted:#888}
 *{box-sizing:border-box;margin:0;padding:0}
-html{background:var(--bg)}
+html{background:var(--bg);-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body{font-family:-apple-system,system-ui,sans-serif;background:var(--bg);color:#222;min-height:100vh}
 .login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:2rem}
 .login-box{background:#fff;padding:2.5rem;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.1);max-width:380px;width:100%;text-align:center}
@@ -185,12 +185,27 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
 
   /* Schedule table stays scrollable */
   .sched-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:8px}
-  /* Tabloyu TEK PARÇA uniform küçült (köşeden çekip küçültme gibi) — iç stiller masaüstüyle birebir aynı kalır */
-  .sched-table{display:table!important;zoom:.62}
+  /* Telefon: zoom YOK — net küçük fontlar + kısa satırlar; amaç tek ekranda maks personel */
+  .sched-table{display:table!important;min-width:560px}
   .sched-table thead{display:table-header-group!important}
   .sched-table tbody{display:table-row-group!important;flex-direction:unset}
   .sched-table tr{display:table-row!important;background:none;border-radius:0;box-shadow:none;padding:0;border:none}
   .sched-table td,.sched-table th{display:table-cell!important;border:revert}
+  .sched-th{font-size:.5rem;padding:.3rem .12rem}
+  .sched-th.staff-th{width:88px;padding-left:.45rem}
+  .sched-th.total-th{width:46px}
+  .sched-cell,.sched-cell.unavail{height:27px}
+  .sched-cell.empty{font-size:1rem}
+  .sched-td.staff-td{padding:.08rem .35rem}
+  .staff-name{font-size:.68rem;line-height:1.05}
+  .staff-dot{width:6px;height:6px;margin-right:.25rem}
+  .staff-meta{margin-top:.02rem;gap:.15rem}
+  .staff-dept{font-size:.5rem;padding:.02rem .28rem}
+  .del-staff-btn{font-size:.68rem;margin-left:.2rem;padding:0 .2rem}
+  .sv-time{font-size:.56rem}
+  .sv-hrs{display:none}
+  .sv-partial{font-size:.5rem}
+  .sched-td.total-td{font-size:.58rem;padding:.2rem .1rem}
   /* Kart görünümü etiketini (td:before) shift/HACCP tablolarında kapat — üst üste binmeyi önler */
   .sched-table td:before,.sched-table th:before{content:none!important;display:none!important}
   #haccpTable td:before,#haccpTable th:before{content:none!important;display:none!important}
