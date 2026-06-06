@@ -825,6 +825,10 @@ async function respondSwap(id,approve,reqId,tgtId,reqShiftId,tgtShiftId){
     await sb.from('shift_assignments').insert({shift_id:reqShiftId,staff_id:tgtId});
     await sb.from('shift_assignments').delete().eq('shift_id',tgtShiftId).eq('staff_id',tgtId);
     await sb.from('shift_assignments').insert({shift_id:tgtShiftId,staff_id:reqId});
+    // Bildirim kayıtlarının sahibini de takasa göre güncelle — yoksa takas edilen
+    // vardiyalar personelin görünümünden (Vardiyalarım + Tablo) kaybolur
+    await sb.from('shift_notifications').update({staff_id:tgtId}).eq('shift_id',reqShiftId).eq('staff_id',reqId);
+    await sb.from('shift_notifications').update({staff_id:reqId}).eq('shift_id',tgtShiftId).eq('staff_id',tgtId);
   }
   await sb.from('swap_requests').update({status:approve?'accepted':'admin_rejected'}).eq('id',id);
 
@@ -1347,7 +1351,7 @@ async function openCellModal(staffId,dayIndex,shiftId,start,end){
   // Müsaitlik kontrolü — sadece yeni vardiya eklerken
   if(!shiftId){
     const ws=fmtDate(currentWeek);
-    const{data:avail}=await sb.from('availability').select('status').eq('staff_id',staffId).eq('week_start',ws).eq('day_index',dayIndex).single();
+    const{data:avail}=await sb.from('availability').select('status').eq('staff_id',staffId).eq('week_start',ws).eq('day_index',dayIndex).maybeSingle();
     if(avail?.status==='unavailable'){
       const p=profiles.find(x=>x.id===staffId);
       const DN_TR=['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
