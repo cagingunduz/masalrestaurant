@@ -193,9 +193,9 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
   .sched-table thead,.sched-table tbody,.sched-table tfoot,.sched-table tr{display:contents!important}
   .sched-table td,.sched-table th{display:flex!important;align-items:center;justify-content:center;height:27px!important;max-height:27px!important;overflow:hidden!important;border:none;border-bottom:1px solid #f0ece4;border-right:1px solid #f0ece4;box-sizing:border-box;padding:0}
   .sched-table thead th{height:34px!important;max-height:34px!important;flex-direction:column;line-height:1.05;background:#fafafa;color:var(--muted);font-size:.5rem;letter-spacing:.5px;text-transform:uppercase;border-bottom:2px solid #eee;padding:.15rem .1rem}
-  .sched-table tfoot td[colspan="7"]{grid-column:span 7!important}
+  .sched-table td[colspan="7"]{grid-column:span 7!important}
   /* tfoot toplam hücresi: HTML'deki inline font-size'ı ez */
-  .sched-table tfoot td{font-size:.55rem!important;font-weight:600}
+  .sched-foot-row td{font-size:.55rem!important;font-weight:600}
   .sched-th{font-size:.5rem;padding:.3rem .12rem}
   .sched-th.staff-th{width:88px;padding-left:.45rem;position:sticky!important;left:0;z-index:3;background:#fafafa;border-right:2px solid #e0dbd0}
   .sched-th.total-th{width:46px}
@@ -1236,12 +1236,11 @@ async function loadShifts(){
       ${thDays}
       <th class="sched-th total-th">${t('col_total')}</th>
     </tr></thead>
-    <tbody>${rows}</tbody>
-    ${staff.length?`<tfoot><tr class="sched-tr">
+    <tbody>${rows}${staff.length?`<tr class="sched-tr sched-foot-row">
       <td class="sched-td staff-td" style="text-align:right;font-weight:700">${t('col_total')}</td>
       <td class="sched-td" colspan="7" style="background:#f3efe6"></td>
       <td class="sched-td total-td" style="font-weight:700;font-size:.95rem">${grandTotal>0?hrsLabel(grandTotal):'–'}</td>
-    </tr></tfoot>`:''}`;
+    </tr>`:''}</tbody>`;
 
   // Cache for notify
   window._shiftMatrix=matrix;
