@@ -2,15 +2,15 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#1a1a1a">
 <title>Masal Staff</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{--gold:#c6a55c;--gold-dark:#9c7e3e;--dark:#1a1a1a;--bg:#f7f5f0;--muted:#888;--ok:#27ae60;--err:#c0392b}
 *{box-sizing:border-box;margin:0;padding:0}
-html{background:#1a1a1a;overflow-x:hidden}
-body{font-family:-apple-system,system-ui,sans-serif;background:var(--bg);color:#222;min-height:100vh;overflow-x:hidden}
+html{background:#1a1a1a;overflow-x:hidden;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{font-family:-apple-system,system-ui,sans-serif;background:var(--bg);color:#222;min-height:100vh;overflow-x:hidden;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 
 /* LOGIN */
 .login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:1.5rem}
@@ -79,6 +79,8 @@ header{background:var(--dark);color:#fff;padding:1rem 1.5rem;display:flex;align-
 .sv-hrs{font-size:.63rem;color:var(--muted)}
 .sched-cell.empty{color:#ddd;font-size:.9rem}
 .staff-dot{width:7px;height:7px;border-radius:50%;display:inline-block;flex-shrink:0}
+.staff-inner{width:100%}
+.staff-name{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.2}
 .staff-dept{display:block;font-size:.67rem;color:#bbb;margin-top:.1rem}
 .me-row .sched-td.staff-td{background:#fffbf3;border-left:3px solid var(--gold)}
 .me-row .sched-td{background:#fffdf8}
@@ -245,13 +247,22 @@ header{background:var(--dark);color:#fff;padding:1rem 1.5rem;display:flex;align-
   .guide-card{padding:1rem}
   .guide-card-items li{font-size:.8rem}
 
-  /* Schedule table scrollable */
-  .sched-wrap{border-radius:8px}
-  .sched-table{min-width:480px}
-  .sched-th{min-width:70px;padding:.45rem .25rem;font-size:.6rem}
-  .sched-th.staff-th{min-width:100px;padding-left:.6rem}
-  .sched-cell{min-height:40px}
-  .sv-time{font-size:.72rem}
+  /* Telefon: ekip tablosu TABLE değil CSS GRID — BİREBİR eşit yükseklik + tek parça küçült (admin ile aynı) */
+  .sched-wrap{border-radius:8px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .sched-table{display:grid!important;grid-template-columns:88px repeat(7,1fr);grid-auto-rows:27px;min-width:520px;background:#fff;zoom:.88;border-collapse:unset}
+  .sched-table thead,.sched-table tbody,.sched-table tr{display:contents!important}
+  .sched-table td,.sched-table th{display:flex!important;align-items:center;justify-content:center;height:27px!important;max-height:27px!important;overflow:hidden!important;border:none;border-bottom:1px solid #f0ece4;border-right:1px solid #f0ece4;box-sizing:border-box;padding:0;line-height:1}
+  .sched-table thead th{height:34px!important;max-height:34px!important;flex-direction:column;line-height:1.05;background:#fafafa;color:var(--muted);font-size:.5rem;letter-spacing:.3px;text-transform:uppercase;border-bottom:2px solid #eee;padding:.15rem .1rem}
+  .sched-table tbody td[colspan]{grid-column:1/-1!important}
+  .sched-td.staff-td{padding:0 .35rem!important;justify-content:flex-start!important}
+  .staff-inner{height:27px!important;max-height:27px!important;overflow:hidden!important;display:flex;flex-direction:column;justify-content:center}
+  .staff-name{font-size:.68rem;line-height:1.1!important}
+  .staff-dot{width:6px;height:6px;margin-right:.2rem}
+  .staff-dept{font-size:.5rem!important;margin-top:.02rem!important;line-height:1!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:78px}
+  .sched-cell{min-height:0!important;height:27px!important;max-height:27px!important;overflow:hidden!important;line-height:1!important;padding:0!important}
+  .sched-cell.empty{font-size:.95rem!important}
+  .sv-time{font-size:.5rem!important;line-height:1.1!important;letter-spacing:-.2px;white-space:nowrap}
+  .sv-hrs{display:none!important}
 }
 </style>
 </head>
@@ -717,7 +728,10 @@ async function loadTable(){
       if(cell){const h=hrsNum(cell.start,cell.end);return`<td class="sched-td${i>=5?' wknd':''}" ${bg}><div class="sched-cell"><span class="sv-time">${cell.start.slice(0,5)}–${cell.end.slice(0,5)}</span><span class="sv-hrs">${hrsLabel(h)}</span></div></td>`}
       return`<td class="sched-td${i>=5?' wknd':''}" ${bg}><div class="sched-cell empty">·</div></td>`}).join('');
     const dept=p.department?`<span class="staff-dept">${esc(p.department)}</span>`:'';
-    return`<tr class="sched-tr${isMe?' me-row':''}"><td class="sched-td staff-td"><span class="staff-dot" style="background:${p.color||'#aaa'}"></span> ${esc(p.name||'?')}${dept}</td>${cells}</tr>`;
+    // Kısaltılmış görünüm: "Zeynep Kaya" → "Zeynep K" (aynı isimli kişileri ayırt etmek için)
+    const _nw=(p.name||'?').trim().split(/\s+/);
+    const displayName=_nw.length>1?`${_nw[0]} ${_nw[_nw.length-1].charAt(0).toUpperCase()}`:_nw[0];
+    return`<tr class="sched-tr${isMe?' me-row':''}"><td class="sched-td staff-td"><div class="staff-inner"><div class="staff-name"><span class="staff-dot" style="background:${p.color||'#aaa'}"></span> ${esc(displayName)}</div>${dept}</div></td>${cells}</tr>`;
   }).join(''):`<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--muted)">—</td></tr>`;
   document.getElementById('schedTable').innerHTML=`<thead><tr><th class="sched-th staff-th">${L().tabTable}</th>${thDays}</tr></thead><tbody>${rows}</tbody>`;
 }
