@@ -197,12 +197,12 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
   /* tfoot toplam hücresi: HTML'deki inline font-size'ı ez */
   .sched-table tfoot td{font-size:.55rem!important;font-weight:600}
   .sched-th{font-size:.5rem;padding:.3rem .12rem}
-  .sched-th.staff-th{width:88px;padding-left:.45rem}
+  .sched-th.staff-th{width:88px;padding-left:.45rem;position:sticky!important;left:0;z-index:3;background:#fafafa;border-right:2px solid #e0dbd0}
   .sched-th.total-th{width:46px}
   /* iOS'ta hiçbir font şişirmesi/boost kaçamasın: !important + sabit line-height */
   .sched-cell,.sched-cell.unavail{height:27px!important;max-height:27px!important;min-height:0!important;overflow:hidden!important;line-height:1!important}
   .sched-cell.empty{font-size:.95rem!important}
-  .sched-td.staff-td{padding:0 .35rem;vertical-align:middle;height:27px!important;max-height:27px!important}
+  .sched-td.staff-td{padding:0 .35rem;vertical-align:middle;height:27px!important;max-height:27px!important;position:sticky!important;left:0;z-index:2;border-right:2px solid #e0dbd0}
   .staff-inner{height:27px!important;max-height:27px!important;overflow:hidden!important;display:flex;flex-direction:column;justify-content:center}
   .staff-name{line-height:1.1!important}
   .staff-meta{line-height:1!important}
