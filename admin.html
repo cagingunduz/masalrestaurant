@@ -189,33 +189,34 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
   .sched-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:8px}
   /* Telefon: TABLE değil CSS GRID — BİREBİR eşit yükseklikler iOS'ta garantili */
   /* zoom:.88 ile tüm tabloyu tek parça uniform küçültür (sağ alttan çekip küçültme gibi) */
-  .sched-table{display:grid!important;grid-template-columns:88px repeat(7,1fr) 46px;grid-template-rows:34px;grid-auto-rows:27px;min-width:560px;background:#fff;zoom:.88;border-collapse:unset;table-layout:auto}
+  /* ZOOM'SUZ: tüm ölçüler 0.88 ile çarpıldı → görünüm zoom'lu hâlle birebir aynı, sticky garantili */
+  .sched-table{display:grid!important;grid-template-columns:77px repeat(7,1fr) 40px;grid-template-rows:30px;grid-auto-rows:24px;min-width:490px;background:#fff;border-collapse:unset;table-layout:auto}
   .sched-table thead,.sched-table tbody,.sched-table tfoot,.sched-table tr{display:contents!important}
-  .sched-table td,.sched-table th{display:flex!important;align-items:center;justify-content:center;height:27px!important;max-height:27px!important;overflow:hidden!important;border:none;border-bottom:1px solid #f0ece4;border-right:1px solid #f0ece4;box-sizing:border-box;padding:0}
-  .sched-table thead th{height:34px!important;max-height:34px!important;flex-direction:column;line-height:1.05;background:#fafafa;color:var(--muted);font-size:.5rem;letter-spacing:.5px;text-transform:uppercase;border-bottom:2px solid #eee;padding:.15rem .1rem}
+  .sched-table td,.sched-table th{display:flex!important;align-items:center;justify-content:center;height:24px!important;max-height:24px!important;overflow:hidden!important;border:none;border-bottom:1px solid #f0ece4;border-right:1px solid #f0ece4;box-sizing:border-box;padding:0}
+  .sched-table thead th{height:30px!important;max-height:30px!important;flex-direction:column;line-height:1.05;background:#fafafa;color:var(--muted);font-size:.44rem;letter-spacing:.4px;text-transform:uppercase;border-bottom:2px solid #eee;padding:.13rem .09rem}
   .sched-table td[colspan="7"]{grid-column:span 7!important}
-  /* tfoot toplam hücresi: HTML'deki inline font-size'ı ez */
-  .sched-foot-row td{font-size:.55rem!important;font-weight:600}
-  .sched-th{font-size:.5rem;padding:.3rem .12rem}
-  .sched-th.staff-th{width:88px;padding-left:.45rem;position:sticky!important;left:0;z-index:3;background:#fafafa;border-right:2px solid #e0dbd0}
-  .sched-th.total-th{width:46px}
+  /* toplam satırı: HTML'deki inline font-size'ı ez */
+  .sched-foot-row td{font-size:.48rem!important;font-weight:600}
+  .sched-th{font-size:.44rem;padding:.26rem .1rem}
+  .sched-th.staff-th{width:77px;padding-left:.4rem;position:sticky!important;left:0;z-index:3;background:#fafafa;border-right:2px solid #e0dbd0}
+  .sched-th.total-th{width:40px}
   /* iOS'ta hiçbir font şişirmesi/boost kaçamasın: !important + sabit line-height */
-  .sched-cell,.sched-cell.unavail{height:27px!important;max-height:27px!important;min-height:0!important;overflow:hidden!important;line-height:1!important}
-  .sched-cell.empty{font-size:.95rem!important}
-  .sched-td.staff-td{padding:0 .35rem;vertical-align:middle;height:27px!important;max-height:27px!important;position:sticky!important;left:0;z-index:2;border-right:2px solid #e0dbd0}
-  .staff-inner{height:27px!important;max-height:27px!important;overflow:hidden!important;display:flex;flex-direction:column;justify-content:center}
+  .sched-cell,.sched-cell.unavail{height:24px!important;max-height:24px!important;min-height:0!important;overflow:hidden!important;line-height:1!important}
+  .sched-cell.empty{font-size:.84rem!important}
+  .sched-td.staff-td{padding:0 .3rem;vertical-align:middle;height:24px!important;max-height:24px!important;position:sticky!important;left:0;z-index:2;border-right:2px solid #e0dbd0}
+  .staff-inner{height:24px!important;max-height:24px!important;overflow:hidden!important;display:flex;flex-direction:column;justify-content:center}
   .staff-name{line-height:1.1!important}
   .staff-meta{line-height:1!important}
   .sv-time{line-height:1.1!important}
-  .staff-name{font-size:.68rem;line-height:1.05}
-  .staff-dot{width:6px;height:6px;margin-right:.25rem}
-  .staff-meta{margin-top:.02rem;gap:.15rem;flex-wrap:nowrap;min-width:0;overflow:hidden}
-  .staff-dept{font-size:.5rem;padding:.02rem .28rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:54px;min-width:0}
-  .del-staff-btn{font-size:.68rem;margin-left:.2rem;padding:0 .2rem}
-  .sv-time{font-size:.48rem;letter-spacing:-.2px}
+  .staff-name{font-size:.6rem;line-height:1.05}
+  .staff-dot{width:5px;height:5px;margin-right:.22rem}
+  .staff-meta{margin-top:.02rem;gap:.13rem;flex-wrap:nowrap;min-width:0;overflow:hidden}
+  .staff-dept{font-size:.44rem;padding:.02rem .25rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:48px;min-width:0}
+  .del-staff-btn{font-size:.6rem;margin-left:.2rem;padding:0 .2rem}
+  .sv-time{font-size:.42rem;letter-spacing:-.2px}
   .sv-hrs{display:none}
-  .sv-partial{font-size:.5rem}
-  .sched-td.total-td{font-size:.58rem;padding:.2rem .1rem}
+  .sv-partial{font-size:.44rem}
+  .sched-td.total-td{font-size:.51rem;padding:.18rem .09rem}
   /* Kart görünümü etiketini (td:before) shift/HACCP tablolarında kapat — üst üste binmeyi önler */
   .sched-table td:before,.sched-table th:before{content:none!important;display:none!important}
   #haccpTable td:before,#haccpTable th:before{content:none!important;display:none!important}
