@@ -195,11 +195,14 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
   .sched-th{font-size:.5rem;padding:.3rem .12rem}
   .sched-th.staff-th{width:88px;padding-left:.45rem}
   .sched-th.total-th{width:46px}
-  .sched-cell,.sched-cell.unavail{height:27px;max-height:27px}
-  .sched-cell.empty{font-size:1rem}
-  /* Personel hücresini de gün hücreleri gibi sabit yükseklikli + taşma kesilir → satırlar birebir eşit */
-  .sched-td.staff-td{padding:0 .35rem;vertical-align:middle}
-  .staff-inner{height:27px;max-height:27px;overflow:hidden;display:flex;flex-direction:column;justify-content:center}
+  /* iOS'ta hiçbir font şişirmesi/boost kaçamasın: !important + sabit line-height */
+  .sched-cell,.sched-cell.unavail{height:27px!important;max-height:27px!important;min-height:0!important;overflow:hidden!important;line-height:1!important}
+  .sched-cell.empty{font-size:.95rem!important}
+  .sched-td.staff-td{padding:0 .35rem;vertical-align:middle;height:27px!important;max-height:27px!important}
+  .staff-inner{height:27px!important;max-height:27px!important;overflow:hidden!important;display:flex;flex-direction:column;justify-content:center}
+  .staff-name{line-height:1.1!important}
+  .staff-meta{line-height:1!important}
+  .sv-time{line-height:1.1!important}
   .staff-name{font-size:.68rem;line-height:1.05}
   .staff-dot{width:6px;height:6px;margin-right:.25rem}
   .staff-meta{margin-top:.02rem;gap:.15rem}
