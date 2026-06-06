@@ -80,7 +80,8 @@ header{background:var(--dark);color:#fff;padding:1rem 1.5rem;display:flex;align-
 .sched-cell.empty{color:#ddd;font-size:.9rem}
 .staff-dot{width:7px;height:7px;border-radius:50%;display:inline-block;flex-shrink:0}
 .staff-inner{width:100%}
-.staff-name{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.2}
+.staff-name{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.2;cursor:pointer}
+#namePop{position:fixed;z-index:99999;background:#1a1a1a;color:#fff;padding:.45rem .75rem;border-radius:8px;font-size:.9rem;font-weight:600;box-shadow:0 8px 28px rgba(0,0,0,.3);max-width:82vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:none;pointer-events:none}
 .staff-dept{display:block;font-size:.67rem;color:#bbb;margin-top:.1rem}
 .me-row .sched-td.staff-td{background:#fffbf3;border-left:3px solid var(--gold)}
 .me-row .sched-td{background:#fffdf8}
@@ -702,6 +703,20 @@ async function loadShifts(){
 // ─── TABLO ────────────────────────────────────────────────────
 let tableWeek=null;
 function changeWeekTable(dir){tableWeek=addDays(tableWeek,dir*7);loadTable()}
+// İsme tıklayınca tam adı küçük pencerede göster (isimler kısaltılmış: "Zeynep K")
+function showNamePop(e,el){
+  e.stopPropagation();
+  const name=el.getAttribute('data-fullname')||el.textContent.trim();
+  let pop=document.getElementById('namePop');
+  if(!pop){pop=document.createElement('div');pop.id='namePop';document.body.appendChild(pop);}
+  pop.textContent=name;pop.style.display='block';
+  const r=el.getBoundingClientRect();const pw=pop.offsetWidth,ph=pop.offsetHeight;
+  let left=r.left;if(left+pw>innerWidth-8)left=innerWidth-pw-8;if(left<8)left=8;
+  let top=r.bottom+6;if(top+ph>innerHeight-8)top=r.top-ph-6;
+  pop.style.left=left+'px';pop.style.top=top+'px';
+  clearTimeout(pop._t);pop._t=setTimeout(()=>{pop.style.display='none';},2500);
+  setTimeout(()=>document.addEventListener('click',function h(){pop.style.display='none';clearTimeout(pop._t);document.removeEventListener('click',h);},{once:true}),0);
+}
 
 async function loadTable(){
   document.getElementById('weekLabelTable').textContent=weekLabel(tableWeek);
@@ -731,7 +746,7 @@ async function loadTable(){
     // Kısaltılmış görünüm: "Zeynep Kaya" → "Zeynep K" (aynı isimli kişileri ayırt etmek için)
     const _nw=(p.name||'?').trim().split(/\s+/);
     const displayName=_nw.length>1?`${_nw[0]} ${_nw[_nw.length-1].charAt(0).toUpperCase()}`:_nw[0];
-    return`<tr class="sched-tr${isMe?' me-row':''}"><td class="sched-td staff-td"><div class="staff-inner"><div class="staff-name"><span class="staff-dot" style="background:${p.color||'#aaa'}"></span> ${esc(displayName)}</div>${dept}</div></td>${cells}</tr>`;
+    return`<tr class="sched-tr${isMe?' me-row':''}"><td class="sched-td staff-td"><div class="staff-inner"><div class="staff-name" data-fullname="${esc(p.name||'?').replace(/"/g,'&quot;')}" onclick="showNamePop(event,this)"><span class="staff-dot" style="background:${p.color||'#aaa'}"></span> ${esc(displayName)}</div>${dept}</div></td>${cells}</tr>`;
   }).join(''):`<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--muted)">—</td></tr>`;
   document.getElementById('schedTable').innerHTML=`<thead><tr><th class="sched-th staff-th">${L().tabTable}</th>${thDays}</tr></thead><tbody>${rows}</tbody>`;
 }

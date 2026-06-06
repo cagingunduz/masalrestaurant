@@ -75,7 +75,8 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
 .sched-td{padding:0;border-bottom:1px solid #f0ece4;border-right:1px solid #f0ece4;position:relative}
 .sched-td.staff-td{padding:.12rem .5rem;background:#fafafa;border-right:2px solid #e0dbd0;font-size:.78rem;font-weight:500;vertical-align:middle}
 .staff-inner{width:100%}
-.staff-name{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.1}
+.staff-name{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.1;cursor:pointer}
+#namePop{position:fixed;z-index:99999;background:#1a1a1a;color:#fff;padding:.45rem .75rem;border-radius:8px;font-size:.9rem;font-weight:600;box-shadow:0 8px 28px rgba(0,0,0,.3);max-width:82vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:none;pointer-events:none}
 .staff-meta{display:flex;align-items:center;gap:.25rem;margin-top:.04rem}
 .staff-dept{display:inline-block;font-size:.62rem;font-weight:500;color:#9a8e76;letter-spacing:.3px;background:rgba(0,0,0,.05);padding:.06rem .4rem;border-radius:4px;text-transform:uppercase}
 .sched-td.total-td{text-align:center;background:#fdf9f4;border-left:2px solid #e0dbd0;border-right:none;padding:.4rem .3rem;font-size:.8rem;font-weight:600;color:var(--gold-dark);vertical-align:middle}
@@ -1115,6 +1116,20 @@ function resetEveningColor(){
   loadShifts();
 }
 
+// İsme tıklayınca tam adı küçük pencerede göster (isimler kısaltılmış: "Zeynep K")
+function showNamePop(e,el){
+  e.stopPropagation();
+  const name=el.getAttribute('data-fullname')||el.textContent.trim();
+  let pop=document.getElementById('namePop');
+  if(!pop){pop=document.createElement('div');pop.id='namePop';document.body.appendChild(pop);}
+  pop.textContent=name;pop.style.display='block';
+  const r=el.getBoundingClientRect();const pw=pop.offsetWidth,ph=pop.offsetHeight;
+  let left=r.left;if(left+pw>innerWidth-8)left=innerWidth-pw-8;if(left<8)left=8;
+  let top=r.bottom+6;if(top+ph>innerHeight-8)top=r.top-ph-6;
+  pop.style.left=left+'px';pop.style.top=top+'px';
+  clearTimeout(pop._t);pop._t=setTimeout(()=>{pop.style.display='none';},2500);
+  setTimeout(()=>document.addEventListener('click',function h(){pop.style.display='none';clearTimeout(pop._t);document.removeEventListener('click',h);},{once:true}),0);
+}
 async function loadShifts(){
   if(!currentWeek)currentWeek=mondayOf(new Date());
   updateWeekLabel();
@@ -1198,7 +1213,7 @@ async function loadShifts(){
     return`<tr class="sched-tr">
       <td class="sched-td staff-td" ${bg}>
         <div class="staff-inner">
-          <div class="staff-name"><span class="staff-dot" style="background:${p.color||'#aaa'}"></span>${esc(displayName)}</div>
+          <div class="staff-name" data-fullname="${esc(p.name||'?')}" onclick="showNamePop(event,this)"><span class="staff-dot" style="background:${p.color||'#aaa'}"></span>${esc(displayName)}</div>
           <div class="staff-meta">
             ${p.department?`<span class="staff-dept">${esc(p.department)}</span>`:''}
             <button class="del-staff-btn" onclick="openEditStaff('${p.id}',event)" title="Bewerken" style="color:#888">✎</button>
