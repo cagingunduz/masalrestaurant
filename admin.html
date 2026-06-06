@@ -187,7 +187,8 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
   /* Schedule table stays scrollable */
   .sched-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:8px}
   /* Telefon: TABLE değil CSS GRID — BİREBİR eşit yükseklikler iOS'ta garantili */
-  .sched-table{display:grid!important;grid-template-columns:88px repeat(7,1fr) 46px;grid-auto-rows:27px;min-width:560px;background:#fff}
+  /* zoom:.88 ile tüm tabloyu tek parça uniform küçültür (sağ alttan çekip küçültme gibi) */
+  .sched-table{display:grid!important;grid-template-columns:88px repeat(7,1fr) 46px;grid-auto-rows:27px;min-width:560px;background:#fff;zoom:.88}
   .sched-table thead,.sched-table tbody,.sched-table tfoot,.sched-table tr{display:contents!important}
   .sched-table td,.sched-table th{display:flex!important;align-items:center;justify-content:center;height:27px!important;max-height:27px!important;overflow:hidden!important;border:none;border-bottom:1px solid #f0ece4;border-right:1px solid #f0ece4;box-sizing:border-box;padding:0}
   .sched-table thead th{height:34px!important;max-height:34px!important;flex-direction:column;line-height:1.05;background:#fafafa;color:var(--muted);font-size:.5rem;letter-spacing:.5px;text-transform:uppercase;border-bottom:2px solid #eee;padding:.15rem .1rem}
