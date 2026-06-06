@@ -208,8 +208,8 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
   .sv-time{line-height:1.1!important}
   .staff-name{font-size:.68rem;line-height:1.05}
   .staff-dot{width:6px;height:6px;margin-right:.25rem}
-  .staff-meta{margin-top:.02rem;gap:.15rem}
-  .staff-dept{font-size:.5rem;padding:.02rem .28rem}
+  .staff-meta{margin-top:.02rem;gap:.15rem;flex-wrap:nowrap;min-width:0;overflow:hidden}
+  .staff-dept{font-size:.5rem;padding:.02rem .28rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:54px;min-width:0}
   .del-staff-btn{font-size:.68rem;margin-left:.2rem;padding:0 .2rem}
   .sv-time{font-size:.48rem;letter-spacing:-.2px}
   .sv-hrs{display:none}
@@ -1157,6 +1157,9 @@ async function loadShifts(){
     let weekTotal=0;
     const tint=hexTint(p.color,0.28);
     const bg=tint?`style="background:${tint}"`:'';
+    // Kısaltılmış görünüm: "Zeynep Kaya" → "Zeynep K" (aynı isimli kişileri ayırt etmek için)
+    const _nw=(p.name||'?').trim().split(/\s+/);
+    const displayName=_nw.length>1?`${_nw[0]} ${_nw[_nw.length-1].charAt(0).toUpperCase()}`:_nw[0];
     const cells=DN.map((_,i)=>{
       const cell=matrix[p.id]?.[i];
       const isWknd=i>=5;
@@ -1195,7 +1198,7 @@ async function loadShifts(){
     return`<tr class="sched-tr">
       <td class="sched-td staff-td" ${bg}>
         <div class="staff-inner">
-          <div class="staff-name"><span class="staff-dot" style="background:${p.color||'#aaa'}"></span>${esc(p.name||'?')}</div>
+          <div class="staff-name"><span class="staff-dot" style="background:${p.color||'#aaa'}"></span>${esc(displayName)}</div>
           <div class="staff-meta">
             ${p.department?`<span class="staff-dept">${esc(p.department)}</span>`:''}
             <button class="del-staff-btn" onclick="openEditStaff('${p.id}',event)" title="Bewerken" style="color:#888">✎</button>
