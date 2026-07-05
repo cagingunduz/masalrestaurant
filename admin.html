@@ -37,6 +37,31 @@ header button:hover{background:var(--gold);color:#fff}
 main{padding:2rem;padding-left:max(2rem,env(safe-area-inset-left));padding-right:max(2rem,env(safe-area-inset-right))}
 .section{display:none}
 .section.active{display:block}
+/* ── İstatistik / Dashboard ── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1rem;margin-bottom:.5rem}
+.stat-card{background:#fff;border:1px solid #eee;border-radius:12px;padding:1.1rem 1.2rem;box-shadow:0 2px 12px rgba(0,0,0,.04)}
+.stat-card .sc-val{font-size:1.9rem;font-weight:700;color:var(--dark);line-height:1}
+.stat-card .sc-label{font-size:.68rem;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-top:.45rem}
+.stat-card .sc-sub{font-size:.72rem;color:var(--gold-dark);margin-top:.35rem;font-weight:500}
+.stat-card.accent{background:linear-gradient(135deg,var(--dark),#2c2c2c);border-color:transparent}
+.stat-card.accent .sc-val{color:#fff}
+.stat-card.accent .sc-label{color:rgba(255,255,255,.65)}
+.stat-card.accent .sc-sub{color:var(--gold)}
+.stat-card.gold{background:linear-gradient(135deg,var(--gold),var(--gold-dark));border-color:transparent}
+.stat-card.gold .sc-val,.stat-card.gold .sc-label{color:#fff}
+.stat-card.gold .sc-sub{color:rgba(255,255,255,.85)}
+.stats-title{font-size:.78rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:1.6rem 0 .8rem;font-weight:600}
+.bar-chart{display:flex;align-items:flex-end;gap:.35rem;height:150px;padding:1rem 1rem .5rem;background:#fff;border:1px solid #eee;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,.04)}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:.25rem;min-width:0}
+.bar-fill{width:100%;max-width:28px;background:linear-gradient(180deg,var(--gold),var(--gold-dark));border-radius:4px 4px 0 0;min-height:3px}
+.bar-val{font-size:.6rem;font-weight:700;color:var(--dark)}
+.bar-label{font-size:.54rem;color:var(--muted);white-space:nowrap;overflow:hidden}
+.status-bar{display:flex;height:26px;border-radius:8px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.04)}
+.status-seg{display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:700;color:#fff;min-width:0;overflow:hidden}
+.status-legend{display:flex;flex-wrap:wrap;gap:.9rem;margin-top:.6rem}
+.status-legend span{display:flex;align-items:center;gap:.35rem;font-size:.72rem;color:#555}
+.status-legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
+.stats-note{background:#fff8ec;border:1px solid #f0e2c4;border-radius:10px;padding:.9rem 1.1rem;font-size:.8rem;color:#8a6d2f;line-height:1.5}
 .toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;gap:1rem;flex-wrap:wrap}
 .toolbar h2{font-family:Georgia,serif;font-size:1.4rem}
 .toolbar .actions{display:flex;gap:.6rem;align-items:center}
@@ -297,6 +322,7 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
   </header>
   <div class="tabs">
     <div class="tab active" data-tab="reservations" data-i18n="tab_reservations" onclick="switchTab('reservations')">Reserveringen</div>
+    <div class="tab" data-tab="stats" data-i18n="tab_stats" onclick="switchTab('stats')">📊 Statistieken</div>
     <div class="tab" data-tab="party" data-i18n="tab_party" onclick="switchTab('party')">Feest aanvragen</div>
     <div class="tab" data-tab="shifts" data-i18n="tab_shifts" onclick="switchTab('shifts')">Shifts</div>
     <div class="tab" data-tab="capacity" data-i18n="tab_capacity" onclick="switchTab('capacity')">Capaciteitslimiet</div>
@@ -307,6 +333,15 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
   <main>
 
     <!-- RESERVATIONS -->
+    <section class="section" id="sec-stats">
+      <div class="toolbar">
+        <h2 data-i18n="tab_stats">📊 İstatistik</h2>
+        <div class="actions">
+          <button class="btn ghost small" onclick="loadStats()" title="Vernieuwen">↻</button>
+        </div>
+      </div>
+      <div id="statsContent"><div style="padding:2rem;text-align:center;color:#999">…</div></div>
+    </section>
     <section class="section active" id="sec-reservations">
       <div class="toolbar">
         <h2 data-i18n="tab_reservations">Reserveringen</h2>
@@ -585,7 +620,7 @@ const I18N={
   nl:{
     login_subtitle:'Voer uw wachtwoord in om door te gaan',password:'Wachtwoord',login_btn:'Inloggen',login_error:'Ongeldig wachtwoord',
     logout:'Uitloggen',
-    tab_reservations:'Reserveringen',tab_party:'Feest aanvragen',tab_shifts:'Shifts',
+    tab_reservations:'Reserveringen',tab_stats:'📊 Statistieken',tab_party:'Feest aanvragen',tab_shifts:'Shifts',
     copy_prev_week:'⧉ Vorige week kopiëren',copy_confirm:'De diensten van vorige week worden naar deze week gekopieerd. Bestaande diensten van deze week worden vervangen. Doorgaan?',copy_none:'Vorige week heeft geen diensten om te kopiëren.',
     tab_capacity:'Capaciteitslimiet',cap_start:'Begintijd',cap_end:'Eindtijd',cap_maxlbl:'Max. personen',cap_add:'+ Toevoegen',
     cap_range:'Tijdsbereik',cap_booked:'Geboekt',cap_full:'Vol',cap_open:'Beschikbaar',cap_empty:'Geen capaciteitslimieten ingesteld',
@@ -627,7 +662,7 @@ const I18N={
   tr:{
     login_subtitle:'Devam etmek için şifrenizi giriniz',password:'Şifre',login_btn:'Giriş Yap',login_error:'Geçersiz şifre',
     logout:'Çıkış',
-    tab_reservations:'Rezervasyonlar',tab_party:'Etkinlik Talepleri',tab_shifts:'Vardiyalar',
+    tab_reservations:'Rezervasyonlar',tab_stats:'📊 İstatistik',tab_party:'Etkinlik Talepleri',tab_shifts:'Vardiyalar',
     copy_prev_week:'⧉ Önceki haftayı kopyala',copy_confirm:'Önceki haftanın vardiyaları bu haftaya kopyalanacak. Bu haftadaki mevcut vardiyalar değiştirilecek. Devam edilsin mi?',copy_none:'Önceki haftada kopyalanacak vardiya yok.',
     tab_capacity:'Kapasite Limiti',cap_start:'Başlangıç',cap_end:'Bitiş',cap_maxlbl:'Maks. kişi',cap_add:'+ Ekle',
     cap_range:'Saat aralığı',cap_booked:'Dolu kişi',cap_full:'Dolu',cap_open:'Müsait',cap_empty:'Tanımlı kapasite limiti yok',
@@ -760,12 +795,118 @@ function switchTab(name){
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===name));
   document.querySelectorAll('.section').forEach(s=>s.classList.toggle('active',s.id==='sec-'+name));
   if(name==='reservations')loadReservations();
+  if(name==='stats')loadStats();
   if(name==='party')loadParty();
   if(name==='shifts')loadShifts();
   if(name==='capacity')loadCapacity();
   if(name==='feedback')loadFeedback();
   if(name==='haccp')loadHaccp();
   if(name==='swaps')loadSwaps();
+}
+
+// ── İSTATİSTİK / DASHBOARD ──
+async function loadStats(){
+  const box=document.getElementById('statsContent');
+  const SL=currentLang==='tr'?{
+    ov:'Genel Bakış',total:'Toplam rezervasyon',upcoming:'Yaklaşan rezervasyon',guests:'Toplam misafir',cancelled:'İptal edilen',
+    sub7:'son 7 günde',avg:'ort. grup',pending:'onay bekliyor',
+    traffic:'Site Trafiği',vToday:'Ziyaretçi (bugün)',v7:'Ziyaretçi (7 gün)',vTotal:'Toplam ziyaretçi',pv:'Sayfa görüntüleme',uniq:'benzersiz cihaz',
+    mails:'E-postalar & Bildirimler',resMail:'Rezervasyon onay maili',shiftMail:'Personel vardiya bildirimi',approx:'≈ tahmini (her rez. 1 mail)',
+    other:'Diğer',party:'Etkinlik talebi',fb:'Geri bildirim',createdToday:'Bugün alınan rezervasyon',created30:'Son 30 günde alınan',
+    statusTitle:'Rezervasyon durumları',chartTitle:'Son 14 günde alınan rezervasyonlar',
+    stNew:'Yeni',stConfirmed:'Onaylı',stArrived:'Geldi',stCancelled:'İptal',
+    noVisits:'Trafik takibi henüz aktif değil. site_visits tablosunu Supabase içinde oluşturup (migration hazır: 20260601_site_visits.sql) siteye tekrar deploy alınca günlük/haftalık ziyaretçi burada görünür.'
+  }:{
+    ov:'Overzicht',total:'Totaal reserveringen',upcoming:'Aankomende reserveringen',guests:'Totaal gasten',cancelled:'Geannuleerd',
+    sub7:'laatste 7 dagen',avg:'gem. groep',pending:'wacht op bevestiging',
+    traffic:'Websiteverkeer',vToday:'Bezoekers (vandaag)',v7:'Bezoekers (7 dgn)',vTotal:'Totaal bezoekers',pv:'Paginaweergaven',uniq:'unieke apparaten',
+    mails:'E-mails & Meldingen',resMail:'Reserveringsbevestiging',shiftMail:'Dienstmeldingen personeel',approx:'≈ schatting (1 mail per res.)',
+    other:'Overig',party:'Feestaanvragen',fb:'Feedback',createdToday:'Vandaag ontvangen',created30:'Laatste 30 dagen',
+    statusTitle:'Reserveringsstatussen',chartTitle:'Reserveringen laatste 14 dagen',
+    stNew:'Nieuw',stConfirmed:'Bevestigd',stArrived:'Aangekomen',stCancelled:'Geannuleerd',
+    noVisits:'Verkeer bijhouden is nog niet actief. Maak de tabel site_visits in Supabase (migratie klaar: 20260601_site_visits.sql) en deploy opnieuw; daarna verschijnen hier dagelijkse/wekelijkse bezoekers.'
+  };
+  const today=new Date(), todayStr=fmtDate(today);
+  const d7=fmtDate(addDays(today,-6)), d30=fmtDate(addDays(today,-29));
+  // Tek sorgu, client-side hesap (mevcut kodun deseni). >1000 rez. olunca sunucu-taraflı toplam gerekir.
+  const{data:res=[]}=await sb.from('reservations').select('created_at,date,status,persons').limit(20000);
+  const parseP=s=>{const n=parseInt(String(s).replace(/[^0-9]/g,''),10);return isNaN(n)?0:n};
+  const cd=r=>String(r.created_at||'').slice(0,10);
+  const active=res.filter(r=>r.status!=='cancelled');
+  const total=res.length, cancelled=res.length-active.length;
+  const createdToday=res.filter(r=>cd(r)===todayStr).length;
+  const created7=res.filter(r=>cd(r)>=d7).length;
+  const created30=res.filter(r=>cd(r)>=d30).length;
+  const upcoming=active.filter(r=>String(r.date||'')>=todayStr).length;
+  const guests=active.reduce((s,r)=>s+parseP(r.persons),0);
+  const avgGroup=active.length?guests/active.length:0;
+  const st={new:0,confirmed:0,arrived:0,cancelled:0};
+  res.forEach(r=>{if(st[r.status]!=null)st[r.status]++});
+  const pending=st.new;
+  const days=[];for(let i=13;i>=0;i--)days.push(fmtDate(addDays(today,-i)));
+  const dc=days.map(k=>({k,n:res.filter(r=>cd(r)===k).length}));
+  const maxN=Math.max(1,...dc.map(x=>x.n));
+  const DN=currentLang==='tr'?['Pt','Sa','Ça','Pe','Cu','Ct','Pz']:['Ma','Di','Wo','Do','Vr','Za','Zo'];
+  let partyC=0,fbC=0,notifC=0;
+  try{const[a,b,c]=await Promise.all([
+    sb.from('party_requests').select('id',{count:'exact',head:true}),
+    sb.from('feedback_submissions').select('id',{count:'exact',head:true}),
+    sb.from('shift_notifications').select('id',{count:'exact',head:true})
+  ]);partyC=a.count||0;fbC=b.count||0;notifC=c.count||0;}catch(e){}
+  let vis=null;
+  try{const r=await sb.from('site_visits').select('visitor_id,created_at').limit(50000);if(!r.error)vis=r.data||[];}catch(e){}
+  let vToday=0,v7=0,vTotal=0,pv=0;
+  if(vis){const vd=v=>String(v.created_at||'').slice(0,10);
+    vTotal=new Set(vis.map(v=>v.visitor_id)).size;
+    v7=new Set(vis.filter(v=>vd(v)>=d7).map(v=>v.visitor_id)).size;
+    vToday=new Set(vis.filter(v=>vd(v)===todayStr).map(v=>v.visitor_id)).size;
+    pv=vis.length;}
+  const nf=n=>Number(n).toLocaleString(currentLang==='tr'?'tr-TR':'nl-NL');
+  const card=(val,label,sub,cls)=>`<div class="stat-card${cls?' '+cls:''}"><div class="sc-val">${val}</div><div class="sc-label">${label}</div>${sub?`<div class="sc-sub">${sub}</div>`:''}</div>`;
+  const segColors={new:'#e0a03a',confirmed:'#27ae60',arrived:'#3a7bd5',cancelled:'#c0392b'};
+  const stNames={new:SL.stNew,confirmed:SL.stConfirmed,arrived:SL.stArrived,cancelled:SL.stCancelled};
+  const stTotal=Math.max(1,total);
+  const segs=['new','confirmed','arrived','cancelled'].filter(k=>st[k]>0).map(k=>{
+    const pct=st[k]/stTotal*100;
+    return`<div class="status-seg" style="width:${pct}%;background:${segColors[k]}" title="${stNames[k]}: ${st[k]}">${pct>8?st[k]:''}</div>`;
+  }).join('');
+  const legend=['new','confirmed','arrived','cancelled'].map(k=>`<span><i style="background:${segColors[k]}"></i>${stNames[k]} · ${st[k]}</span>`).join('');
+  const bars=dc.map(x=>{const h=Math.round(x.n/maxN*100);const dt=new Date(x.k+'T12:00:00');
+    return`<div class="bar-col"><div class="bar-val">${x.n||''}</div><div class="bar-fill" style="height:${h}%"></div><div class="bar-label">${DN[(dt.getDay()+6)%7]}</div></div>`;
+  }).join('');
+  const trafficHtml=vis?`<div class="stats-grid">
+      ${card(nf(vToday),SL.vToday,SL.uniq,'gold')}
+      ${card(nf(v7),SL.v7,SL.uniq)}
+      ${card(nf(vTotal),SL.vTotal,SL.uniq)}
+      ${card(nf(pv),SL.pv,'')}
+    </div>`:`<div class="stats-note">${SL.noVisits}</div>`;
+  box.innerHTML=`
+    <div class="stats-title" style="margin-top:.3rem">${SL.ov}</div>
+    <div class="stats-grid">
+      ${card(nf(total),SL.total,'+'+created7+' '+SL.sub7,'accent')}
+      ${card(nf(upcoming),SL.upcoming,pending+' '+SL.pending)}
+      ${card(nf(guests),SL.guests,SL.avg+' '+avgGroup.toFixed(1))}
+      ${card(nf(cancelled),SL.cancelled,'')}
+    </div>
+    <div class="stats-title">${SL.statusTitle}</div>
+    <div class="status-bar">${segs}</div>
+    <div class="status-legend">${legend}</div>
+    <div class="stats-title">${SL.chartTitle}</div>
+    <div class="bar-chart">${bars}</div>
+    <div class="stats-title">${SL.traffic}</div>
+    ${trafficHtml}
+    <div class="stats-title">${SL.mails}</div>
+    <div class="stats-grid">
+      ${card(nf(total),SL.resMail,SL.approx)}
+      ${card(nf(notifC),SL.shiftMail,'')}
+    </div>
+    <div class="stats-title">${SL.other}</div>
+    <div class="stats-grid">
+      ${card(nf(createdToday),SL.createdToday,'')}
+      ${card(nf(created30),SL.created30,'')}
+      ${card(nf(partyC),SL.party,'')}
+      ${card(nf(fbC),SL.fb,'')}
+    </div>`;
 }
 
 // === SWAP REQUESTS ===

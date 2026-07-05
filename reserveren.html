@@ -1085,5 +1085,17 @@ buildTimeGrid();
 buildOccasions();
 setLang(lang);
 </script>
+<script>
+/* Basit birinci-taraf ziyaret sayacı (site_visits) — IP/ad/e-posta saklamaz */
+(function(){try{
+  var SB='https://mytqxxdzfrropqcrhipv.supabase.co',
+      K='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15dHF4eGR6ZnJyb3BxY3JoaXB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MjgwMTUsImV4cCI6MjA5MTAwNDAxNX0.eKAts80PGm6TTYSllnYq79UaG0_ERJi7FBLnh2GgG4I';
+  var path=location.pathname, skey='mv_'+path;
+  if(sessionStorage.getItem(skey))return; sessionStorage.setItem(skey,'1');
+  var vid=localStorage.getItem('mv_vid');
+  if(!vid){vid=Date.now().toString(36)+Math.random().toString(36).slice(2,10);localStorage.setItem('mv_vid',vid);}
+  fetch(SB+'/rest/v1/site_visits',{method:'POST',headers:{'Content-Type':'application/json','apikey':K,'Authorization':'Bearer '+K,'Prefer':'return=minimal'},body:JSON.stringify({visitor_id:vid,path:path,referrer:(document.referrer||'').slice(0,300)||null})}).catch(function(){});
+}catch(e){}})();
+</script>
 </body>
 </html>
