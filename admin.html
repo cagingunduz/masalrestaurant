@@ -811,7 +811,7 @@ async function loadStats(){
     ov:'Genel Bakış',total:'Toplam rezervasyon',upcoming:'Yaklaşan rezervasyon',guests:'Toplam misafir',cancelled:'İptal edilen',
     sub7:'son 7 günde',avg:'ort. grup',pending:'onay bekliyor',
     traffic:'Site Trafiği',vToday:'Ziyaretçi (bugün)',v7:'Ziyaretçi (7 gün)',vTotal:'Toplam ziyaretçi',pv:'Sayfa görüntüleme',uniq:'benzersiz cihaz',
-    mails:'E-postalar & Bildirimler',resMail:'Rezervasyon onay maili',shiftMail:'Personel vardiya bildirimi',approx:'≈ tahmini (her rez. 1 mail)',
+    mails:'E-postalar & Bildirimler',resMail:'Müşteriye gönderilen e-posta',resMailSub:'değerlendirme daveti',shiftMail:'Personel vardiya bildirimi',
     other:'Diğer',party:'Etkinlik talebi',fb:'Geri bildirim',createdToday:'Bugün alınan rezervasyon',created30:'Son 30 günde alınan',
     statusTitle:'Rezervasyon durumları',chartTitle:'Son 14 günde alınan rezervasyonlar',
     stNew:'Yeni',stConfirmed:'Onaylı',stArrived:'Geldi',stCancelled:'İptal',
@@ -820,7 +820,7 @@ async function loadStats(){
     ov:'Overzicht',total:'Totaal reserveringen',upcoming:'Aankomende reserveringen',guests:'Totaal gasten',cancelled:'Geannuleerd',
     sub7:'laatste 7 dagen',avg:'gem. groep',pending:'wacht op bevestiging',
     traffic:'Websiteverkeer',vToday:'Bezoekers (vandaag)',v7:'Bezoekers (7 dgn)',vTotal:'Totaal bezoekers',pv:'Paginaweergaven',uniq:'unieke apparaten',
-    mails:'E-mails & Meldingen',resMail:'Reserveringsbevestiging',shiftMail:'Dienstmeldingen personeel',approx:'≈ schatting (1 mail per res.)',
+    mails:'E-mails & Meldingen',resMail:'Verzonden klant-e-mails',resMailSub:'beoordelingsuitnodiging',shiftMail:'Dienstmeldingen personeel',
     other:'Overig',party:'Feestaanvragen',fb:'Feedback',createdToday:'Vandaag ontvangen',created30:'Laatste 30 dagen',
     statusTitle:'Reserveringsstatussen',chartTitle:'Reserveringen laatste 14 dagen',
     stNew:'Nieuw',stConfirmed:'Bevestigd',stArrived:'Aangekomen',stCancelled:'Geannuleerd',
@@ -847,12 +847,13 @@ async function loadStats(){
   const dc=days.map(k=>({k,n:res.filter(r=>cd(r)===k).length}));
   const maxN=Math.max(1,...dc.map(x=>x.n));
   const DN=currentLang==='tr'?['Pt','Sa','Ça','Pe','Cu','Ct','Pz']:['Ma','Di','Wo','Do','Vr','Za','Zo'];
-  let partyC=0,fbC=0,notifC=0;
-  try{const[a,b,c]=await Promise.all([
+  let partyC=0,fbC=0,notifC=0,mailC=0;
+  try{const[a,b,c,d]=await Promise.all([
     sb.from('party_requests').select('id',{count:'exact',head:true}),
     sb.from('feedback_submissions').select('id',{count:'exact',head:true}),
-    sb.from('shift_notifications').select('id',{count:'exact',head:true})
-  ]);partyC=a.count||0;fbC=b.count||0;notifC=c.count||0;}catch(e){}
+    sb.from('shift_notifications').select('id',{count:'exact',head:true}),
+    sb.from('reservations').select('id',{count:'exact',head:true}).not('feedback_email_sent_at','is',null)
+  ]);partyC=a.count||0;fbC=b.count||0;notifC=c.count||0;mailC=d.count||0;}catch(e){}
   let vis=null;
   try{const r=await sb.from('site_visits').select('visitor_id,created_at').limit(50000);if(!r.error)vis=r.data||[];}catch(e){}
   let vToday=0,v7=0,vTotal=0,pv=0;
@@ -897,7 +898,7 @@ async function loadStats(){
     ${trafficHtml}
     <div class="stats-title">${SL.mails}</div>
     <div class="stats-grid">
-      ${card(nf(total),SL.resMail,SL.approx)}
+      ${card(nf(mailC),SL.resMail,SL.resMailSub)}
       ${card(nf(notifC),SL.shiftMail,'')}
     </div>
     <div class="stats-title">${SL.other}</div>
