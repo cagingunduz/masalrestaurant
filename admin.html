@@ -81,6 +81,7 @@ tr:hover td{background:#fcfbf7}
 .badge{display:inline-block;padding:.2rem .55rem;border-radius:20px;font-size:.7rem;letter-spacing:.5px;text-transform:uppercase}
 .badge.new{background:#fff4d6;color:#9c7e3e}
 .badge.confirmed{background:#d4edda;color:#155724}
+.badge.arrived{background:#dbe9fb;color:#1c4a80}
 .badge.cancelled{background:#f8d7da;color:#721c24}
 tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background:linear-gradient(transparent calc(50% - 1px),#e74c3c calc(50% - 1px),#e74c3c calc(50% + 1px),transparent calc(50% + 1px))!important}
 .empty{text-align:center;padding:3rem;color:var(--muted);background:#fff;border-radius:10px}
@@ -337,7 +338,7 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
       <div class="toolbar">
         <h2 data-i18n="tab_stats">📊 İstatistik</h2>
         <div class="actions">
-          <button class="btn ghost small" onclick="loadStats()" title="Vernieuwen">↻</button>
+          <button class="btn ghost small" onclick="loadStats()" data-i18n-title="refresh" title="Vernieuwen">↻</button>
         </div>
       </div>
       <div id="statsContent"><div style="padding:2rem;text-align:center;color:#999">…</div></div>
@@ -350,6 +351,7 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
             <option value="all" data-i18n="filter_all">Alle</option>
             <option value="new" data-i18n="status_new">Nieuw</option>
             <option value="confirmed" data-i18n="status_confirmed">Bevestigd</option>
+            <option value="arrived" data-i18n="status_arrived">Aangekomen</option>
             <option value="cancelled" data-i18n="status_cancelled">Geannuleerd</option>
           </select>
           <button class="btn ghost" onclick="loadReservations()" data-i18n="refresh">Vernieuwen</button>
@@ -380,7 +382,7 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
           <input type="date" id="weekPicker" class="input" onchange="onWeekChange()" style="width:138px">
           <button class="btn ghost small" onclick="openAddStaff()" data-i18n="add_staff">+ Medewerker</button>
           <button class="btn ghost small" onclick="copyPrevWeek()" data-i18n="copy_prev_week">⧉ Vorige week kopiëren</button>
-          <button class="btn ghost small" onclick="loadShifts()" title="Vernieuwen">↻</button>
+          <button class="btn ghost small" onclick="loadShifts()" data-i18n-title="refresh" title="Vernieuwen">↻</button>
           <button class="btn small" onclick="notifyShifts()" id="notifyBtn" data-i18n="notify_btn" style="background:#27ae60;border-color:#27ae60">📧 Haber Ver</button>
         </div>
       </div>
@@ -569,11 +571,11 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
     <h3 data-i18n="edit_staff_title">Medewerker bewerken</h3>
     <input type="hidden" id="editStaffId">
     <label data-i18n="staff_dept">Afdeling / Bölüm</label>
-    <input type="text" id="editStaffDept" class="input" style="width:100%" placeholder="bijv. Keuken, Bar...">
+    <input type="text" id="editStaffDept" class="input" style="width:100%" data-i18n-ph="ph_dept" placeholder="bijv. Keuken, Bar...">
     <label data-i18n="staff_email">E-mail (meldingen)</label>
     <input type="email" id="editStaffEmail" class="input" style="width:100%" placeholder="naam@email.com">
     <label data-i18n="staff_pass">Nieuw wachtwoord</label>
-    <input type="password" id="editStaffPass" class="input" style="width:100%" placeholder="Leeg = ongewijzigd">
+    <input type="password" id="editStaffPass" class="input" style="width:100%" data-i18n-ph="ph_pass_unchanged" placeholder="Leeg = ongewijzigd">
     <label data-i18n="color">Kleur</label><br>
     <input type="color" id="editStaffColor" style="margin-top:.3rem;height:38px;width:60px;border:1px solid #ddd;border-radius:6px;cursor:pointer;padding:2px">
     <div class="modal-actions">
@@ -590,7 +592,7 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
     <label data-i18n="f_name">Naam</label>
     <input type="text" id="newStaffName" class="input" style="width:100%" data-i18n-ph="name_ph" placeholder="Volledige naam">
     <label data-i18n="staff_dept">Afdeling / Bölüm</label>
-    <input type="text" id="newStaffDept" class="input" style="width:100%" placeholder="bijv. Keuken, Bar, Bediening...">
+    <input type="text" id="newStaffDept" class="input" style="width:100%" data-i18n-ph="ph_dept" placeholder="bijv. Keuken, Bar, Bediening...">
     <label data-i18n="staff_email">E-mail (meldingen)</label>
     <input type="email" id="newStaffEmail" class="input" style="width:100%" placeholder="naam@email.com">
     <label data-i18n="staff_pass">Şifre</label>
@@ -629,7 +631,7 @@ const I18N={
     shift_colors:'Dienstkleuren:',shift_colors_save:'💾 Opslaan',shift_colors_saved:'Kleuren opgeslagen ✓',move_to_staff:'Verplaats naar andere medewerker',
     haccp_drag:'Versleep om te ordenen',haccp_max_val:'Max. waarde (°C)',haccp_min_val:'Min. waarde (°C)',haccp_name_required:'Naam (NL) is verplicht',haccp_confirm_delete:'Verwijderen?',
     edit:'Bewerken',haccp_edit_title:'Locatie bewerken',haccp_clear_all:'🗑 Waarden wissen',haccp_clear_confirm:'Alle ingevoerde waarden van deze week wissen?',
-    filter_all:'Alle',status_new:'Nieuw',status_confirmed:'Bevestigd',status_cancelled:'Geannuleerd',
+    filter_all:'Alle',status_new:'Nieuw',status_confirmed:'Bevestigd',status_cancelled:'Geannuleerd',status_arrived:'Aangekomen',
     refresh:'Vernieuwen',prev:'← Vorige',next:'Volgende →',
     new_shift:'Nieuwe shift',edit_shift:'Shift bewerken',
     date:'Datum',start_time:'Begintijd',end_time:'Eindtijd',assign_staff:'Personeel toewijzen',
@@ -638,7 +640,7 @@ const I18N={
     col_date:'Datum',col_time:'Tijd',col_name:'Naam',col_phone:'Telefoon',col_email:'E-mail',col_persons:'Personen',col_notes:'Notities',col_status:'Status',col_actions:'Acties',
     col_type:'Type',col_guests:'Gasten',col_decor:'Aankleding',col_cake:'Taart',col_wishes:'Wensen',
     add_staff:'+ Medewerker',add_staff_title:'Medewerker toevoegen',initials:'Initialen',color:'Kleur',
-    name_ph:'Volledige naam',initials_ph:'bijv. AK',hour_unit:'uur',
+    name_ph:'Volledige naam',initials_ph:'bijv. AK',hour_unit:'uur',ph_dept:'bijv. Keuken, Bar...',ph_pass_unchanged:'Leeg = ongewijzigd',
     f_name:'Naam',staff_dept:'Afdeling',staff_pass:'Wachtwoord',staff_email:'E-mail (meldingen)',
     col_staff:'Medewerker',col_total:'Totaal',no_staff:'Geen medewerkers. Voeg er een toe.',
     confirm_delete_res:'Reservering verwijderen?',confirm_delete_party:'Aanvraag verwijderen?',confirm_delete_staff:'Medewerker verwijderen?',
@@ -671,7 +673,7 @@ const I18N={
     shift_colors:'Vardiya renkleri:',shift_colors_save:'💾 Kaydet',shift_colors_saved:'Renkler kaydedildi ✓',move_to_staff:'Başka personele taşı',
     haccp_drag:'Sıralamak için sürükle',haccp_max_val:'Maks. değer (°C)',haccp_min_val:'Min. değer (°C)',haccp_name_required:'Ad (NL) zorunlu',haccp_confirm_delete:'Silinsin mi?',
     edit:'Düzenle',haccp_edit_title:'Satır düzenle',haccp_clear_all:'🗑 Değerleri temizle',haccp_clear_confirm:'Bu haftanın tüm girilen değerleri silinsin mi?',
-    filter_all:'Tümü',status_new:'Yeni',status_confirmed:'Onaylandı',status_cancelled:'İptal',
+    filter_all:'Tümü',status_new:'Yeni',status_confirmed:'Onaylandı',status_cancelled:'İptal',status_arrived:'Geldi',
     refresh:'Yenile',prev:'← Önceki',next:'Sonraki →',
     date:'Tarih',start_time:'Başlangıç',end_time:'Bitiş',
     delete:'Sil',cancel:'İptal',save:'Kaydet',
@@ -679,7 +681,7 @@ const I18N={
     col_date:'Tarih',col_time:'Saat',col_name:'Ad',col_phone:'Telefon',col_email:'E-posta',col_persons:'Kişi',col_notes:'Notlar',col_status:'Durum',col_actions:'İşlem',
     col_type:'Tür',col_guests:'Misafir',col_decor:'Dekor',col_cake:'Pasta',col_wishes:'İstekler',
     add_staff:'+ Personel',add_staff_title:'Personel ekle',initials:'Kısaltma',color:'Renk',
-    name_ph:'Tam adı',initials_ph:'örn. AK',hour_unit:'saat',
+    name_ph:'Tam adı',initials_ph:'örn. AK',hour_unit:'saat',ph_dept:'örn. Mutfak, Bar...',ph_pass_unchanged:'Boş = değişmez',
     f_name:'Ad Soyad',staff_dept:'Bölüm',staff_pass:'Şifre',staff_email:'E-posta (bildirimler)',
     new_shift:'Yeni vardiya',edit_shift:'Vardiya düzenle',assign_staff:'Personel ata',
     col_staff:'Personel',col_total:'Toplam',no_staff:'Personel yok. Yeni ekleyin.',
@@ -704,6 +706,11 @@ const I18N={
 };
 
 let currentLang=localStorage.getItem('masalAdminLang')||'nl';
+// Dil-farkında ay ve gün adları (vardiya etiketleri, takas günleri vb.)
+const MONTHS_I18N={nl:['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'],tr:['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara']};
+function MONTHS(){return MONTHS_I18N[currentLang]||MONTHS_I18N.nl}
+const DOW_FULL_I18N={nl:['Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag','Zondag'],tr:['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar']};
+function DOWF(){return DOW_FULL_I18N[currentLang]||DOW_FULL_I18N.nl}
 function t(k){return (I18N[currentLang]&&I18N[currentLang][k])||k}
 function DAY_NAMES(){return currentLang==='tr'?DAY_NAMES_TR:DAY_NAMES_NL}
 
@@ -717,6 +724,10 @@ function setLang(lang){
   document.querySelectorAll('[data-i18n-ph]').forEach(el=>{
     const k=el.getAttribute('data-i18n-ph');
     if(I18N[lang]&&I18N[lang][k])el.placeholder=I18N[lang][k];
+  });
+  document.querySelectorAll('[data-i18n-title]').forEach(el=>{
+    const k=el.getAttribute('data-i18n-title');
+    if(I18N[lang]&&I18N[lang][k])el.title=I18N[lang][k];
   });
   ['langNL','langTR','langNL2','langTR2'].forEach(id=>{
     const el=document.getElementById(id);
@@ -766,6 +777,8 @@ async function showApp(){
   currentWeek=mondayOf(new Date());
   updateWeekLabel();
   haccpCurrentWeek=mondayOf(new Date());
+  // Kayıtlı dile göre tüm statik metinleri çevir (yoksa Flamanca kalır)
+  setLang(currentLang);
   // Son kalınan sekmeye dön (F5 sonrası)
   switchTab(localStorage.getItem('masalAdminTab')||'reservations');
   // Realtime: auto-reload shifts and reservations on changes
@@ -787,6 +800,7 @@ async function showApp(){
   updateSwapBadge();
 }
 
+setLang(currentLang); // login ekranı dahil statik metinleri kayıtlı dile çevir
 if(sessionStorage.getItem('masalAdmin')==='1'){showApp()}
 
 // === TABS ===
@@ -937,8 +951,8 @@ async function loadSwaps(){
     const req=pById[r.requester_id]||{name:'?',color:'#aaa'};
     const tgt=pById[r.target_id]||{name:'?',color:'#aaa'};
     const rs=r.rs,ts=r.ts;
-    const rsLabel=rs?`${DAY_NAMES_TR_S[rs.day_index]} ${rs.start_time?.slice(0,5)}–${rs.end_time?.slice(0,5)}`:'?';
-    const tsLabel=ts?`${DAY_NAMES_TR_S[ts.day_index]} ${ts.start_time?.slice(0,5)}–${ts.end_time?.slice(0,5)}`:'?';
+    const rsLabel=rs?`${DOWF()[rs.day_index]} ${rs.start_time?.slice(0,5)}–${rs.end_time?.slice(0,5)}`:'?';
+    const tsLabel=ts?`${DOWF()[ts.day_index]} ${ts.start_time?.slice(0,5)}–${ts.end_time?.slice(0,5)}`:'?';
     return`<div style="background:#fff;border-radius:10px;border:1px solid #e5e1d8;border-left:4px solid var(--gold);padding:1.2rem 1.4rem;margin-bottom:.8rem">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.6rem">
         <div>
@@ -1178,7 +1192,7 @@ function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x}
 
 function updateWeekLabel(){
   const end=addDays(currentWeek,6);
-  const MO=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+  const MO=MONTHS();
   const s=currentWeek.getDate()+' '+MO[currentWeek.getMonth()];
   const e=end.getDate()+' '+MO[end.getMonth()]+' '+end.getFullYear();
   document.getElementById('weekLabel').textContent=s+' – '+e;
@@ -1302,7 +1316,7 @@ async function loadShifts(){
   });
 
   const DN=currentLang==='tr'?['Pt','Sa','Ça','Pe','Cu','Ct','Pz']:['Ma','Di','Wo','Do','Vr','Za','Zo'];
-  const MO=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+  const MO=MONTHS();
 
   // Header
   const thDays=DN.map((d,i)=>{
@@ -1362,7 +1376,7 @@ async function loadShifts(){
           <div class="staff-name" data-fullname="${esc(p.name||'?')}" onclick="showNamePop(event,this)"><span class="staff-dot" style="background:${p.color||'#aaa'}"></span>${esc(displayName)}</div>
           <div class="staff-meta">
             ${p.department?`<span class="staff-dept">${esc(p.department)}</span>`:''}
-            <button class="del-staff-btn" onclick="openEditStaff('${p.id}',event)" title="Bewerken" style="color:#888">✎</button>
+            <button class="del-staff-btn" onclick="openEditStaff('${p.id}',event)" title="${t('edit')}" style="color:#888">✎</button>
             <button class="del-staff-btn" onclick="deleteStaff('${p.id}',event)" title="${t('confirm_delete_staff')}">✕</button>
           </div>
         </div>
@@ -1506,7 +1520,7 @@ async function openCellModal(staffId,dayIndex,shiftId,start,end){
   const p=profiles.find(x=>x.id===staffId);
   const DN=currentLang==='tr'?['Pt','Sa','Ça','Pe','Cu','Ct','Pz']:['Ma','Di','Wo','Do','Vr','Za','Zo'];
   const dt=addDays(currentWeek,dayIndex);
-  const MO=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+  const MO=MONTHS();
   document.getElementById('cellModalTitle').textContent=(p?.name||'?')+' · '+DN[dayIndex]+' '+dt.getDate()+' '+MO[dt.getMonth()];
   document.getElementById('cellStart').value=start||'09:00';
   document.getElementById('cellEnd').value=end||'17:00';
