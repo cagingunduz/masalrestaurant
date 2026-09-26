@@ -2155,7 +2155,7 @@ const ATT_META={
 };
 function attLocale(){return currentLang==='tr'?'tr-TR':'nl-NL'}
 function fmtTime(iso){return new Date(iso).toLocaleTimeString(attLocale(),{hour:'2-digit',minute:'2-digit'})}
-function hm(min){min=Math.max(0,Math.round(min));const h=Math.floor(min/60),m=min%60;return currentLang==='tr'?`${h} sa ${m} dk`:`${h} u ${m} m`}
+function hm(min){min=Math.max(0,Math.round(min));const h=Math.floor(min/60),m=min%60;return currentLang==='tr'?(h?`${h} sa ${m} dk`:`${m} dk`):(h?`${h} u ${m} m`:`${m} m`)}
 
 // ── Bildirimler (olay akışı) ──
 async function loadAttendance(){
@@ -2260,9 +2260,12 @@ async function loadWorklog(){
     if(hasAny){grandMin+=totMin; grandPay+=pay;}
     rows+='<tr style="border-top:1px solid #ece3cf">'
       +'<td style="padding:.6rem .7rem">'
-        +(hasAny?'<button onclick="wlToggle(\''+s.id+'\')" id="wlbtn-'+s.id+'" style="background:none;border:none;cursor:pointer;font:inherit;font-weight:700;color:#2a2a2a;display:flex;align-items:center;gap:.5rem">'
-          +'<span id="wlarr-'+s.id+'" style="color:#8a6d2f">▸</span>'
-          +'<span style="width:11px;height:11px;border-radius:50%;background:'+(s.color||'#bbb')+'"></span>'+esc(s.name)+'</button>'
+        +(hasAny?'<span style="display:flex;align-items:center;gap:.35rem">'
+          +'<button onclick="wlToggle(\''+s.id+'\')" id="wlbtn-'+s.id+'" title="'+(currentLang==='tr'?'Haftalık detay':'Weekdetail')+'" style="background:none;border:none;cursor:pointer;color:#8a6d2f;font-size:.95rem;padding:.1rem .15rem;line-height:1"><span id="wlarr-'+s.id+'">▸</span></button>'
+          +'<button onclick="openStaffReport(\''+s.id+'\')" title="'+(currentLang==='tr'?'Aylık raporu aç / indir':'Maandrapport openen')+'" style="background:none;border:none;cursor:pointer;font:inherit;font-weight:700;color:#2a2a2a;display:flex;align-items:center;gap:.5rem;text-align:left">'
+            +'<span style="width:11px;height:11px;border-radius:50%;background:'+(s.color||'#bbb')+'"></span>'+esc(s.name)
+            +'<span style="color:#8a6d2f;font-size:.85rem">📄</span></button>'
+          +'</span>'
           :'<span style="display:flex;align-items:center;gap:.5rem;font-weight:700;color:#999"><span style="width:11px;height:11px;border-radius:50%;background:'+(s.color||'#bbb')+';opacity:.5"></span>'+esc(s.name)+'</span>')
       +'</td>'
       +'<td style="padding:.6rem .7rem;text-align:center;font-weight:700;font-variant-numeric:tabular-nums">'+(hasAny?hm(totMin):'—')+'</td>'
@@ -2300,6 +2303,138 @@ async function loadWorklog(){
 function wlToggle(id){
   const r=document.getElementById('wldet-'+id), a=document.getElementById('wlarr-'+id);
   if(!r)return; const open=r.style.display==='none'; r.style.display=open?'table-row':'none'; if(a)a.textContent=open?'▾':'▸';
+}
+
+// ── Kişi bazlı AYLIK rapor (yazdır / PDF) ──
+async function openStaffReport(staffId){
+  // Rapor ayı = çalışma saatleri sekmesinde o an gösterilen haftanın ayı
+  const anchor=weekStart(wlOffset);
+  const y=anchor.getFullYear(), mo=anchor.getMonth();
+  const monthStart=new Date(y,mo,1); monthStart.setHours(0,0,0,0);
+  const monthEnd=new Date(y,mo+1,1); monthEnd.setHours(0,0,0,0);
+  const todayS=fmtDate(new Date());
+  const loc=attLocale();
+  const win=window.open('','_blank','width=900,height=1000');
+  if(win)win.document.write('<p style="font-family:sans-serif;padding:2rem;color:#888">…</p>');
+  const [pr,wr,er]=await Promise.all([
+    sb.from('profiles').select('name,color').eq('id',staffId).maybeSingle(),
+    sb.from('staff_wages').select('hourly_wage').eq('profile_id',staffId).maybeSingle(),
+    sb.from('attendance_events').select('type,at').eq('profile_id',staffId).gte('at',monthStart.toISOString()).lt('at',monthEnd.toISOString()).order('at',{ascending:true})
+  ]);
+  const name=pr.data?.name||'—', color=pr.data?.color||'#c6a55c';
+  const wage=Number(wr.data?.hourly_wage)||0;
+  const evs=er.data||[];
+  const byDay={}; evs.forEach(e=>{const d=fmtDate(new Date(e.at));(byDay[d]=byDay[d]||[]).push(e);});
+
+  const R=currentLang==='tr'?{
+    title:'Aylık Puantaj Raporu',sub:'Maandrapportage',staff:'Personel',period:'Dönem',rdate:'Rapor tarihi',
+    date:'Tarih',day:'Gün',cin:'Giriş',cout:'Çıkış',brk:'Mola',hrs:'Çalışılan',pay:'Gün ücreti',
+    week:'Hafta',wtot:'haftalık toplam',hoursTot:'Toplam çalışılan saat',wageLbl:'Saatlik ücret',grand:'TOPLAM ALACAK',
+    ongoing:'devam ediyor',incomplete:'çıkış yok',print:'🖨 Yazdır / PDF kaydet',nowage:'saatlik ücret girilmemiş',days:'gün çalışıldı'
+  }:{
+    title:'Maandrapportage',sub:'Aylık Puantaj',staff:'Medewerker',period:'Periode',rdate:'Rapportdatum',
+    date:'Datum',day:'Dag',cin:'In',cout:'Uit',brk:'Pauze',hrs:'Gewerkt',pay:'Dagloon',
+    week:'Week',wtot:'weektotaal',hoursTot:'Totaal gewerkte uren',wageLbl:'Uurloon',grand:'TE BETALEN',
+    ongoing:'bezig',incomplete:'geen uitklok',print:'🖨 Afdrukken / PDF',nowage:'geen uurloon ingevuld',days:'dagen gewerkt'
+  };
+  const daysInMonth=new Date(y,mo+1,0).getDate();
+  const periodLabel=monthStart.toLocaleDateString(loc,{month:'long',year:'numeric'});
+  const range=`1-${mo+1}-${y} – ${daysInMonth}-${mo+1}-${y}`;
+
+  let rowsHtml='',curW=null,wMin=0,wPay=0,totMin=0,totPay=0,workedDays=0;
+  const subRow=(wk,m,p)=>`<tr class="wk"><td colspan="5">${R.week} ${wk} · ${R.wtot}</td><td class="r">${hm(m)}</td><td class="r">€ ${p.toFixed(2)}</td></tr>`;
+  for(let dnum=1;dnum<=daysInMonth;dnum++){
+    const dt=new Date(y,mo,dnum), ds=fmtDate(dt);
+    const dayEvs=byDay[ds]||[];
+    const {week}=getISOWeekNum(dt);
+    if(curW===null)curW=week;
+    if(week!==curW){rowsHtml+=subRow(curW,wMin,wPay);wMin=0;wPay=0;curW=week;}
+    let inT='—',outT='—',brk=0,worked=0,has=dayEvs.length>0;
+    if(has){
+      const c=computeDay(dayEvs,null,ds===todayS);
+      worked=c.worked;brk=c.brk;
+      const ins=dayEvs.filter(e=>e.type==='clock_in'),outs=dayEvs.filter(e=>e.type==='clock_out');
+      inT=ins.length?fmtTime(ins[0].at):'—';
+      outT=outs.length?fmtTime(outs[outs.length-1].at):(c.ongoing?'<i>'+R.ongoing+'</i>':(c.incomplete?'<i class="bad">'+R.incomplete+'</i>':'—'));
+      if(worked>0)workedDays++;
+    }
+    const dp=(worked/60)*wage;
+    wMin+=worked;wPay+=dp;totMin+=worked;totPay+=dp;
+    const dow=dt.toLocaleDateString(loc,{weekday:'short'});
+    const wknd=(dt.getDay()===0||dt.getDay()===6);
+    rowsHtml+=`<tr class="${has?'':'off'}${wknd?' wknd':''}">`
+      +`<td class="d">${dnum}-${mo+1}</td><td>${dow}</td>`
+      +`<td class="c">${inT}</td><td class="c">${outT}</td>`
+      +`<td class="c mut">${brk>0?hm(brk):'—'}</td>`
+      +`<td class="r b">${worked>0?hm(worked):'—'}</td>`
+      +`<td class="r pay">${worked>0?'€ '+dp.toFixed(2):'—'}</td></tr>`;
+  }
+  if(curW!==null)rowsHtml+=subRow(curW,wMin,wPay);
+
+  const logo='https://i0.wp.com/masalrestaurant.nl/wp-content/uploads/2021/11/Masal_Logo_DEF.png?fit=600%2C304&ssl=1';
+  const html=`<!DOCTYPE html><html lang="${currentLang}"><head><meta charset="UTF-8"><title>${esc(name)} · ${esc(periodLabel)}</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:#2a2620;background:#f0ede6;padding:24px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .sheet{max-width:820px;margin:0 auto;background:#fff;border-radius:14px;box-shadow:0 10px 40px rgba(60,48,20,.12);padding:34px 38px}
+  .top{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #ece3d2;padding-bottom:18px;margin-bottom:20px}
+  .top img{height:46px;filter:invert(72%) sepia(40%) saturate(400%) hue-rotate(5deg) brightness(95%)}
+  .top .r{text-align:right;font-size:12px;color:#8a8478}
+  h1{font-family:Georgia,serif;font-size:22px;color:#2a2620;margin-top:8px}
+  .sub{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:#9c7e3e;margin-top:2px}
+  .info{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px}
+  .info .box{flex:1;min-width:150px;background:#fbf8ef;border:1px solid #ece3d2;border-radius:10px;padding:10px 14px}
+  .info .k{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:#8a8478;font-weight:700}
+  .info .v{font-size:15px;font-weight:700;margin-top:3px;display:flex;align-items:center;gap:7px}
+  .dot{width:12px;height:12px;border-radius:50%;display:inline-block}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  thead th{background:#2a2620;color:#fff;font-size:10px;letter-spacing:.04em;text-transform:uppercase;font-weight:700;padding:8px 10px;text-align:left}
+  thead th.c{text-align:center}thead th.r{text-align:right}
+  tbody td{padding:6px 10px;border-bottom:1px solid #f0ece2}
+  td.c{text-align:center}td.r{text-align:right;font-variant-numeric:tabular-nums}
+  td.d{font-weight:700;color:#5a4a1f}td.b{font-weight:700}td.mut{color:#c67c15}td.pay{font-weight:700;color:#1b8a4b}
+  tr.off td{color:#b9b3a6}
+  tr.wknd:not(.wk) td{background:#fbf8ef}
+  tr.wk td{background:#f4ecd6;color:#5a4a1f;font-weight:800;font-size:11.5px;border-bottom:1px solid #e0d3ad;font-variant-numeric:tabular-nums}
+  i{font-style:normal;color:#1b8a4b;font-weight:600}i.bad{color:#b23b3b}
+  .summary{display:flex;gap:12px;margin-top:22px;flex-wrap:wrap}
+  .summary .card{flex:1;min-width:150px;border-radius:12px;padding:14px 16px;border:1px solid #ece3d2;background:#fbf8ef}
+  .summary .card .k{font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:#8a8478;font-weight:700}
+  .summary .card .v{font-size:22px;font-weight:800;margin-top:5px;font-variant-numeric:tabular-nums;color:#2a2620}
+  .summary .card.pay{background:linear-gradient(135deg,#1b8a4b,#14733d);border-color:transparent}
+  .summary .card.pay .k{color:rgba(255,255,255,.8)}.summary .card.pay .v{color:#fff}
+  .foot{margin-top:16px;font-size:10.5px;color:#a49c8c;text-align:center}
+  .noprint{text-align:center;margin-top:22px}
+  .noprint button{background:#c6a55c;color:#fff;border:none;border-radius:10px;padding:11px 26px;font-size:14px;font-weight:700;cursor:pointer}
+  @media print{body{background:#fff;padding:0}.sheet{box-shadow:none;border-radius:0;max-width:100%;padding:12px 6px}.noprint{display:none}}
+</style></head><body>
+  <div class="sheet">
+    <div class="top">
+      <div><img src="${logo}" alt="Masal"><h1>${R.title}</h1><div class="sub">${R.sub}</div></div>
+      <div class="r">${range}<br>${R.rdate}: ${new Date().toLocaleDateString(loc)} ${new Date().toLocaleTimeString(loc,{hour:'2-digit',minute:'2-digit'})}</div>
+    </div>
+    <div class="info">
+      <div class="box"><div class="k">${R.staff}</div><div class="v"><span class="dot" style="background:${color}"></span>${esc(name)}</div></div>
+      <div class="box"><div class="k">${R.period}</div><div class="v" style="text-transform:capitalize">${esc(periodLabel)}</div></div>
+      <div class="box"><div class="k">${R.wageLbl}</div><div class="v">${wage>0?'€ '+wage.toFixed(2)+' / '+(currentLang==='tr'?'saat':'uur'):"<span style='color:#b23b3b;font-size:12px'>"+R.nowage+"</span>"}</div></div>
+    </div>
+    <table>
+      <thead><tr>
+        <th>${R.date}</th><th>${R.day}</th><th class="c">${R.cin}</th><th class="c">${R.cout}</th><th class="c">${R.brk}</th><th class="r">${R.hrs}</th><th class="r">${R.pay}</th>
+      </tr></thead>
+      <tbody>${rowsHtml}</tbody>
+    </table>
+    <div class="summary">
+      <div class="card"><div class="k">${R.hoursTot}</div><div class="v">${hm(totMin)}</div></div>
+      <div class="card"><div class="k">${R.staff} · ${workedDays} ${R.days}</div><div class="v">${wage>0?'€ '+wage.toFixed(2):'—'}</div></div>
+      <div class="card pay"><div class="k">${R.grand}</div><div class="v">€ ${totPay.toFixed(2)}</div></div>
+    </div>
+    <div class="foot">Masal Restaurant · ${esc(name)} · ${esc(periodLabel)}</div>
+    <div class="noprint"><button onclick="window.print()">${R.print}</button></div>
+  </div>
+</body></html>`;
+  if(!win){alert(currentLang==='tr'?'Rapor penceresi açılamadı (pop-up engellenmiş olabilir).':'Kon rapport niet openen (pop-up geblokkeerd?).');return;}
+  win.document.open();win.document.write(html);win.document.close();
 }
 async function saveWage(id,val){
   const wage=Math.max(0,Number(val)||0);
