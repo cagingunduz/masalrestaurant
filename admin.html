@@ -330,6 +330,8 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
     <div class="tab" data-tab="feedback" data-i18n="tab_feedback" onclick="switchTab('feedback')">Feedback</div>
     <div class="tab" data-tab="haccp" onclick="switchTab('haccp')">HACCP</div>
     <div class="tab" data-tab="swaps" data-i18n="tab_swaps" onclick="switchTab('swaps')" id="swapsTab">Vardiya Değişimleri</div>
+    <div class="tab" data-tab="attendance" data-i18n="tab_attendance" onclick="switchTab('attendance')">🔔 Meldingen</div>
+    <div class="tab" data-tab="worklog" data-i18n="tab_worklog" onclick="switchTab('worklog')">⏱ Werkuren</div>
   </div>
   <main>
 
@@ -342,6 +344,27 @@ tr.cancelled-row td{color:#aaa!important;text-decoration:line-through;background
         </div>
       </div>
       <div id="statsContent"><div style="padding:2rem;text-align:center;color:#999">…</div></div>
+    </section>
+    <section class="section" id="sec-attendance">
+      <div class="toolbar">
+        <h2 data-i18n="tab_attendance">🔔 Meldingen</h2>
+        <div class="actions">
+          <button class="btn ghost small" onclick="loadAttendance()" data-i18n-title="refresh" title="Vernieuwen">↻</button>
+        </div>
+      </div>
+      <div id="attContent"><div style="padding:2rem;text-align:center;color:#999">…</div></div>
+    </section>
+    <section class="section" id="sec-worklog">
+      <div class="toolbar">
+        <h2 data-i18n="tab_worklog">⏱ Werkuren</h2>
+        <div class="actions" style="display:flex;align-items:center;gap:.4rem">
+          <button class="btn ghost small" onclick="wlWeek(-1)">‹</button>
+          <span id="wlWeekLabel" style="font-weight:600;min-width:170px;text-align:center;display:inline-block;font-size:.85rem"></span>
+          <button class="btn ghost small" onclick="wlWeek(1)">›</button>
+          <button class="btn ghost small" onclick="loadWorklog()" data-i18n-title="refresh" title="Vernieuwen">↻</button>
+        </div>
+      </div>
+      <div id="wlContent"><div style="padding:2rem;text-align:center;color:#999">…</div></div>
     </section>
     <section class="section active" id="sec-reservations">
       <div class="toolbar">
@@ -659,7 +682,10 @@ const I18N={
     haccp_col_loc:'Locatie',haccp_col_norm:'Norm',
     edit_staff_title:'Medewerker bewerken',
     haccp_add_btn:'+ Locatie',haccp_add_title:'Locatie toevoegen',
-    haccp_lbl_nl:'Naam (NL)',haccp_lbl_tr:'Naam (TR)',haccp_lbl_norm:'Norm',haccp_lbl_type:'Type'
+    haccp_lbl_nl:'Naam (NL)',haccp_lbl_tr:'Naam (TR)',haccp_lbl_norm:'Norm',haccp_lbl_type:'Type',
+    tab_attendance:'🔔 Meldingen',tab_worklog:'⏱ Werkuren',
+    att_empty:'Nog geen registraties.',att_clock_in:'ingeklokt',att_break_start:'pauze gestart',att_break_end:'pauze beëindigd',att_clock_out:'uitgeklokt',att_today:'Vandaag',att_yesterday:'Gisteren',
+    wl_week:'Week',wl_col_staff:'Medewerker',wl_total_hours:'Totaal uren',wl_wage:'€/uur',wl_total_pay:'Te betalen',wl_no_data:'Geen registraties deze week.',wl_in:'In',wl_out:'Uit',wl_break:'Pauze',wl_day:'Dag',wl_hours:'Uren',wl_grand:'Totaal',wl_ongoing:'bezig',wl_incomplete:'geen uitklok'
   },
   tr:{
     login_subtitle:'Devam etmek için şifrenizi giriniz',password:'Şifre',login_btn:'Giriş Yap',login_error:'Geçersiz şifre',
@@ -701,7 +727,10 @@ const I18N={
     haccp_col_loc:'Lokasyon',haccp_col_norm:'Norm',
     edit_staff_title:'Personel düzenle',
     haccp_add_btn:'+ Parça ekle',haccp_add_title:'Parça ekle',
-    haccp_lbl_nl:'Ad (NL)',haccp_lbl_tr:'Ad (TR)',haccp_lbl_norm:'Norm',haccp_lbl_type:'Tür'
+    haccp_lbl_nl:'Ad (NL)',haccp_lbl_tr:'Ad (TR)',haccp_lbl_norm:'Norm',haccp_lbl_type:'Tür',
+    tab_attendance:'🔔 Bildirimler',tab_worklog:'⏱ Çalışma Saatleri',
+    att_empty:'Henüz kayıt yok.',att_clock_in:'giriş yaptı',att_break_start:'molaya çıktı',att_break_end:'moladan döndü',att_clock_out:'çıkış yaptı',att_today:'Bugün',att_yesterday:'Dün',
+    wl_week:'Hafta',wl_col_staff:'Personel',wl_total_hours:'Toplam saat',wl_wage:'€/saat',wl_total_pay:'Alacak',wl_no_data:'Bu hafta kayıt yok.',wl_in:'Giriş',wl_out:'Çıkış',wl_break:'Mola',wl_day:'Gün',wl_hours:'Saat',wl_grand:'Toplam',wl_ongoing:'devam ediyor',wl_incomplete:'çıkış yok'
   }
 };
 
@@ -816,6 +845,8 @@ function switchTab(name){
   if(name==='feedback')loadFeedback();
   if(name==='haccp')loadHaccp();
   if(name==='swaps')loadSwaps();
+  if(name==='attendance')loadAttendance();
+  if(name==='worklog')loadWorklog();
 }
 
 // ── İSTATİSTİK / DASHBOARD ──
@@ -2070,6 +2101,174 @@ function printHaccp(){
 }
 
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+// ════════════════════════════════════════════════════════════════════════
+//  PERSONEEL: puantaj (Bildirimler) + Çalışma Saatleri (Werkuren)
+// ════════════════════════════════════════════════════════════════════════
+const ATT_META={
+  clock_in:  {i18n:'att_clock_in',  color:'#1b8a4b',bg:'#e7f6ec',dot:'🟢'},
+  break_start:{i18n:'att_break_start',color:'#c67c15',bg:'#fbf1e0',dot:'🟠'},
+  break_end: {i18n:'att_break_end', color:'#2563a8',bg:'#e6effa',dot:'🔵'},
+  clock_out: {i18n:'att_clock_out', color:'#b23b3b',bg:'#fae9e9',dot:'🔴'}
+};
+function attLocale(){return currentLang==='tr'?'tr-TR':'nl-NL'}
+function fmtTime(iso){return new Date(iso).toLocaleTimeString(attLocale(),{hour:'2-digit',minute:'2-digit'})}
+function hm(min){min=Math.max(0,Math.round(min));const h=Math.floor(min/60),m=min%60;return currentLang==='tr'?`${h} sa ${m} dk`:`${h} u ${m} m`}
+
+// ── Bildirimler (olay akışı) ──
+async function loadAttendance(){
+  const box=document.getElementById('attContent');
+  box.innerHTML='<div style="padding:2rem;text-align:center;color:#999">…</div>';
+  const{data:evs=[],error}=await sb.from('attendance_events')
+    .select('id,profile_id,type,at').order('at',{ascending:false}).limit(300);
+  if(error){box.innerHTML='<div style="padding:1.5rem;color:#b23b3b">'+esc(error.message)+'</div>';return;}
+  if(!evs.length){box.innerHTML='<div style="padding:2rem;text-align:center;color:#999">'+t('att_empty')+'</div>';return;}
+  const{data:profs=[]}=await sb.from('profiles').select('id,name,color');
+  const P={}; profs.forEach(p=>P[p.id]=p);
+  const todayS=fmtDate(new Date()), yestS=fmtDate(addDays(new Date(),-1));
+  const groups={}, order=[];
+  evs.forEach(e=>{const d=fmtDate(new Date(e.at)); if(!groups[d]){groups[d]=[];order.push(d);} groups[d].push(e);});
+  let html='';
+  order.forEach(d=>{
+    let label=d===todayS?t('att_today'):d===yestS?t('att_yesterday'):new Date(d+'T00:00:00').toLocaleDateString(attLocale(),{weekday:'long',day:'numeric',month:'long'});
+    html+='<div style="margin:1.1rem 0 .5rem;font-weight:700;color:#8a6d2f;font-size:.8rem;letter-spacing:.04em;text-transform:uppercase">'+esc(label)+'</div>';
+    groups[d].forEach(e=>{
+      const m=ATT_META[e.type]||{color:'#555',bg:'#eee',dot:'⚪',i18n:e.type};
+      const p=P[e.profile_id]||{name:'—',color:'#bbb'};
+      html+='<div style="display:flex;align-items:center;gap:.7rem;padding:.55rem .8rem;margin-bottom:.35rem;background:'+m.bg+';border-left:4px solid '+m.color+';border-radius:8px">'
+        +'<span style="font-size:1rem">'+m.dot+'</span>'
+        +'<span style="width:11px;height:11px;border-radius:50%;background:'+(p.color||'#bbb')+';flex:none"></span>'
+        +'<span style="font-weight:700;color:#2a2a2a">'+esc(p.name)+'</span>'
+        +'<span style="color:'+m.color+';font-weight:600">'+t(m.i18n)+'</span>'
+        +'<span style="margin-left:auto;font-variant-numeric:tabular-nums;color:#555;font-weight:600">'+fmtTime(e.at)+'</span>'
+      +'</div>';
+    });
+  });
+  box.innerHTML=html;
+}
+
+// ── Çalışma Saatleri (haftalık) ──
+let wlOffset=0, wlData={};
+function weekStart(off){
+  const d=new Date(); d.setHours(0,0,0,0);
+  const dow=(d.getDay()+6)%7; // Pzt=0
+  d.setDate(d.getDate()-dow+off*7);
+  return d;
+}
+function computeDay(evs,dayEnd,isToday){
+  // evs: aynı günün olayları, artan sıralı
+  let state=null,last=null,worked=0,brk=0,ongoing=false,incomplete=false;
+  evs.forEach(e=>{
+    const at=new Date(e.at);
+    if(e.type==='clock_in'){state='in';last=at;}
+    else if(e.type==='break_start'){if(state==='in'){worked+=at-last;} state='break';last=at;}
+    else if(e.type==='break_end'){if(state==='break'){brk+=at-last;} state='in';last=at;}
+    else if(e.type==='clock_out'){if(state==='in'){worked+=at-last;}else if(state==='break'){brk+=at-last;} state='out';last=at;}
+  });
+  if(state==='in'||state==='break'){
+    if(isToday){ const now=new Date(); if(state==='in'){worked+=now-last;}else{brk+=now-last;} ongoing=true; }
+    else incomplete=true;
+  }
+  return {worked:worked/60000,brk:brk/60000,ongoing,incomplete};
+}
+async function loadWorklog(){
+  const box=document.getElementById('wlContent');
+  box.innerHTML='<div style="padding:2rem;text-align:center;color:#999">…</div>';
+  const ws=weekStart(wlOffset), we=addDays(ws,7);
+  const todayS=fmtDate(new Date());
+  document.getElementById('wlWeekLabel').textContent=
+    ws.toLocaleDateString(attLocale(),{day:'numeric',month:'short'})+' – '+addDays(ws,6).toLocaleDateString(attLocale(),{day:'numeric',month:'short',year:'numeric'});
+  const[{data:staff=[]},{data:evs=[]},{data:wages=[]}]=await Promise.all([
+    sb.from('profiles').select('id,name,color,role').eq('role','staff').order('name'),
+    sb.from('attendance_events').select('profile_id,type,at').gte('at',ws.toISOString()).lt('at',we.toISOString()).order('at',{ascending:true}),
+    sb.from('staff_wages').select('profile_id,hourly_wage')
+  ]);
+  const W={}; wages.forEach(w=>W[w.profile_id]=Number(w.hourly_wage)||0);
+  const byStaff={}; staff.forEach(s=>byStaff[s.id]={info:s,days:{}});
+  evs.forEach(e=>{
+    if(!byStaff[e.profile_id])return;
+    const d=fmtDate(new Date(e.at));
+    (byStaff[e.profile_id].days[d]=byStaff[e.profile_id].days[d]||[]).push(e);
+  });
+  // haftanın günleri
+  const weekDays=[]; for(let i=0;i<7;i++)weekDays.push(fmtDate(addDays(ws,i)));
+  wlData={}; let grandMin=0, grandPay=0, anyData=false;
+  let rows='';
+  staff.forEach(s=>{
+    const rec=byStaff[s.id]; let totMin=0; let detail=''; let hasAny=false;
+    weekDays.forEach(d=>{
+      const dayEvs=rec.days[d]; if(!dayEvs||!dayEvs.length)return;
+      hasAny=true; anyData=true;
+      const c=computeDay(dayEvs,null,d===todayS);
+      totMin+=c.worked;
+      const ins=dayEvs.filter(e=>e.type==='clock_in'), outs=dayEvs.filter(e=>e.type==='clock_out');
+      const inT=ins.length?fmtTime(ins[0].at):'—';
+      const outT=outs.length?fmtTime(outs[outs.length-1].at):(c.ongoing?'<span style="color:#1b8a4b;font-weight:700">'+t('wl_ongoing')+'</span>':(c.incomplete?'<span style="color:#b23b3b;font-weight:700">'+t('wl_incomplete')+'</span>':'—'));
+      const dLabel=new Date(d+'T00:00:00').toLocaleDateString(attLocale(),{weekday:'short',day:'numeric',month:'short'});
+      detail+='<tr>'
+        +'<td style="padding:.35rem .6rem;color:#555">'+esc(dLabel)+'</td>'
+        +'<td style="padding:.35rem .6rem;text-align:center;font-variant-numeric:tabular-nums">'+inT+'</td>'
+        +'<td style="padding:.35rem .6rem;text-align:center;font-variant-numeric:tabular-nums">'+outT+'</td>'
+        +'<td style="padding:.35rem .6rem;text-align:center;color:#c67c15">'+(c.brk>0?hm(c.brk):'—')+'</td>'
+        +'<td style="padding:.35rem .6rem;text-align:right;font-weight:700;font-variant-numeric:tabular-nums">'+hm(c.worked)+'</td>'
+      +'</tr>';
+    });
+    const wage=W[s.id]||0, pay=(totMin/60)*wage;
+    wlData[s.id]={totMin};
+    if(hasAny){grandMin+=totMin; grandPay+=pay;}
+    rows+='<tr style="border-top:1px solid #ece3cf">'
+      +'<td style="padding:.6rem .7rem">'
+        +(hasAny?'<button onclick="wlToggle(\''+s.id+'\')" id="wlbtn-'+s.id+'" style="background:none;border:none;cursor:pointer;font:inherit;font-weight:700;color:#2a2a2a;display:flex;align-items:center;gap:.5rem">'
+          +'<span id="wlarr-'+s.id+'" style="color:#8a6d2f">▸</span>'
+          +'<span style="width:11px;height:11px;border-radius:50%;background:'+(s.color||'#bbb')+'"></span>'+esc(s.name)+'</button>'
+          :'<span style="display:flex;align-items:center;gap:.5rem;font-weight:700;color:#999"><span style="width:11px;height:11px;border-radius:50%;background:'+(s.color||'#bbb')+';opacity:.5"></span>'+esc(s.name)+'</span>')
+      +'</td>'
+      +'<td style="padding:.6rem .7rem;text-align:center;font-weight:700;font-variant-numeric:tabular-nums">'+(hasAny?hm(totMin):'—')+'</td>'
+      +'<td style="padding:.6rem .7rem;text-align:center"><div style="display:inline-flex;align-items:center;gap:.25rem">€<input type="number" step="0.5" min="0" value="'+(wage||'')+'" onchange="saveWage(\''+s.id+'\',this.value)" style="width:64px;padding:.3rem .4rem;border:1px solid #d8cba6;border-radius:6px;text-align:right;font:inherit"></div></td>'
+      +'<td style="padding:.6rem .7rem;text-align:right;font-weight:800;color:#1b8a4b;font-variant-numeric:tabular-nums" id="wlpay-'+s.id+'">'+(hasAny?'€ '+pay.toFixed(2):'—')+'</td>'
+    +'</tr>';
+    if(hasAny){
+      rows+='<tr id="wldet-'+s.id+'" style="display:none"><td colspan="4" style="padding:0 .7rem .7rem">'
+        +'<table style="width:100%;border-collapse:collapse;background:#fbf8ef;border-radius:8px;font-size:.82rem;overflow:hidden">'
+        +'<thead><tr style="color:#8a6d2f;text-align:left">'
+          +'<th style="padding:.4rem .6rem;font-weight:700">'+t('wl_day')+'</th>'
+          +'<th style="padding:.4rem .6rem;text-align:center;font-weight:700">'+t('wl_in')+'</th>'
+          +'<th style="padding:.4rem .6rem;text-align:center;font-weight:700">'+t('wl_out')+'</th>'
+          +'<th style="padding:.4rem .6rem;text-align:center;font-weight:700">'+t('wl_break')+'</th>'
+          +'<th style="padding:.4rem .6rem;text-align:right;font-weight:700">'+t('wl_hours')+'</th>'
+        +'</tr></thead><tbody>'+detail+'</tbody></table>'
+      +'</td></tr>';
+    }
+  });
+  if(!anyData){box.innerHTML='<div style="padding:2rem;text-align:center;color:#999">'+t('wl_no_data')+'</div>';return;}
+  box.innerHTML='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;min-width:520px">'
+    +'<thead><tr style="background:#f4ecd6;color:#5a4a1f;text-align:left">'
+      +'<th style="padding:.65rem .7rem;font-weight:700">'+t('wl_col_staff')+'</th>'
+      +'<th style="padding:.65rem .7rem;text-align:center;font-weight:700">'+t('wl_total_hours')+'</th>'
+      +'<th style="padding:.65rem .7rem;text-align:center;font-weight:700">'+t('wl_wage')+'</th>'
+      +'<th style="padding:.65rem .7rem;text-align:right;font-weight:700">'+t('wl_total_pay')+'</th>'
+    +'</tr></thead><tbody>'+rows+'</tbody>'
+    +'<tfoot><tr style="background:#f4ecd6;border-top:2px solid #d8cba6;font-weight:800">'
+      +'<td style="padding:.65rem .7rem">'+t('wl_grand')+'</td>'
+      +'<td style="padding:.65rem .7rem;text-align:center;font-variant-numeric:tabular-nums">'+hm(grandMin)+'</td>'
+      +'<td></td>'
+      +'<td style="padding:.65rem .7rem;text-align:right;color:#1b8a4b;font-variant-numeric:tabular-nums">€ '+grandPay.toFixed(2)+'</td>'
+    +'</tr></tfoot></table></div>';
+}
+function wlToggle(id){
+  const r=document.getElementById('wldet-'+id), a=document.getElementById('wlarr-'+id);
+  if(!r)return; const open=r.style.display==='none'; r.style.display=open?'table-row':'none'; if(a)a.textContent=open?'▾':'▸';
+}
+async function saveWage(id,val){
+  const wage=Math.max(0,Number(val)||0);
+  const{error}=await sb.from('staff_wages').upsert({profile_id:id,hourly_wage:wage,updated_at:new Date().toISOString()},{onConflict:'profile_id'});
+  if(error){alert(error.message);return;}
+  const rec=wlData[id]; if(rec){
+    const pay=(rec.totMin/60)*wage;
+    const cell=document.getElementById('wlpay-'+id); if(cell)cell.textContent='€ '+pay.toFixed(2);
+  }
+  loadWorklog(); // grand total'i tazele
+}
 </script>
 </body>
 </html>

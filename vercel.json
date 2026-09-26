@@ -1,4 +1,8 @@
 {
+  "rewrites": [
+    { "source": "/personal", "destination": "/personal.html" },
+    { "source": "/personal/", "destination": "/personal.html" }
+  ],
   "redirects": [
     { "source": "/reserveren", "destination": "/reserveren.html", "permanent": true },
     { "source": "/reserveren/", "destination": "/reserveren.html", "permanent": true },

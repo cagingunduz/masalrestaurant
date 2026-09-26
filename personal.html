@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="robots" content="noindex">
+<title>Masal — Personeel</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--gold:#c6a55c;--gold-dark:#9c7e3e;--dark:#1a1a1a;--bg:#f7f5f0;--muted:#8a8478;--line:#e5e1d8;
+ --green:#3a9d5d;--green-d:#2e7d49;--red:#c0392b;--red-d:#992d22;--blue:#2f6fb0;--blue-d:#255a90;--amber:#c98a2b;--amber-d:#a86f1f;}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+ background:var(--bg);color:var(--dark);-webkit-font-smoothing:antialiased;
+ display:flex;align-items:center;justify-content:center;min-height:100dvh;padding:20px}
+.wrap{width:100%;max-width:520px}
+.card{background:#fff;border-radius:22px;box-shadow:0 20px 60px rgba(40,34,20,.10),0 4px 14px rgba(40,34,20,.05);
+ padding:38px 34px;position:relative}
+.brand{text-align:center;margin-bottom:26px}
+.brand .logo{font-family:Georgia,"Times New Roman",serif;font-size:40px;color:var(--gold-dark);line-height:1;letter-spacing:.5px}
+.brand .sub{font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:var(--muted);margin-top:8px}
+h1{font-size:20px;font-weight:700;text-align:center;margin-bottom:6px}
+.lead{text-align:center;color:var(--muted);font-size:14px;margin-bottom:24px;line-height:1.5}
+input[type=password],input[type=text]{width:100%;padding:16px 18px;font-size:18px;border:1.5px solid var(--line);
+ border-radius:14px;outline:none;text-align:center;letter-spacing:2px;background:#fbfaf7}
+input:focus{border-color:var(--gold)}
+.btn{width:100%;border:none;border-radius:14px;padding:16px;font-size:16px;font-weight:700;cursor:pointer;
+ color:#fff;background:var(--gold);letter-spacing:.4px;margin-top:14px;transition:filter .15s,transform .05s;
+ display:flex;align-items:center;justify-content:center;gap:10px}
+.btn:active{transform:scale(.99)}
+.btn:hover{filter:brightness(1.05)}
+.btn.big{padding:22px;font-size:20px;border-radius:18px}
+.btn.green{background:var(--green)}.btn.red{background:var(--red)}.btn.blue{background:var(--blue)}.btn.amber{background:var(--amber)}
+.btn.ghost{background:transparent;color:var(--gold-dark);border:1.5px solid var(--line);font-weight:600}
+.btn.ghost:hover{border-color:var(--gold)}
+.err{color:var(--red);text-align:center;font-size:13.5px;margin-top:12px;min-height:18px}
+.lang{position:absolute;top:16px;right:18px;display:flex;gap:2px;font-size:12px;font-weight:700}
+.lang button{background:none;border:none;color:var(--muted);cursor:pointer;padding:4px 6px;letter-spacing:1px}
+.lang button.on{color:var(--gold-dark)}
+.lang span{color:var(--line)}
+/* panel */
+.hello{text-align:center;margin-bottom:6px}
+.hello .name{font-size:26px;font-weight:800}
+.status{text-align:center;border-radius:16px;padding:18px;margin:18px 0 8px;font-size:15px;line-height:1.5}
+.status.dot-out{background:#f4f2ec;color:var(--muted)}
+.status.dot-working{background:#eaf6ee;color:var(--green-d)}
+.status.dot-break{background:#fdf3e2;color:var(--amber-d)}
+.status .big{display:block;font-size:19px;font-weight:800;margin-bottom:2px}
+.clock{font-variant-numeric:tabular-nums;font-size:34px;font-weight:800;text-align:center;color:var(--dark);letter-spacing:1px;margin-bottom:4px}
+.date{text-align:center;color:var(--muted);font-size:13px;margin-bottom:14px}
+.summary{display:flex;gap:10px;margin:14px 0 4px}
+.summary .box{flex:1;background:#fbfaf7;border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center}
+.summary .box .k{font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+.summary .box .v{font-size:17px;font-weight:800;margin-top:4px;font-variant-numeric:tabular-nums}
+.actions{display:flex;flex-direction:column;gap:12px;margin-top:16px}
+.actions.row{flex-direction:row}
+.actions.row .btn{margin-top:0}
+.footlink{text-align:center;margin-top:18px}
+.footlink button{background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+/* toast */
+.toast{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(26,22,14,.55);z-index:50;padding:24px}
+.toast.show{display:flex}
+.toast .inner{background:#fff;border-radius:22px;padding:40px 34px;text-align:center;max-width:420px;width:100%;animation:pop .25s ease}
+@keyframes pop{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
+.toast .ic{width:78px;height:78px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:42px;color:#fff}
+.toast .msg{font-size:20px;font-weight:800}
+.toast .time{color:var(--muted);margin-top:6px;font-size:15px;font-variant-numeric:tabular-nums}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <!-- ══ Ekran 1: Klasik Masal şifresi (cihaz kilidi) ══ -->
+  <div class="card" id="gateScreen">
+    <div class="lang"><button id="lg-nl" onclick="setLang('nl')">NL</button><span>/</span><button id="lg-tr" onclick="setLang('tr')">TR</button></div>
+    <div class="brand"><div class="logo">Masal</div><div class="sub">Personeel</div></div>
+    <h1 data-t="gate_title">Toegang</h1>
+    <p class="lead" data-t="gate_lead">Voer het Masal-wachtwoord in om dit apparaat te ontgrendelen.</p>
+    <form onsubmit="return doGate(event)">
+      <input type="password" id="gatePw" placeholder="••••••••" autocomplete="off" inputmode="text">
+      <button class="btn" type="submit" data-t="gate_btn">Ontgrendelen</button>
+    </form>
+    <div class="err" id="gateErr"></div>
+  </div>
+
+  <!-- ══ Ekran 2: Personel şifresi ══ -->
+  <div class="card hidden" id="loginScreen">
+    <div class="lang"><button onclick="setLang('nl')" id="lg2-nl">NL</button><span>/</span><button onclick="setLang('tr')" id="lg2-tr">TR</button></div>
+    <div class="brand"><div class="logo">Masal</div><div class="sub">Personeel</div></div>
+    <h1 data-t="login_title">Inklokken</h1>
+    <p class="lead" data-t="login_lead">Voer je persoonlijke wachtwoord in.</p>
+    <form onsubmit="return doLogin(event)">
+      <input type="password" id="staffPw" placeholder="••••••••" autocomplete="off" inputmode="text">
+      <button class="btn" type="submit" id="loginBtn" data-t="login_btn">Verder</button>
+    </form>
+    <div class="err" id="loginErr"></div>
+  </div>
+
+  <!-- ══ Ekran 3: Panel ══ -->
+  <div class="card hidden" id="panelScreen">
+    <div class="hello"><span class="lead" data-t="hello" style="margin:0"></span><div class="name" id="pName"></div></div>
+    <div class="clock" id="clock">--:--</div>
+    <div class="date" id="today"></div>
+    <div class="status" id="statusBox"></div>
+    <div class="summary" id="summary"></div>
+    <div class="actions" id="actions"></div>
+    <div class="footlink"><button onclick="backToLogin()" data-t="not_me">Ik ben het niet — uitloggen</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><div class="inner">
+  <div class="ic" id="toastIc">✓</div>
+  <div class="msg" id="toastMsg"></div>
+  <div class="time" id="toastTime"></div>
+</div></div>
+
+<script>
+const SUPABASE_URL='https://mytqxxdzfrropqcrhipv.supabase.co';
+const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15dHF4eGR6ZnJyb3BxY3JoaXB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MjgwMTUsImV4cCI6MjA5MTAwNDAxNX0.eKAts80PGm6TTYSllnYq79UaG0_ERJi7FBLnh2GgG4I';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
+const GATE_PASSWORD='masal2017';
+
+const L={
+ nl:{gate_title:'Toegang',gate_lead:'Voer het Masal-wachtwoord in om dit apparaat te ontgrendelen.',gate_btn:'Ontgrendelen',gate_err:'Onjuist wachtwoord',
+  login_title:'Inklokken',login_lead:'Voer je persoonlijke wachtwoord in.',login_btn:'Verder',login_err:'Onjuist wachtwoord',login_load:'Laden…',conn_err:'Verbindingsfout',
+  hello:'Hallo,',not_me:'Ik ben het niet — uitloggen',
+  st_out:'Je bent nog niet ingeklokt',st_working:'Aan het werk sinds',st_break:'Op pauze sinds',
+  a_in:'Ik ben begonnen',a_break:'Pauze starten',a_backwork:'Pauze beëindigen',a_out:'Ik ga naar huis',
+  k_in:'Gestart',k_worked:'Gewerkt',k_break:'Pauze',
+  done_in:'Inklokken geregistreerd',done_break:'Pauze gestart',done_backwork:'Weer aan het werk',done_out:'Uitklokken geregistreerd — fijne dag!',
+  months:['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'],
+  days:['zondag','maandag','dinsdag','woensdag','donderdag','vrijdag','zaterdag']},
+ tr:{gate_title:'Giriş',gate_lead:'Cihazın kilidini açmak için Masal şifresini girin.',gate_btn:'Kilidi Aç',gate_err:'Hatalı şifre',
+  login_title:'Giriş / Çıkış',login_lead:'Kişisel şifreni gir.',login_btn:'Devam',login_err:'Hatalı şifre',login_load:'Yükleniyor…',conn_err:'Bağlantı hatası',
+  hello:'Merhaba,',not_me:'Ben değilim — çıkış',
+  st_out:'Henüz giriş yapmadın',st_working:'Şu andan beri çalışıyorsun:',st_break:'Şu andan beri moladasın:',
+  a_in:'Giriş yaptım',a_break:'Molaya çık',a_backwork:'Moladan döndüm',a_out:'Çıkış yaptım',
+  k_in:'Giriş',k_worked:'Çalışılan',k_break:'Mola',
+  done_in:'Giriş kaydedildi',done_break:'Mola başladı',done_backwork:'Tekrar iş başında',done_out:'Çıkış kaydedildi — iyi günler!',
+  months:['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'],
+  days:['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi']}
+};
+let lang=localStorage.getItem('masalLang')||'nl';
+function T(){return L[lang]}
+function setLang(l){lang=l;localStorage.setItem('masalLang',l);applyLang();}
+function applyLang(){
+ document.documentElement.lang=lang;
+ document.querySelectorAll('[data-t]').forEach(el=>{const k=el.getAttribute('data-t');if(T()[k])el.textContent=T()[k];});
+ ['lg-nl','lg2-nl'].forEach(id=>document.getElementById(id)?.classList.toggle('on',lang==='nl'));
+ ['lg-tr','lg2-tr'].forEach(id=>document.getElementById(id)?.classList.toggle('on',lang==='tr'));
+ if(me&&!panelScreen.classList.contains('hidden'))renderPanel();
+}
+
+const $=id=>document.getElementById(id);
+const gateScreen=$('gateScreen'),loginScreen=$('loginScreen'),panelScreen=$('panelScreen');
+let me=null,todayEvents=[];
+
+// ── canlı saat ──
+function tickClock(){const d=new Date();$('clock').textContent=d.toLocaleTimeString(lang==='tr'?'tr-TR':'nl-NL',{hour:'2-digit',minute:'2-digit'});}
+setInterval(tickClock,1000);
+
+function show(el){[gateScreen,loginScreen,panelScreen].forEach(s=>s.classList.add('hidden'));el.classList.remove('hidden');}
+
+// ── Ekran 1: gate ──
+if(localStorage.getItem('masalPersonalUnlocked')==='1'){show(loginScreen);}else{show(gateScreen);}
+function doGate(e){e.preventDefault();
+ const v=$('gatePw').value.trim();
+ if(v===GATE_PASSWORD){localStorage.setItem('masalPersonalUnlocked','1');$('gatePw').value='';$('gateErr').textContent='';show(loginScreen);setTimeout(()=>$('staffPw').focus(),50);}
+ else{$('gateErr').textContent=T().gate_err;}
+ return false;
+}
+
+// ── Ekran 2: personel şifresi ──
+async function doLogin(e){e.preventDefault();
+ const pw=$('staffPw').value.trim();const btn=$('loginBtn');const err=$('loginErr');
+ if(!pw)return false;err.textContent='';btn.textContent=T().login_load;btn.disabled=true;
+ try{
+  const {data,error}=await sb.from('profiles').select('id,name,color,password,role').eq('password',pw);
+  if(error)throw error;
+  const p=(data||[]).find(x=>x.role==='staff')||(data||[])[0];
+  if(!p){err.textContent=T().login_err;btn.textContent=T().login_btn;btn.disabled=false;return false;}
+  me=p;$('staffPw').value='';btn.textContent=T().login_btn;btn.disabled=false;
+  await openPanel();
+ }catch(_){err.textContent=T().conn_err;btn.textContent=T().login_btn;btn.disabled=false;}
+ return false;
+}
+function backToLogin(){me=null;$('staffPw').value='';$('loginErr').textContent='';show(loginScreen);setTimeout(()=>$('staffPw').focus(),50);}
+
+// ── Ekran 3: panel ──
+function startOfToday(){const d=new Date();d.setHours(0,0,0,0);return d;}
+async function openPanel(){
+ const {data}=await sb.from('attendance_events').select('type,at').eq('profile_id',me.id).gte('at',startOfToday().toISOString()).order('at',{ascending:true});
+ todayEvents=data||[];
+ show(panelScreen);renderPanel();tickClock();
+}
+function stateOf(evs){if(!evs.length)return'out';const l=evs[evs.length-1].type;if(l==='clock_out')return'out';if(l==='break_start')return'break';return'working';}
+function fmtT(iso){return new Date(iso).toLocaleTimeString(lang==='tr'?'tr-TR':'nl-NL',{hour:'2-digit',minute:'2-digit'});}
+function workedMinutes(evs,now){ // giriş→çıkış oturumları, molalar düşülür
+ let total=0,inAt=null,breakAt=null,onBreak=0;
+ for(const e of evs){const t=new Date(e.at).getTime();
+  if(e.type==='clock_in'){inAt=t;onBreak=0;breakAt=null;}
+  else if(e.type==='break_start'){breakAt=t;}
+  else if(e.type==='break_end'){if(breakAt){onBreak+=t-breakAt;breakAt=null;}}
+  else if(e.type==='clock_out'){if(inAt){total+=(t-inAt)-onBreak;}inAt=null;onBreak=0;breakAt=null;}
+ }
+ if(inAt){let live=(now-inAt)-onBreak;if(breakAt)live-=(now-breakAt);total+=live;}
+ return Math.max(0,Math.round(total/60000));
+}
+function breakMinutes(evs,now){let m=0,b=null;for(const e of evs){const t=new Date(e.at).getTime();if(e.type==='break_start')b=t;else if(e.type==='break_end'&&b){m+=t-b;b=null;}}if(b)m+=now-b;return Math.round(m/60000);}
+function hhmm(mins){const h=Math.floor(mins/60),m=mins%60;return h+'s '+String(m).padStart(2,'0')+'d';}
+function renderPanel(){
+ const d=new Date();
+ $('pName').textContent=me.name;
+ $('today').textContent=`${T().days[d.getDay()]} ${d.getDate()} ${T().months[d.getMonth()]}`;
+ const st=stateOf(todayEvents);const now=Date.now();
+ const firstIn=todayEvents.find(e=>e.type==='clock_in');
+ const sb_=$('statusBox');const ac=$('actions');const sm=$('summary');
+ // status
+ if(st==='out'){sb_.className='status dot-out';sb_.innerHTML=`<span class="big">${T().st_out}</span>`;}
+ else if(st==='working'){const since=[...todayEvents].reverse().find(e=>e.type==='clock_in'||e.type==='break_end');sb_.className='status dot-working';sb_.innerHTML=`${T().st_working} <span class="big">${fmtT(since.at)}</span>`;}
+ else{const since=[...todayEvents].reverse().find(e=>e.type==='break_start');sb_.className='status dot-break';sb_.innerHTML=`${T().st_break} <span class="big">${fmtT(since.at)}</span>`;}
+ // summary (giriş / çalışılan / mola)
+ if(st==='out'&&!firstIn){sm.innerHTML='';}
+ else{sm.innerHTML=`
+  <div class="box"><div class="k">${T().k_in}</div><div class="v">${firstIn?fmtT(firstIn.at):'—'}</div></div>
+  <div class="box"><div class="k">${T().k_worked}</div><div class="v">${hhmm(workedMinutes(todayEvents,now))}</div></div>
+  <div class="box"><div class="k">${T().k_break}</div><div class="v">${hhmm(breakMinutes(todayEvents,now))}</div></div>`;}
+ // actions
+ if(st==='out'){ac.className='actions';ac.innerHTML=`<button class="btn big green" onclick="punch('clock_in')">▶  ${T().a_in}</button>`;}
+ else if(st==='working'){ac.className='actions row';ac.innerHTML=`<button class="btn big amber" onclick="punch('break_start')">⏸  ${T().a_break}</button><button class="btn big red" onclick="punch('clock_out')">■  ${T().a_out}</button>`;}
+ else{ac.className='actions';ac.innerHTML=`<button class="btn big blue" onclick="punch('break_end')">▶  ${T().a_backwork}</button>`;}
+}
+async function punch(type){
+ const ac=$('actions');ac.querySelectorAll('button').forEach(b=>b.disabled=true);
+ try{
+  const {error}=await sb.from('attendance_events').insert({profile_id:me.id,type});
+  if(error)throw error;
+  const t=new Date();
+  const map={clock_in:['✓','var(--green)','done_in'],break_start:['⏸','var(--amber)','done_break'],break_end:['▶','var(--blue)','done_backwork'],clock_out:['👋','var(--red)','done_out']};
+  const [ic,col,key]=map[type];
+  $('toastIc').textContent=ic;$('toastIc').style.background=col;
+  $('toastMsg').textContent=T()[key];
+  $('toastTime').textContent=t.toLocaleTimeString(lang==='tr'?'tr-TR':'nl-NL',{hour:'2-digit',minute:'2-digit'});
+  $('toast').classList.add('show');
+  setTimeout(()=>{$('toast').classList.remove('show');backToLogin();},2600);
+ }catch(_){ac.querySelectorAll('button').forEach(b=>b.disabled=false);alert(T().conn_err);}
+}
+
+applyLang();tickClock();
+</script>
+</body>
+</html>
