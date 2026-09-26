@@ -674,7 +674,7 @@ const I18N={
     notify_btn:'📧 Informeren',notify_sending:'📧 Versturen…',notify_no_shifts:'Laad eerst de diensten.',
     notify_nothing:'Geen nieuwe dienstwijzigingen om te versturen.',notify_already:'({n} reeds bijgewerkt)',
     notify_done:'{n} medewerker(s) geïnformeerd over nieuwe diensten.',
-    unavail_warn:'{name} is niet beschikbaar op {day}. Klik nogmaals om toch een dienst toe te voegen.',
+    unavail_warn:'{name} is niet beschikbaar op {day}. Toch een dienst toevoegen?',
     haccp_title:'Registratie temperaturen',haccp_ok:'Binnen norm',haccp_nok:'Afwijking',
     haccp_hint:'Klik op een cel om te bewerken',
     haccp_notes_title:'Opmerkingen / corrigerende maatregelen',
@@ -719,7 +719,7 @@ const I18N={
     notify_btn:'📧 Haber Ver',notify_sending:'📧 Gönderiliyor…',notify_no_shifts:'Önce vardiyaları yükle.',
     notify_nothing:'Gönderilecek yeni vardiya değişikliği yok.',notify_already:'({n} kişi zaten güncel)',
     notify_done:'{n} personele yeni vardiya bildirimi gönderildi.',
-    unavail_warn:'{name} {day} günü müsait değil. Yine de vardiya eklemek için tekrar tıklayın.',
+    unavail_warn:'{name} {day} günü müsait değil. Yine de vardiya eklensin mi?',
     haccp_title:'Sıcaklık Kayıt Formu',haccp_ok:'Norm dahilinde',haccp_nok:'Sapma',
     haccp_hint:'Düzenlemek için bir hücreye tıklayın',
     haccp_notes_title:'Açıklamalar / düzeltici tedbirler',
@@ -850,6 +850,21 @@ function switchTab(name){
 }
 
 // ── İSTATİSTİK / DASHBOARD ──
+// Supabase tek sorguda en fazla 1000 satır döner; tüm satırları sayfalayarak çeker.
+async function sbFetchAll(table,cols,orderCol){
+  let rows=[],from=0,err=null;
+  for(;;){
+    let q=sb.from(table).select(cols);
+    if(orderCol)q=q.order(orderCol,{ascending:true});
+    const{data=[],error}=await q.range(from,from+999);
+    if(error){err=error;break;}
+    rows=rows.concat(data);
+    if(data.length<1000)break;
+    from+=1000;
+    if(from>200000)break; // güvenlik freni
+  }
+  return{rows,error:err};
+}
 async function loadStats(){
   const box=document.getElementById('statsContent');
   const SL=currentLang==='tr'?{
@@ -873,8 +888,8 @@ async function loadStats(){
   };
   const today=new Date(), todayStr=fmtDate(today);
   const d7=fmtDate(addDays(today,-6)), d30=fmtDate(addDays(today,-29));
-  // Tek sorgu, client-side hesap (mevcut kodun deseni). >1000 rez. olunca sunucu-taraflı toplam gerekir.
-  const{data:res=[]}=await sb.from('reservations').select('created_at,date,status,persons').limit(20000);
+  // Tüm rezervasyonlar sayfalanarak çekilir (Supabase 1000 satır sınırını aşmak için).
+  const{rows:res=[]}=await sbFetchAll('reservations','created_at,date,status,persons','id');
   const parseP=s=>{const n=parseInt(String(s).replace(/[^0-9]/g,''),10);return isNaN(n)?0:n};
   const cd=r=>String(r.created_at||'').slice(0,10);
   const active=res.filter(r=>r.status!=='cancelled');
@@ -900,7 +915,7 @@ async function loadStats(){
     sb.from('reservations').select('id',{count:'exact',head:true}).not('feedback_email_sent_at','is',null)
   ]);partyC=a.count||0;fbC=b.count||0;notifC=c.count||0;mailC=d.count||0;}catch(e){}
   let vis=null;
-  try{const r=await sb.from('site_visits').select('visitor_id,created_at').limit(50000);if(!r.error)vis=r.data||[];}catch(e){}
+  try{const r=await sbFetchAll('site_visits','visitor_id,created_at','id');if(!r.error)vis=r.rows||[];}catch(e){}
   let vToday=0,v7=0,vTotal=0,pv=0;
   if(vis){const vd=v=>String(v.created_at||'').slice(0,10);
     vTotal=new Set(vis.map(v=>v.visitor_id)).size;
@@ -1391,7 +1406,7 @@ async function loadShifts(){
       }else{
         const data=`'${p.id}',${i},null,null,'09:00','17:00'`;
         if(isUnavail){
-          return`<td class="sched-td${isWknd?' wknd':''} unavail-td"><div class="sched-cell unavail" title="${currentLang==='tr'?'Müsait değil':'Niet beschikbaar'}">✕</div></td>`;
+          return`<td class="sched-td${isWknd?' wknd':''} unavail-td"><div class="sched-cell empty unavail" style="cursor:pointer" onclick="openCellModal(${data})" title="${currentLang==='tr'?'Müsait değil — yine de vardiya eklemek için tıkla':'Niet beschikbaar — klik om toch een dienst toe te voegen'}">✕</div></td>`;
         }
         if(isPartial){
           const rangeText=partialRanges.map(r=>r.from.slice(0,5)+'–'+r.to.slice(0,5)).join(', ');
@@ -1543,8 +1558,8 @@ async function openCellModal(staffId,dayIndex,shiftId,start,end){
       const DN_TR=['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
       const DN_NL=['Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag','Zondag'];
       const DN=currentLang==='tr'?DN_TR:DN_NL;
-      alert('⚠️ '+t('unavail_warn').replace('{name}',p?.name||'Personel').replace('{day}',DN[dayIndex]));
-      return;
+      // Personel müsait değil dese de admin yine de vardiya atayabilsin — sadece onay iste
+      if(!confirm('⚠️ '+t('unavail_warn').replace('{name}',p?.name||'Personel').replace('{day}',DN[dayIndex])))return;
     }
   }
   cellState={staffId,dayIndex,shiftId};
