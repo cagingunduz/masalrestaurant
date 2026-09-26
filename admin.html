@@ -1898,13 +1898,11 @@ function deleteHaccpLoc(key){
   renderHaccpTable();
 }
 
-function haccpRandVal(loc){
-  const r=(min,max)=>Math.round((min+(Math.random()*(max-min)))*10)/10;
-  if(loc.type==='check')return'ja';
-  if(loc.type==='text')return null;
-  if(loc.type==='temp'&&loc.maxVal!=null)return String(r(Math.max(0,loc.maxVal-5),loc.maxVal));
-  if(loc.type==='temp_min'&&loc.maxVal!=null)return String(r(loc.maxVal-8,loc.maxVal));
-  if(loc.type==='temp_hot'&&loc.minVal!=null)return String(r(loc.minVal,loc.minVal+15));
+// Oto-doldur için geçerli değer bandı (gerçekçi + norm dahilinde kalsın)
+function haccpBand(loc){
+  if(loc.type==='temp'&&loc.maxVal!=null)     return{lo:Math.max(0,loc.maxVal-3),hi:loc.maxVal-0.2};
+  if(loc.type==='temp_min'&&loc.maxVal!=null) return{lo:loc.maxVal-5,hi:loc.maxVal-0.5};
+  if(loc.type==='temp_hot'&&loc.minVal!=null) return{lo:loc.minVal+0.5,hi:loc.minVal+10};
   return null;
 }
 async function haccpAutoFill(){
@@ -1914,21 +1912,38 @@ async function haccpAutoFill(){
   if(!confirm(confirmMsg))return;
   const{week,year}=getISOWeekNum(haccpCurrentWeek);
   const allLocs=[...HACCP_LOCS,...customHaccpLocs];
+  const r1=v=>Math.round(v*10)/10;
   const upserts=[];
   for(const loc of allLocs){
     if(loc.type==='text')continue;
     const existing=haccpData[loc.key]||{};
     const row={week_number:week,year,location_key:loc.key};
     let changed=false;
+    if(loc.type==='check'){
+      for(const day of HACCP_DAYS){
+        const cur=existing[day];
+        if(cur===null||cur===undefined||cur===''){row[day]='ja';changed=true;}
+        else row[day]=cur;
+      }
+      if(changed)upserts.push(row);
+      continue;
+    }
+    const band=haccpBand(loc);
+    if(!band)continue; // sayısal ama sınır tanımsız → atla
+    const clamp=v=>Math.min(band.hi,Math.max(band.lo,v));
+    // Haftalık taban: bandın orta kısmında rastgele başlangıç; sonra gün gün KÜÇÜK dalgalanma
+    let prev=r1(clamp(band.lo+(band.hi-band.lo)*(0.35+Math.random()*0.4)));
     for(const day of HACCP_DAYS){
       const cur=existing[day];
       const isEmpty=cur===null||cur===undefined||cur==='';
-      if(isEmpty){
-        const val=haccpRandVal(loc);
-        if(val!==null){row[day]=val;changed=true;}
-        else row[day]=cur??null;
-      }else{
+      if(!isEmpty){
+        const n=parseFloat(cur); if(!isNaN(n))prev=n; // dolu günden yumuşak devam et
         row[day]=cur;
+      }else{
+        const step=r1((Math.random()*0.6)-0.3); // -0.3 .. +0.3 (0.1 adımlı) → günler birbirine yakın
+        prev=r1(clamp(prev+step));
+        row[day]=String(prev);
+        changed=true;
       }
     }
     if(changed)upserts.push(row);
