@@ -153,23 +153,23 @@ tr.cancelled-row td{color:#b3ada0!important;text-decoration:line-through;backgro
 .staff-row{display:flex;align-items:center;gap:.6rem;padding:.5rem;border-radius:10px;cursor:pointer}
 .staff-row:hover{background:var(--cream-soft)}
 .staff-row input{width:auto}
-/* Çalışma saatleri düzenleme */
-.wle-list{display:flex;flex-direction:column;gap:.5rem;max-height:60vh;overflow-y:auto;margin:0 -.2rem;padding:0 .2rem}
-.wle-day{display:flex;align-items:center;gap:.6rem;background:var(--cream-soft);border:1px solid var(--line);border-radius:12px;padding:.5rem .7rem}
+/* Çalışma saatleri düzenleme — AYLIK kompakt tablo */
+.wle-list{max-height:66vh;overflow-y:auto;margin:0 -.2rem;padding:0 .3rem}
+.wle-head{display:grid;grid-template-columns:76px repeat(4,1fr) 24px;gap:.3rem;align-items:center;padding:0 .4rem .3rem;position:sticky;top:0;background:#fff;z-index:2}
+.wle-head span{font-size:.54rem;text-transform:uppercase;letter-spacing:.02em;color:#8a8478;font-weight:700;text-align:center}
+.wle-day{display:grid;grid-template-columns:76px repeat(4,1fr) 24px;gap:.3rem;align-items:center;background:var(--cream-soft);border:1px solid var(--line);border-radius:7px;padding:.18rem .4rem;margin-bottom:.22rem}
 .wle-day.wknd{background:#faf3e6}
-.wle-dl{width:78px;font-weight:700;font-size:.76rem;color:#5a4a1f;flex:none;text-transform:capitalize}
-.wle-fields{display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem;flex:1;min-width:0}
-.wle-f{display:flex;flex-direction:column;gap:.15rem;min-width:0}
-.wle-f span{font-size:.58rem;letter-spacing:.02em;text-transform:uppercase;color:#8a8478;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.wle-f input{width:100%;padding:.35rem .25rem;border:1.5px solid var(--line);border-radius:9px;font-size:.82rem;background:#fff;text-align:center;font-variant-numeric:tabular-nums}
-.wle-f input:focus{border-color:var(--gold);outline:none}
-.wle-clear{background:none;border:1px solid var(--line);color:#b23b3b;cursor:pointer;flex:none;width:26px;height:26px;border-radius:8px;font-size:.75rem;line-height:1}
+.wle-dl{font-weight:700;font-size:.7rem;color:#5a4a1f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-transform:capitalize}
+.wle-day input{width:100%;padding:.2rem .1rem;border:1.5px solid var(--line);border-radius:6px;font-size:.76rem;background:#fff;text-align:center;font-variant-numeric:tabular-nums}
+.wle-day input:focus{border-color:var(--gold);outline:none}
+.wle-clear{background:none;border:1px solid var(--line);color:#b23b3b;cursor:pointer;width:22px;height:22px;border-radius:6px;font-size:.68rem;line-height:1;padding:0}
 .wle-clear:hover{background:#fae9e9;border-color:#e6b8b8}
 @media(max-width:640px){
-  .wle-day{flex-wrap:wrap}
-  .wle-dl{width:100%}
-  .wle-fields{grid-template-columns:repeat(2,1fr);width:100%}
-  .wle-clear{position:absolute;right:1.2rem;margin-top:-1.9rem}
+  .wle-head{grid-template-columns:52px repeat(4,1fr) 20px;gap:.15rem}
+  .wle-day{grid-template-columns:52px repeat(4,1fr) 20px;gap:.15rem;padding:.15rem .25rem}
+  .wle-day input{font-size:.68rem;padding:.18rem .05rem}
+  .wle-dl{font-size:.6rem}
+  .wle-clear{width:18px;height:18px}
 }
 
 /* HACCP table */
@@ -353,22 +353,24 @@ tr.cancelled-row td{color:#b3ada0!important;text-decoration:line-through;backgro
   </header>
   <div class="tabs">
     <div class="tab active" data-tab="reservations" data-i18n="tab_reservations" onclick="switchTab('reservations')">Reserveringen</div>
-    <div class="tab" data-tab="stats" data-i18n="tab_stats" onclick="switchTab('stats')">📊 Statistieken</div>
+    <div class="tab" data-tab="stats" data-i18n="tab_stats" onclick="switchTab('stats')">Statistieken</div>
     <div class="tab" data-tab="party" data-i18n="tab_party" onclick="switchTab('party')">Feest aanvragen</div>
     <div class="tab" data-tab="shifts" data-i18n="tab_shifts" onclick="switchTab('shifts')">Shifts</div>
     <div class="tab" data-tab="capacity" data-i18n="tab_capacity" onclick="switchTab('capacity')">Capaciteitslimiet</div>
     <div class="tab" data-tab="feedback" data-i18n="tab_feedback" onclick="switchTab('feedback')">Feedback</div>
     <div class="tab" data-tab="haccp" onclick="switchTab('haccp')">HACCP</div>
     <div class="tab" data-tab="swaps" data-i18n="tab_swaps" onclick="switchTab('swaps')" id="swapsTab">Vardiya Değişimleri</div>
-    <div class="tab" data-tab="attendance" data-i18n="tab_attendance" onclick="switchTab('attendance')">🔔 Meldingen</div>
-    <div class="tab" data-tab="worklog" data-i18n="tab_worklog" onclick="switchTab('worklog')">⏱ Werkuren</div>
+    <div class="tab" data-tab="attendance" data-i18n="tab_attendance" onclick="switchTab('attendance')">Meldingen</div>
+    <div class="tab" data-tab="worklog" data-i18n="tab_worklog" onclick="switchTab('worklog')">Werkuren</div>
+    <div class="tab" data-tab="kitchen" data-i18n="tab_kitchen" onclick="switchTab('kitchen')">Keuken</div>
+    <div class="tab" data-tab="users" data-i18n="tab_users" onclick="switchTab('users')">Gebruikers</div>
   </div>
   <main>
 
     <!-- RESERVATIONS -->
     <section class="section" id="sec-stats">
       <div class="toolbar">
-        <h2 data-i18n="tab_stats">📊 İstatistik</h2>
+        <h2 data-i18n="tab_stats">İstatistik</h2>
         <div class="actions">
           <button class="btn ghost small" onclick="loadStats()" data-i18n-title="refresh" title="Vernieuwen">↻</button>
         </div>
@@ -377,7 +379,7 @@ tr.cancelled-row td{color:#b3ada0!important;text-decoration:line-through;backgro
     </section>
     <section class="section" id="sec-attendance">
       <div class="toolbar">
-        <h2 data-i18n="tab_attendance">🔔 Meldingen</h2>
+        <h2 data-i18n="tab_attendance">Meldingen</h2>
         <div class="actions">
           <button class="btn ghost small" onclick="loadAttendance()" data-i18n-title="refresh" title="Vernieuwen">↻</button>
         </div>
@@ -386,15 +388,39 @@ tr.cancelled-row td{color:#b3ada0!important;text-decoration:line-through;backgro
     </section>
     <section class="section" id="sec-worklog">
       <div class="toolbar">
-        <h2 data-i18n="tab_worklog">⏱ Werkuren</h2>
-        <div class="actions" style="display:flex;align-items:center;gap:.4rem">
+        <h2 data-i18n="tab_worklog">Werkuren</h2>
+        <div class="actions" style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap">
           <button class="btn ghost small" onclick="wlWeek(-1)">‹</button>
           <span id="wlWeekLabel" style="font-weight:600;min-width:170px;text-align:center;display:inline-block;font-size:.85rem"></span>
           <button class="btn ghost small" onclick="wlWeek(1)">›</button>
           <button class="btn ghost small" onclick="loadWorklog()" data-i18n-title="refresh" title="Vernieuwen">↻</button>
+          <button class="btn small" id="mailAllBtn" onclick="emailAllReports()" data-i18n="ml_send">📧 Maandrapport naar iedereen</button>
         </div>
       </div>
       <div id="wlContent"><div style="padding:2rem;text-align:center;color:#999">…</div></div>
+    </section>
+    <section class="section" id="sec-kitchen">
+      <div class="toolbar">
+        <h2 data-i18n="tab_kitchen">Keuken</h2>
+        <div class="actions" style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap">
+          <button class="btn ghost small" onclick="wlWeek(-1)">‹</button>
+          <span id="mkWeekLabel" style="font-weight:600;min-width:170px;text-align:center;display:inline-block;font-size:.85rem"></span>
+          <button class="btn ghost small" onclick="wlWeek(1)">›</button>
+          <button class="btn ghost small" onclick="loadMutfak()" data-i18n-title="refresh" title="Vernieuwen">↻</button>
+          <button class="btn small" onclick="openKitchenPicker()" data-i18n="k_add_member">+ Personeel</button>
+        </div>
+      </div>
+      <div id="mkContent"><div style="padding:2rem;text-align:center;color:#999">…</div></div>
+    </section>
+    <section class="section" id="sec-users">
+      <div class="toolbar">
+        <h2 data-i18n="tab_users">Gebruikers</h2>
+        <div class="actions">
+          <button class="btn small" onclick="openAddStaff()" data-i18n="u_add">Gebruiker toevoegen</button>
+          <button class="btn ghost small" onclick="loadUsers()" data-i18n-title="refresh" title="Vernieuwen">↻</button>
+        </div>
+      </div>
+      <div id="usersContent"><div style="padding:2rem;text-align:center;color:#999">…</div></div>
     </section>
     <section class="section active" id="sec-reservations">
       <div class="toolbar">
@@ -660,7 +686,11 @@ tr.cancelled-row td{color:#b3ada0!important;text-decoration:line-through;backgro
 </div>
 
 <div class="modal-bg" id="wlEditModal">
-  <div class="modal" id="wlEditCard" style="max-width:600px"></div>
+  <div class="modal" id="wlEditCard" style="max-width:620px"></div>
+</div>
+
+<div class="modal-bg" id="kitchenPickerModal">
+  <div class="modal" id="kitchenPickerCard" style="max-width:420px"></div>
 </div>
 
 <script>
@@ -679,7 +709,7 @@ const I18N={
   nl:{
     login_subtitle:'Voer uw wachtwoord in om door te gaan',password:'Wachtwoord',login_btn:'Inloggen',login_error:'Ongeldig wachtwoord',
     logout:'Uitloggen',
-    tab_reservations:'Reserveringen',tab_stats:'📊 Statistieken',tab_party:'Feest aanvragen',tab_shifts:'Shifts',
+    tab_reservations:'Reserveringen',tab_stats:'Statistieken',tab_party:'Feest aanvragen',tab_shifts:'Shifts',
     copy_prev_week:'⧉ Vorige week kopiëren',copy_confirm:'De diensten van vorige week worden naar deze week gekopieerd. Bestaande diensten van deze week worden vervangen. Doorgaan?',copy_none:'Vorige week heeft geen diensten om te kopiëren.',
     tab_capacity:'Capaciteitslimiet',cap_start:'Begintijd',cap_end:'Eindtijd',cap_maxlbl:'Max. personen',cap_add:'+ Toevoegen',
     cap_range:'Tijdsbereik',cap_booked:'Geboekt',cap_full:'Vol',cap_open:'Beschikbaar',cap_empty:'Geen capaciteitslimieten ingesteld',
@@ -717,14 +747,17 @@ const I18N={
     edit_staff_title:'Medewerker bewerken',
     haccp_add_btn:'+ Locatie',haccp_add_title:'Locatie toevoegen',
     haccp_lbl_nl:'Naam (NL)',haccp_lbl_tr:'Naam (TR)',haccp_lbl_norm:'Norm',haccp_lbl_type:'Type',
-    tab_attendance:'🔔 Meldingen',tab_worklog:'⏱ Werkuren',
+    tab_attendance:'Meldingen',tab_worklog:'Werkuren',tab_users:'Gebruikers',tab_kitchen:'Keuken',
+    u_name:'Naam',u_dept:'Werkplek',u_email:'E-mail',u_pass:'Wachtwoord',u_role:'Rol',u_color:'Kleur',u_save:'Opslaan',u_saved:'Opgeslagen ✓',u_add:'Gebruiker toevoegen',u_del:'Verwijderen',u_del_confirm:'Deze gebruiker verwijderen?',u_role_staff:'Personeel',u_role_admin:'Admin',
+    k_add_member:'Personeel toevoegen',k_pick_title:'Keukenpersoneel kiezen',k_in_kitchen:'In de keuken',k_none:'Nog geen keukenpersoneel. Voeg toe met +.',k_done:'Klaar',
+    ml_send:'📧 Maandrapport naar iedereen',ml_confirm:'Maandrapport van deze maand naar alle personeelsleden met e-mail versturen?',ml_sending:'Versturen…',ml_done:'{n} e-mail verzonden ✓',ml_none:'Geen personeel met e-mailadres.',ml_subject:'Je maandrapport (urenstaat)',
     att_empty:'Nog geen registraties.',att_clock_in:'ingeklokt',att_break_start:'pauze gestart',att_break_end:'pauze beëindigd',att_clock_out:'uitgeklokt',att_today:'Vandaag',att_yesterday:'Gisteren',
     wl_week:'Week',wl_col_staff:'Medewerker',wl_total_hours:'Totaal uren',wl_wage:'€/uur',wl_total_pay:'Te betalen',wl_no_data:'Geen registraties deze week.',wl_in:'In',wl_out:'Uit',wl_break:'Pauze',wl_day:'Dag',wl_hours:'Uren',wl_grand:'Totaal',wl_ongoing:'bezig',wl_incomplete:'geen uitklok',wl_no_staff:'Nog geen personeel.',wl_edit_tip:'Tijden bewerken',wl_edit_title:'Tijden bewerken',wl_break_start:'Pauze start',wl_break_end:'Pauze eind',wl_save:'Opslaan',wl_cancel:'Annuleren',wl_clear:'Wissen',wl_saved:'Opgeslagen ✓',wl_edit_hint:'Laat leeg = geen registratie. Tijden in 24-uurs formaat.'
   },
   tr:{
     login_subtitle:'Devam etmek için şifrenizi giriniz',password:'Şifre',login_btn:'Giriş Yap',login_error:'Geçersiz şifre',
     logout:'Çıkış',
-    tab_reservations:'Rezervasyonlar',tab_stats:'📊 İstatistik',tab_party:'Etkinlik Talepleri',tab_shifts:'Vardiyalar',
+    tab_reservations:'Rezervasyonlar',tab_stats:'İstatistik',tab_party:'Etkinlik Talepleri',tab_shifts:'Vardiyalar',
     copy_prev_week:'⧉ Önceki haftayı kopyala',copy_confirm:'Önceki haftanın vardiyaları bu haftaya kopyalanacak. Bu haftadaki mevcut vardiyalar değiştirilecek. Devam edilsin mi?',copy_none:'Önceki haftada kopyalanacak vardiya yok.',
     tab_capacity:'Kapasite Limiti',cap_start:'Başlangıç',cap_end:'Bitiş',cap_maxlbl:'Maks. kişi',cap_add:'+ Ekle',
     cap_range:'Saat aralığı',cap_booked:'Dolu kişi',cap_full:'Dolu',cap_open:'Müsait',cap_empty:'Tanımlı kapasite limiti yok',
@@ -762,7 +795,10 @@ const I18N={
     edit_staff_title:'Personel düzenle',
     haccp_add_btn:'+ Parça ekle',haccp_add_title:'Parça ekle',
     haccp_lbl_nl:'Ad (NL)',haccp_lbl_tr:'Ad (TR)',haccp_lbl_norm:'Norm',haccp_lbl_type:'Tür',
-    tab_attendance:'🔔 Bildirimler',tab_worklog:'⏱ Çalışma Saatleri',
+    tab_attendance:'Bildirimler',tab_worklog:'Çalışma Saatleri',tab_users:'Kullanıcılar',tab_kitchen:'Mutfak',
+    u_name:'İsim',u_dept:'Nerede çalışıyor',u_email:'E-posta',u_pass:'Şifre',u_role:'Rol',u_color:'Renk',u_save:'Kaydet',u_saved:'Kaydedildi ✓',u_add:'Kullanıcı ekle',u_del:'Sil',u_del_confirm:'Bu kullanıcı silinsin mi?',u_role_staff:'Personel',u_role_admin:'Admin',
+    k_add_member:'Personel ekle',k_pick_title:'Mutfak personeli seç',k_in_kitchen:'Mutfakta',k_none:'Henüz mutfak personeli yok. + ile ekle.',k_done:'Tamam',
+    ml_send:'📧 Aylık raporu herkese yolla',ml_confirm:'Bu ayın puantaj raporu, e-postası olan tüm personele gönderilsin mi?',ml_sending:'Gönderiliyor…',ml_done:'{n} e-posta gönderildi ✓',ml_none:'E-postası olan personel yok.',ml_subject:'Aylık puantaj raporunuz',
     att_empty:'Henüz kayıt yok.',att_clock_in:'giriş yaptı',att_break_start:'molaya çıktı',att_break_end:'moladan döndü',att_clock_out:'çıkış yaptı',att_today:'Bugün',att_yesterday:'Dün',
     wl_week:'Hafta',wl_col_staff:'Personel',wl_total_hours:'Toplam saat',wl_wage:'€/saat',wl_total_pay:'Alacak',wl_no_data:'Bu hafta kayıt yok.',wl_in:'Giriş',wl_out:'Çıkış',wl_break:'Mola',wl_day:'Gün',wl_hours:'Saat',wl_grand:'Toplam',wl_ongoing:'devam ediyor',wl_incomplete:'çıkış yok',wl_no_staff:'Henüz personel yok.',wl_edit_tip:'Saatleri düzenle',wl_edit_title:'Saatleri düzenle',wl_break_start:'Mola başı',wl_break_end:'Mola sonu',wl_save:'Kaydet',wl_cancel:'İptal',wl_clear:'Temizle',wl_saved:'Kaydedildi ✓',wl_edit_hint:'Boş bırakırsan = kayıt yok. Saatler 24-saat formatında.'
   }
@@ -881,6 +917,8 @@ function switchTab(name){
   if(name==='swaps')loadSwaps();
   if(name==='attendance')loadAttendance();
   if(name==='worklog')loadWorklog();
+  if(name==='kitchen')loadMutfak();
+  if(name==='users')loadUsers();
 }
 
 // ── İSTATİSTİK / DASHBOARD ──
@@ -1756,7 +1794,7 @@ async function saveStaff(){
   if(contact_email&&json.id) await sb.from('profiles').update({contact_email}).eq('id',json.id);
   // Welcome email gönder
   if(contact_email){
-    const welcomeBody=`Hallo ${name},\n\nJe bent toegevoegd aan MasalShift, het personeelsportaal van Masal Restaurant.\n\n🔐 Jouw wachtwoord: ${password}\n🌐 Inloggen: masalrestaurant.vercel.app/staff.html\n\n──────────────────\nWat kun je doen?\n\n📅 Mijn Rooster — Bekijk je diensten voor de week\n📊 Rooster — Bekijk het volledige teamrooster\n✅ Beschikbaarheid — Geef per dag aan wanneer je beschikbaar bent\n🔔 Meldingen — Vraag een dienstruil aan via de ⇄ knop\n──────────────────\n\nMet vriendelijke groet,\nMasal Restaurant`;
+    const welcomeBody=`Hallo ${name},\n\nJe bent toegevoegd aan MasalShift, het personeelsportaal van Masal Restaurant.\n\n🔐 Jouw wachtwoord: ${password}\n🌐 Inloggen: masalrestaurant.vercel.app/staff.html\n\n──────────────────\nWat kun je doen?\n\n📅 Mijn Rooster — Bekijk je diensten voor de week\nRooster — Bekijk het volledige teamrooster\n✅ Beschikbaarheid — Geef per dag aan wanneer je beschikbaar bent\nMeldingen — Vraag een dienstruil aan via de ⇄ knop\n──────────────────\n\nMet vriendelijke groet,\nMasal Restaurant`;
     await sendEmail(contact_email,'Welkom bij MasalShift 👋',welcomeBody);
   }
   const{data:p}=await sb.from('profiles').select('*').order('name');
@@ -2334,63 +2372,70 @@ let wlEditState=null;
 function wlPad(n){return String(n).padStart(2,'0')}
 function wlLocalHM(iso){const d=new Date(iso);return wlPad(d.getHours())+':'+wlPad(d.getMinutes());}
 function wlTimeToISO(dayDate,hhmm){const p=String(hhmm).split(':');const d=new Date(dayDate.getFullYear(),dayDate.getMonth(),dayDate.getDate(),parseInt(p[0])||0,parseInt(p[1])||0,0,0);return d.toISOString();}
-function wleField(key,label,value){return '<label class="wle-f"><span>'+esc(label)+'</span><input type="time" data-k="'+key+'" value="'+value+'"></label>';}
-function wleClearDay(i){document.querySelectorAll('#wlEditCard .wle-day[data-i="'+i+'"] input').forEach(inp=>inp.value='');}
+function wleClearDay(date){document.querySelectorAll('#wlEditCard .wle-day[data-date="'+date+'"] input').forEach(inp=>{inp.value='';});}
+function wlReloadActive(){const a=document.querySelector('.section.active');if(a&&a.id==='sec-mutfak')loadMutfak();else loadWorklog();}
 function closeWlEdit(){document.getElementById('wlEditModal').classList.remove('open');wlEditState=null;}
 async function wlEdit(staffId){
-  const ws=weekStart(wlOffset), we=addDays(ws,7), loc=attLocale();
+  // AYLIK düzenleme — gösterilen haftanın ayı, kompakt tablo
+  const anchor=weekStart(wlOffset), loc=attLocale();
+  const y=anchor.getFullYear(), mo=anchor.getMonth();
+  const ms=new Date(y,mo,1); ms.setHours(0,0,0,0);
+  const me=new Date(y,mo+1,1); me.setHours(0,0,0,0);
   const card=document.getElementById('wlEditCard');
   card.innerHTML='<p style="padding:1.5rem;text-align:center;color:#999">…</p>';
   document.getElementById('wlEditModal').classList.add('open');
   const[{data:prof},{data:evs=[]}]=await Promise.all([
     sb.from('profiles').select('name').eq('id',staffId).maybeSingle(),
-    sb.from('attendance_events').select('id,type,at').eq('profile_id',staffId).gte('at',ws.toISOString()).lt('at',we.toISOString()).order('at',{ascending:true})
+    sb.from('attendance_events').select('id,type,at').eq('profile_id',staffId).gte('at',ms.toISOString()).lt('at',me.toISOString()).order('at',{ascending:true})
   ]);
-  wlEditState={staffId,ws:ws.getTime()};
+  wlEditState={staffId,ms:ms.getTime(),me:me.getTime()};
   const byDay={}; evs.forEach(e=>{const d=fmtDate(new Date(e.at));(byDay[d]=byDay[d]||[]).push(e);});
+  const daysInMonth=new Date(y,mo+1,0).getDate();
+  const v=e=>e?wlLocalHM(e.at):'';
+  const inp=(k,val)=>'<input type="time" data-k="'+k+'" value="'+val+'">';
   let rowsH='';
-  for(let i=0;i<7;i++){
-    const dd=addDays(ws,i), ds=fmtDate(dd), dayEvs=byDay[ds]||[];
+  for(let dnum=1;dnum<=daysInMonth;dnum++){
+    const dd=new Date(y,mo,dnum), ds=fmtDate(dd), dayEvs=byDay[ds]||[];
     const firstIn=dayEvs.find(e=>e.type==='clock_in');
     const bs=dayEvs.find(e=>e.type==='break_start');
     const be=dayEvs.find(e=>e.type==='break_end');
     const outs=dayEvs.filter(e=>e.type==='clock_out'), lastOut=outs[outs.length-1];
-    const v=e=>e?wlLocalHM(e.at):'';
-    const dLabel=dd.toLocaleDateString(loc,{weekday:'short',day:'numeric',month:'short'});
+    const dLabel=dd.getDate()+' '+dd.toLocaleDateString(loc,{weekday:'short'});
     const wknd=(dd.getDay()===0||dd.getDay()===6);
-    rowsH+='<div class="wle-day'+(wknd?' wknd':'')+'" data-i="'+i+'">'
+    rowsH+='<div class="wle-day'+(wknd?' wknd':'')+'" data-date="'+ds+'">'
       +'<div class="wle-dl">'+esc(dLabel)+'</div>'
-      +'<div class="wle-fields">'+wleField('in',t('wl_in'),v(firstIn))+wleField('bs',t('wl_break_start'),v(bs))+wleField('be',t('wl_break_end'),v(be))+wleField('out',t('wl_out'),v(lastOut))+'</div>'
-      +'<button type="button" class="wle-clear" onclick="wleClearDay('+i+')" title="'+esc(t('wl_clear'))+'">✕</button>'
+      +inp('in',v(firstIn))+inp('bs',v(bs))+inp('be',v(be))+inp('out',v(lastOut))
+      +'<button type="button" class="wle-clear" onclick="wleClearDay(\''+ds+'\')" title="'+esc(t('wl_clear'))+'">✕</button>'
     +'</div>';
   }
-  const wsLabel=ws.toLocaleDateString(loc,{day:'numeric',month:'short'})+' – '+addDays(ws,6).toLocaleDateString(loc,{day:'numeric',month:'short',year:'numeric'});
+  const monLabel=ms.toLocaleDateString(loc,{month:'long',year:'numeric'});
+  const head='<div class="wle-head"><span></span><span>'+t('wl_in')+'</span><span>'+t('wl_break_start')+'</span><span>'+t('wl_break_end')+'</span><span>'+t('wl_out')+'</span><span></span></div>';
   card.innerHTML='<h3 style="display:flex;align-items:center;gap:.5rem">✏️ '+esc(prof?.name||'')+'</h3>'
-    +'<p style="color:#8a8478;font-size:.82rem;margin:-.4rem 0 .2rem;font-weight:600">'+esc(wsLabel)+'</p>'
-    +'<p style="color:#a49c8c;font-size:.72rem;margin-bottom:.8rem">'+t('wl_edit_hint')+'</p>'
-    +'<div class="wle-list">'+rowsH+'</div>'
+    +'<p style="color:#8a8478;font-size:.82rem;margin:-.4rem 0 .1rem;font-weight:600;text-transform:capitalize">'+esc(monLabel)+'</p>'
+    +'<p style="color:#a49c8c;font-size:.7rem;margin-bottom:.5rem">'+t('wl_edit_hint')+'</p>'
+    +'<div class="wle-list">'+head+rowsH+'</div>'
     +'<div class="modal-actions"><button class="btn ghost" onclick="closeWlEdit()">'+t('wl_cancel')+'</button><button class="btn" onclick="wlSaveEdit()">'+t('wl_save')+'</button></div>';
 }
 async function wlSaveEdit(){
   if(!wlEditState)return;
-  const staffId=wlEditState.staffId, ws=new Date(wlEditState.ws), we=addDays(ws,7);
+  const staffId=wlEditState.staffId, ms=new Date(wlEditState.ms), me=new Date(wlEditState.me);
   const inserts=[];
   document.querySelectorAll('#wlEditCard .wle-day').forEach(row=>{
-    const i=parseInt(row.getAttribute('data-i')), dd=addDays(ws,i);
+    const ds=row.getAttribute('data-date'); const dd=new Date(ds+'T00:00:00');
     const get=k=>{const el=row.querySelector('input[data-k="'+k+'"]');return el&&el.value?el.value:null;};
     [['in','clock_in'],['bs','break_start'],['be','break_end'],['out','clock_out']].forEach(([k,type])=>{
       const val=get(k); if(val)inserts.push({profile_id:staffId,type,at:wlTimeToISO(dd,val)});
     });
   });
-  const del=await sb.from('attendance_events').delete().eq('profile_id',staffId).gte('at',ws.toISOString()).lt('at',we.toISOString());
+  const del=await sb.from('attendance_events').delete().eq('profile_id',staffId).gte('at',ms.toISOString()).lt('at',me.toISOString());
   if(del.error){alert(del.error.message);return;}
   if(inserts.length){const ins=await sb.from('attendance_events').insert(inserts); if(ins.error){alert(ins.error.message);return;}}
   closeWlEdit();
-  loadWorklog();
+  wlReloadActive();
 }
 
 // ── Kişi bazlı AYLIK rapor (yazdır / PDF) ──
-async function openStaffReport(staffId){
+async function buildReport(staffId){
   // Rapor ayı = çalışma saatleri sekmesinde o an gösterilen haftanın ayı
   const anchor=weekStart(wlOffset);
   const y=anchor.getFullYear(), mo=anchor.getMonth();
@@ -2398,14 +2443,12 @@ async function openStaffReport(staffId){
   const monthEnd=new Date(y,mo+1,1); monthEnd.setHours(0,0,0,0);
   const todayS=fmtDate(new Date());
   const loc=attLocale();
-  const win=window.open('','_blank','width=900,height=1000');
-  if(win)win.document.write('<p style="font-family:sans-serif;padding:2rem;color:#888">…</p>');
   const [pr,wr,er]=await Promise.all([
-    sb.from('profiles').select('name,color').eq('id',staffId).maybeSingle(),
+    sb.from('profiles').select('name,color,contact_email').eq('id',staffId).maybeSingle(),
     sb.from('staff_wages').select('hourly_wage').eq('profile_id',staffId).maybeSingle(),
     sb.from('attendance_events').select('type,at').eq('profile_id',staffId).gte('at',monthStart.toISOString()).lt('at',monthEnd.toISOString()).order('at',{ascending:true})
   ]);
-  const name=pr.data?.name||'—', color=pr.data?.color||'#c6a55c';
+  const name=pr.data?.name||'—', color=pr.data?.color||'#c6a55c', email=pr.data?.contact_email||null;
   const wage=Number(wr.data?.hourly_wage)||0;
   const evs=er.data||[];
   const byDay={}; evs.forEach(e=>{const d=fmtDate(new Date(e.at));(byDay[d]=byDay[d]||[]).push(e);});
@@ -2517,8 +2560,44 @@ async function openStaffReport(staffId){
     <div class="noprint"><button onclick="window.print()">${R.print}</button></div>
   </div>
 </body></html>`;
+  return {name,color,email,html,totMin,totPay,periodLabel};
+}
+async function openStaffReport(staffId){
+  const win=window.open('','_blank','width=900,height=1000');
+  if(win)win.document.write('<p style="font-family:sans-serif;padding:2rem;color:#888">…</p>');
+  const rep=await buildReport(staffId);
   if(!win){alert(currentLang==='tr'?'Rapor penceresi açılamadı (pop-up engellenmiş olabilir).':'Kon rapport niet openen (pop-up geblokkeerd?).');return;}
-  win.document.open();win.document.write(html);win.document.close();
+  win.document.open();win.document.write(rep.html);win.document.close();
+}
+// ── Tek tuşla herkese aylık puantaj raporunu e-postayla gönder ──
+async function emailAllReports(){
+  const btn=document.getElementById('mailAllBtn');
+  if(!confirm(t('ml_confirm')))return;
+  const{data:staff=[]}=await sb.from('profiles').select('id,contact_email').eq('role','staff');
+  const withMail=(staff||[]).filter(s=>s.contact_email&&s.contact_email.includes('@'));
+  if(!withMail.length){alert(t('ml_none'));return;}
+  const oldLabel=btn?btn.textContent:''; if(btn){btn.disabled=true;btn.textContent=t('ml_sending');}
+  let sent=0;
+  for(const s of withMail){
+    try{
+      const rep=await buildReport(s.id);
+      const subject=t('ml_subject')+' · '+(rep.periodLabel||'');
+      const ok=await sendEmailReport(rep.email,subject,rep.html);
+      if(ok)sent++;
+    }catch(e){console.warn('rapor mail hatası',s.id,e);}
+  }
+  if(btn){btn.disabled=false;btn.textContent=oldLabel;}
+  alert(t('ml_done').replace('{n}',sent));
+}
+async function sendEmailReport(to,subject,body){
+  try{
+    const r=await fetch(`${SUPABASE_URL}/functions/v1/send-email`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_ANON},
+      body:JSON.stringify({to,subject,body,sender:'staff'})
+    });
+    return r.ok;
+  }catch(e){console.warn('Email hatası',e);return false;}
 }
 async function saveWage(id,val){
   const wage=Math.max(0,Number(val)||0);
@@ -2528,8 +2607,118 @@ async function saveWage(id,val){
     const pay=(rec.totMin/60)*wage;
     const cell=document.getElementById('wlpay-'+id); if(cell)cell.textContent='€ '+pay.toFixed(2);
   }
-  loadWorklog(); // grand total'i tazele
+  wlReloadActive(); // grand total'i tazele (aktif sekme)
 }
+
+// ════════════════════════════════════════════════════════════════════════
+//  KULLANICILAR
+// ════════════════════════════════════════════════════════════════════════
+async function loadUsers(){
+  const box=document.getElementById('usersContent');
+  box.innerHTML='<div style="padding:2rem;text-align:center;color:#999">…</div>';
+  const{data:users=[],error}=await sb.from('profiles').select('id,name,department,contact_email,password,role,color').order('role').order('name');
+  if(error){box.innerHTML='<div class="empty">'+t('err')+esc(error.message)+'</div>';return;}
+  const inp='padding:.35rem .5rem;border:1px solid #e0d8c4;border-radius:7px;font:inherit;background:#fff';
+  let rows='';
+  (users||[]).forEach(u=>{
+    rows+='<tr data-id="'+u.id+'" style="border-top:1px solid #ece3cf">'
+      +'<td style="padding:.5rem .6rem"><span style="display:inline-flex;align-items:center;gap:.5rem"><input type="color" value="'+(u.color||'#c6a55c')+'" data-f="color" style="width:26px;height:26px;border:none;border-radius:6px;background:none;cursor:pointer;padding:0"><input type="text" value="'+esc(u.name||'')+'" data-f="name" style="width:150px;'+inp+'"></span></td>'
+      +'<td style="padding:.5rem .6rem"><input type="text" value="'+esc(u.department||'')+'" data-f="department" placeholder="—" style="width:120px;'+inp+'"></td>'
+      +'<td style="padding:.5rem .6rem"><input type="email" value="'+esc(u.contact_email||'')+'" data-f="contact_email" placeholder="—" style="width:200px;'+inp+'"></td>'
+      +'<td style="padding:.5rem .6rem"><input type="text" value="'+esc(u.password||'')+'" data-f="password" style="width:120px;'+inp+'"></td>'
+      +'<td style="padding:.5rem .6rem"><select data-f="role" style="'+inp+'"><option value="staff"'+(u.role==='staff'?' selected':'')+'>'+t('u_role_staff')+'</option><option value="admin"'+(u.role==='admin'?' selected':'')+'>'+t('u_role_admin')+'</option></select></td>'
+      +'<td style="padding:.5rem .6rem;white-space:nowrap"><button class="btn small" onclick="saveUser(\''+u.id+'\')">'+t('u_save')+'</button> <button class="btn ghost small" style="color:#b23b3b;border-color:#e6b8b8" onclick="deleteUser(\''+u.id+'\')">'+t('u_del')+'</button></td>'
+    +'</tr>';
+  });
+  box.innerHTML='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;min-width:860px">'
+    +'<thead><tr style="background:#f4ecd6;color:#5a4a1f;text-align:left">'
+      +'<th style="padding:.6rem;font-weight:700">'+t('u_name')+'</th><th style="padding:.6rem;font-weight:700">'+t('u_dept')+'</th>'
+      +'<th style="padding:.6rem;font-weight:700">'+t('u_email')+'</th><th style="padding:.6rem;font-weight:700">'+t('u_pass')+'</th>'
+      +'<th style="padding:.6rem;font-weight:700">'+t('u_role')+'</th><th style="padding:.6rem;font-weight:700"></th>'
+    +'</tr></thead><tbody>'+rows+'</tbody></table></div>';
+}
+async function saveUser(id){
+  const tr=document.querySelector('#usersContent tr[data-id="'+id+'"]'); if(!tr)return;
+  const g=f=>{const el=tr.querySelector('[data-f="'+f+'"]');return el?el.value:'';};
+  const payload={name:g('name').trim()||null,department:g('department').trim()||null,contact_email:g('contact_email').trim()||null,password:g('password'),role:g('role'),color:g('color')};
+  const{error}=await sb.from('profiles').update(payload).eq('id',id);
+  if(error){alert(error.message);return;}
+  const btn=tr.querySelector('button'); if(btn){const o=btn.textContent;btn.textContent=t('u_saved');btn.disabled=true;setTimeout(()=>{btn.textContent=o;btn.disabled=false;},1500);}
+}
+async function deleteUser(id){
+  if(!confirm(t('u_del_confirm')))return;
+  try{await fetch(`${SUPABASE_URL}/functions/v1/delete-staff`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_ANON},body:JSON.stringify({userId:id})});}catch(e){}
+  await sb.from('profiles').delete().eq('id',id);
+  loadUsers();
+}
+
+// ════════════════════════════════════════════════════════════════════════
+//  MUTFAK (çalışma saatleri — sadece mutfak personeli)
+// ════════════════════════════════════════════════════════════════════════
+function isKitchen(dep){return /mutfak|keuken|kitchen/i.test(dep||'');}
+async function loadMutfak(){
+  const box=document.getElementById('mkContent');
+  box.innerHTML='<div style="padding:2rem;text-align:center;color:#999">…</div>';
+  const ws=weekStart(wlOffset), we=addDays(ws,7), todayS=fmtDate(new Date());
+  document.getElementById('mkWeekLabel').textContent=ws.toLocaleDateString(attLocale(),{day:'numeric',month:'short'})+' – '+addDays(ws,6).toLocaleDateString(attLocale(),{day:'numeric',month:'short',year:'numeric'});
+  const[{data:allStaff=[]},{data:wages=[]}]=await Promise.all([
+    sb.from('profiles').select('id,name,color,role,department').eq('role','staff').order('name'),
+    sb.from('staff_wages').select('profile_id,hourly_wage')
+  ]);
+  const staff=(allStaff||[]).filter(s=>isKitchen(s.department));
+  if(!staff.length){box.innerHTML='<div style="padding:2rem;text-align:center;color:#999">'+t('k_none')+'</div>';return;}
+  const ids=staff.map(s=>s.id);
+  const{data:evs=[]}=await sb.from('attendance_events').select('profile_id,type,at').in('profile_id',ids).gte('at',ws.toISOString()).lt('at',we.toISOString()).order('at',{ascending:true});
+  const W={}; wages.forEach(w=>W[w.profile_id]=Number(w.hourly_wage)||0);
+  const byStaff={}; staff.forEach(s=>byStaff[s.id]={days:{}});
+  evs.forEach(e=>{if(!byStaff[e.profile_id])return;const d=fmtDate(new Date(e.at));(byStaff[e.profile_id].days[d]=byStaff[e.profile_id].days[d]||[]).push(e);});
+  const weekDays=[]; for(let i=0;i<7;i++)weekDays.push(fmtDate(addDays(ws,i)));
+  let grandMin=0,grandPay=0,rows='';
+  staff.forEach(s=>{
+    let totMin=0,hasAny=false;
+    weekDays.forEach(d=>{const de=byStaff[s.id].days[d];if(!de||!de.length)return;hasAny=true;totMin+=computeDay(de,null,d===todayS).worked;});
+    const wage=W[s.id]||0, pay=(totMin/60)*wage;
+    if(hasAny){grandMin+=totMin;grandPay+=pay;}
+    rows+='<tr style="border-top:1px solid #ece3cf">'
+      +'<td style="padding:.6rem .7rem"><span style="display:flex;align-items:center;gap:.5rem">'
+        +'<span style="width:11px;height:11px;border-radius:50%;background:'+(s.color||'#bbb')+(hasAny?'':';opacity:.5')+'"></span><span style="font-weight:700;color:'+(hasAny?'#2a2a2a':'#8a8478')+'">'+esc(s.name)+'</span>'
+        +'<button onclick="openStaffReport(\''+s.id+'\')" title="Rapor" style="background:none;border:none;cursor:pointer;color:#8a6d2f;font-size:.82rem">📄</button>'
+        +'<button onclick="wlEdit(\''+s.id+'\')" title="'+esc(t('wl_edit_tip'))+'" style="background:none;border:none;cursor:pointer;color:#9c7e3e;font-size:.88rem">✏️</button>'
+        +'<button onclick="removeFromKitchen(\''+s.id+'\')" title="'+esc(currentLang==='tr'?'Mutfaktan çıkar':'Uit keuken halen')+'" style="background:none;border:none;cursor:pointer;color:#c9a1a1;font-size:.8rem">✕</button>'
+      +'</span></td>'
+      +'<td style="padding:.6rem .7rem;text-align:center;font-weight:700;font-variant-numeric:tabular-nums">'+(hasAny?hm(totMin):'—')+'</td>'
+      +'<td style="padding:.6rem .7rem;text-align:center"><div style="display:inline-flex;align-items:center;gap:.25rem">€<input type="number" step="0.5" min="0" value="'+(wage||'')+'" onchange="saveWage(\''+s.id+'\',this.value)" style="width:64px;padding:.3rem .4rem;border:1px solid #d8cba6;border-radius:6px;text-align:right;font:inherit"></div></td>'
+      +'<td style="padding:.6rem .7rem;text-align:right;font-weight:800;color:#1b8a4b;font-variant-numeric:tabular-nums">'+(hasAny?'€ '+pay.toFixed(2):'—')+'</td>'
+    +'</tr>';
+  });
+  box.innerHTML='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;min-width:520px">'
+    +'<thead><tr style="background:#f4ecd6;color:#5a4a1f;text-align:left">'
+      +'<th style="padding:.65rem .7rem;font-weight:700">'+t('wl_col_staff')+'</th><th style="padding:.65rem .7rem;text-align:center;font-weight:700">'+t('wl_total_hours')+'</th>'
+      +'<th style="padding:.65rem .7rem;text-align:center;font-weight:700">'+t('wl_wage')+'</th><th style="padding:.65rem .7rem;text-align:right;font-weight:700">'+t('wl_total_pay')+'</th>'
+    +'</tr></thead><tbody>'+rows+'</tbody>'
+    +'<tfoot><tr style="background:#f4ecd6;border-top:2px solid #d8cba6;font-weight:800"><td style="padding:.65rem .7rem">'+t('wl_grand')+'</td><td style="padding:.65rem .7rem;text-align:center">'+hm(grandMin)+'</td><td></td><td style="padding:.65rem .7rem;text-align:right;color:#1b8a4b">€ '+grandPay.toFixed(2)+'</td></tr></tfoot></table></div>';
+}
+async function removeFromKitchen(id){
+  if(!confirm(currentLang==='tr'?'Mutfaktan çıkarılsın mı?':'Uit de keuken halen?'))return;
+  await sb.from('profiles').update({department:null}).eq('id',id);
+  loadMutfak();
+}
+async function openKitchenPicker(){
+  const{data:staff=[]}=await sb.from('profiles').select('id,name,color,department').eq('role','staff').order('name');
+  let items='';
+  (staff||[]).forEach(s=>{
+    const inK=isKitchen(s.department);
+    items+='<label class="staff-row"><input type="checkbox" '+(inK?'checked':'')+' onchange="toggleKitchen(\''+s.id+'\',this.checked)"><span style="width:10px;height:10px;border-radius:50%;background:'+(s.color||'#bbb')+'"></span><span>'+esc(s.name)+'</span>'+(s.department?'<span style="margin-left:auto;font-size:.72rem;color:#8a8478">'+esc(s.department)+'</span>':'')+'</label>';
+  });
+  document.getElementById('kitchenPickerCard').innerHTML='<h3 style="display:flex;align-items:center;gap:.5rem">🍳 '+t('k_pick_title')+'</h3>'
+    +'<div class="staff-list" style="margin-top:.8rem;max-height:52vh">'+items+'</div>'
+    +'<div class="modal-actions"><button class="btn" onclick="closeKitchenPicker()">'+t('k_done')+'</button></div>';
+  document.getElementById('kitchenPickerModal').classList.add('open');
+}
+async function toggleKitchen(id,checked){
+  await sb.from('profiles').update({department:checked?'Mutfak':null}).eq('id',id);
+}
+function closeKitchenPicker(){document.getElementById('kitchenPickerModal').classList.remove('open');loadMutfak();}
 </script>
 </body>
 </html>
