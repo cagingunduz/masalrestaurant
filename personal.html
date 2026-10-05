@@ -67,6 +67,35 @@ input:focus{border-color:var(--gold)}
 .toast .msg{font-size:20px;font-weight:800}
 .toast .time{color:var(--muted);margin-top:6px;font-size:15px;font-variant-numeric:tabular-nums}
 .hidden{display:none!important}
+/* ── DİKEY TABLET: tam ekran kiosk ───────────────────────────────────────── */
+@media (orientation: portrait){
+  body{display:block;padding:0}
+  .wrap{max-width:none;width:100%}
+  .card{min-height:100dvh;width:100%;border-radius:0;box-shadow:none;
+    display:flex;flex-direction:column;justify-content:center;padding:52px 34px}
+  .brand{margin-bottom:40px}
+  .brand .logo{font-size:56px}
+  .brand .sub{font-size:13px;margin-top:10px}
+  h1{font-size:27px;margin-bottom:8px}
+  .lead{font-size:16px;margin-bottom:32px}
+  input[type=password],input[type=text]{padding:22px;font-size:23px;border-radius:16px}
+  .btn{padding:22px;font-size:20px;margin-top:18px;border-radius:16px}
+  .btn.big{padding:28px;font-size:24px;border-radius:20px}
+  .lang{top:22px;right:26px;font-size:15px}
+  /* panel ekranı büyüt */
+  .clock{font-size:52px;margin-bottom:6px}
+  .date{font-size:16px;margin-bottom:22px}
+  .hello .name{font-size:34px}
+  .status{font-size:18px;padding:24px;margin:24px 0 10px}
+  .status .big{font-size:23px}
+  .summary{gap:14px;margin:22px 0 6px}
+  .summary .box{padding:16px}
+  .summary .box .k{font-size:12px}
+  .summary .box .v{font-size:21px}
+  .actions{gap:16px;margin-top:24px}
+  .footlink{margin-top:28px}
+  .footlink button{font-size:15px}
+}
 </style>
 </head>
 <body>
