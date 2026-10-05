@@ -153,6 +153,12 @@ tr.cancelled-row td{color:#b3ada0!important;text-decoration:line-through;backgro
 .staff-row{display:flex;align-items:center;gap:.6rem;padding:.5rem;border-radius:10px;cursor:pointer}
 .staff-row:hover{background:var(--cream-soft)}
 .staff-row input{width:auto}
+/* Mutfak personel seçici — .modal label (uppercase/block) ezmesini geçersiz kıl */
+#kitchenPickerCard .staff-row{display:flex;align-items:center;gap:.7rem;margin:0;padding:.55rem .6rem;text-transform:none;letter-spacing:normal;font-weight:500;color:#2a2a2a}
+#kitchenPickerCard .staff-row input[type=checkbox]{width:18px;height:18px;flex:none;accent-color:var(--gold-dark)}
+#kitchenPickerCard .staff-row .dot{width:11px;height:11px;border-radius:50%;flex:none}
+#kitchenPickerCard .staff-row .nm{text-transform:capitalize}
+#kitchenPickerCard .staff-row .dept{margin-left:auto;font-size:.7rem;color:#8a8478;text-transform:lowercase;background:#f4ecd6;padding:.1rem .5rem;border-radius:999px;white-space:nowrap}
 /* Çalışma saatleri düzenleme — AYLIK kompakt tablo */
 .wle-list{max-height:66vh;overflow-y:auto;margin:0 -.2rem;padding:0 .3rem}
 .wle-head{display:grid;grid-template-columns:76px repeat(4,1fr) 24px;gap:.3rem;align-items:center;padding:0 .4rem .3rem;position:sticky;top:0;background:#fff;z-index:2}
@@ -2708,10 +2714,10 @@ async function openKitchenPicker(){
   let items='';
   (staff||[]).forEach(s=>{
     const inK=isKitchen(s.department);
-    items+='<label class="staff-row"><input type="checkbox" '+(inK?'checked':'')+' onchange="toggleKitchen(\''+s.id+'\',this.checked)"><span style="width:10px;height:10px;border-radius:50%;background:'+(s.color||'#bbb')+'"></span><span>'+esc(s.name)+'</span>'+(s.department?'<span style="margin-left:auto;font-size:.72rem;color:#8a8478">'+esc(s.department)+'</span>':'')+'</label>';
+    items+='<label class="staff-row"><input type="checkbox" '+(inK?'checked':'')+' onchange="toggleKitchen(\''+s.id+'\',this.checked)"><span class="dot" style="background:'+(s.color||'#bbb')+'"></span><span class="nm">'+esc(s.name||'')+'</span>'+(s.department?'<span class="dept">'+esc(s.department)+'</span>':'')+'</label>';
   });
-  document.getElementById('kitchenPickerCard').innerHTML='<h3 style="display:flex;align-items:center;gap:.5rem">🍳 '+t('k_pick_title')+'</h3>'
-    +'<div class="staff-list" style="margin-top:.8rem;max-height:52vh">'+items+'</div>'
+  document.getElementById('kitchenPickerCard').innerHTML='<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem"><h3 style="flex:1;margin:0">🍳 '+t('k_pick_title')+'</h3><button onclick="closeKitchenPicker()" aria-label="Kapat" style="background:none;border:none;font-size:1.4rem;line-height:1;color:#8a8478;cursor:pointer;padding:.1rem .4rem">✕</button></div>'
+    +'<div class="staff-list" style="margin-top:.4rem;max-height:52vh">'+items+'</div>'
     +'<div class="modal-actions"><button class="btn" onclick="closeKitchenPicker()">'+t('k_done')+'</button></div>';
   document.getElementById('kitchenPickerModal').classList.add('open');
 }
