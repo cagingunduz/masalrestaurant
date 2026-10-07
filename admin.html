@@ -368,6 +368,7 @@ tr.cancelled-row td{color:#b3ada0!important;text-decoration:line-through;backgro
     <div class="tab" data-tab="swaps" data-i18n="tab_swaps" onclick="switchTab('swaps')" id="swapsTab">Vardiya Değişimleri</div>
     <div class="tab" data-tab="attendance" data-i18n="tab_attendance" onclick="switchTab('attendance')">Meldingen</div>
     <div class="tab" data-tab="worklog" data-i18n="tab_worklog" onclick="switchTab('worklog')">Werkuren</div>
+    <div class="tab" data-tab="daily" data-i18n="tab_daily" onclick="switchTab('daily')">Dagelijks</div>
     <div class="tab" data-tab="kitchen" data-i18n="tab_kitchen" onclick="switchTab('kitchen')">Keuken</div>
     <div class="tab" data-tab="users" data-i18n="tab_users" onclick="switchTab('users')">Gebruikers</div>
   </div>
@@ -404,6 +405,19 @@ tr.cancelled-row td{color:#b3ada0!important;text-decoration:line-through;backgro
         </div>
       </div>
       <div id="wlContent"><div style="padding:2rem;text-align:center;color:#999">…</div></div>
+    </section>
+    <section class="section" id="sec-daily">
+      <div class="toolbar">
+        <h2 data-i18n="tab_daily">Dagelijks</h2>
+        <div class="actions" style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap">
+          <button class="btn ghost small" onclick="dlDay(-1)">‹</button>
+          <span id="dlDayLabel" style="font-weight:600;min-width:180px;text-align:center;display:inline-block;font-size:.85rem"></span>
+          <button class="btn ghost small" onclick="dlDay(1)">›</button>
+          <button class="btn ghost small" onclick="dlOffset=0;loadDaily()" data-i18n="dl_today">Vandaag</button>
+          <button class="btn ghost small" onclick="loadDaily()" data-i18n-title="refresh" title="Vernieuwen">↻</button>
+        </div>
+      </div>
+      <div id="dlContent"><div style="padding:2rem;text-align:center;color:#999">…</div></div>
     </section>
     <section class="section" id="sec-kitchen">
       <div class="toolbar">
@@ -757,6 +771,7 @@ const I18N={
     u_name:'Naam',u_dept:'Werkplek',u_email:'E-mail',u_pass:'Wachtwoord',u_role:'Rol',u_color:'Kleur',u_save:'Opslaan',u_saved:'Opgeslagen ✓',u_add:'Gebruiker toevoegen',u_del:'Verwijderen',u_del_confirm:'Deze gebruiker verwijderen?',u_role_staff:'Personeel',u_role_admin:'Admin',
     k_add_member:'Personeel toevoegen',k_pick_title:'Keukenpersoneel kiezen',k_in_kitchen:'In de keuken',k_none:'Nog geen keukenpersoneel. Voeg toe met +.',k_done:'Klaar',
     ml_send:'📧 Rapport naar selectie',ml_confirm:'Maandrapport naar {n} geselecteerde medewerker(s) versturen?',ml_sending:'Versturen…',ml_done:'{n} e-mail verzonden ✓',ml_none:'Geen personeel met e-mailadres.',ml_none_sel:'Niemand geselecteerd.',ml_col:'Rapport',ml_selall:'Allen selecteren',ml_subject:'Je maandrapport (urenstaat)',
+    tab_daily:'Dagelijks',dl_today:'Vandaag',dl_none:'Niemand gewerkt op deze dag.',dl_day_total:'Dagtotaal',pw_dupe:'Dit wachtwoord is al in gebruik door iemand anders.',pw_req:'Wachtwoord vereist.',
     att_empty:'Nog geen registraties.',att_clock_in:'ingeklokt',att_break_start:'pauze gestart',att_break_end:'pauze beëindigd',att_clock_out:'uitgeklokt',att_today:'Vandaag',att_yesterday:'Gisteren',
     wl_week:'Week',wl_col_staff:'Medewerker',wl_total_hours:'Totaal uren',wl_wage:'€/uur',wl_total_pay:'Te betalen',wl_no_data:'Geen registraties deze week.',wl_in:'In',wl_out:'Uit',wl_break:'Pauze',wl_day:'Dag',wl_hours:'Uren',wl_grand:'Totaal',wl_ongoing:'bezig',wl_incomplete:'geen uitklok',wl_no_staff:'Nog geen personeel.',wl_edit_tip:'Tijden bewerken',wl_edit_title:'Tijden bewerken',wl_break_start:'Pauze start',wl_break_end:'Pauze eind',wl_save:'Opslaan',wl_cancel:'Annuleren',wl_clear:'Wissen',wl_saved:'Opgeslagen ✓',wl_edit_hint:'Laat leeg = geen registratie. Tijden in 24-uurs formaat.'
   },
@@ -805,6 +820,7 @@ const I18N={
     u_name:'İsim',u_dept:'Nerede çalışıyor',u_email:'E-posta',u_pass:'Şifre',u_role:'Rol',u_color:'Renk',u_save:'Kaydet',u_saved:'Kaydedildi ✓',u_add:'Kullanıcı ekle',u_del:'Sil',u_del_confirm:'Bu kullanıcı silinsin mi?',u_role_staff:'Personel',u_role_admin:'Admin',
     k_add_member:'Personel ekle',k_pick_title:'Mutfak personeli seç',k_in_kitchen:'Mutfakta',k_none:'Henüz mutfak personeli yok. + ile ekle.',k_done:'Tamam',
     ml_send:'📧 Seçililere rapor yolla',ml_confirm:'{n} seçili personele bu ayın puantaj raporu gönderilsin mi?',ml_sending:'Gönderiliyor…',ml_done:'{n} e-posta gönderildi ✓',ml_none:'E-postası olan personel yok.',ml_none_sel:'Kimse seçili değil.',ml_col:'Rapor',ml_selall:'Hepsini seç',ml_subject:'Aylık puantaj raporunuz',
+    tab_daily:'Günlük Çalışanlar',dl_today:'Bugün',dl_none:'Bu gün çalışan yok.',dl_day_total:'Gün toplamı',pw_dupe:'Bu şifre başka birinde kullanılıyor.',pw_req:'Şifre gerekli.',
     att_empty:'Henüz kayıt yok.',att_clock_in:'giriş yaptı',att_break_start:'molaya çıktı',att_break_end:'moladan döndü',att_clock_out:'çıkış yaptı',att_today:'Bugün',att_yesterday:'Dün',
     wl_week:'Hafta',wl_col_staff:'Personel',wl_total_hours:'Toplam saat',wl_wage:'€/saat',wl_total_pay:'Alacak',wl_no_data:'Bu hafta kayıt yok.',wl_in:'Giriş',wl_out:'Çıkış',wl_break:'Mola',wl_day:'Gün',wl_hours:'Saat',wl_grand:'Toplam',wl_ongoing:'devam ediyor',wl_incomplete:'çıkış yok',wl_no_staff:'Henüz personel yok.',wl_edit_tip:'Saatleri düzenle',wl_edit_title:'Saatleri düzenle',wl_break_start:'Mola başı',wl_break_end:'Mola sonu',wl_save:'Kaydet',wl_cancel:'İptal',wl_clear:'Temizle',wl_saved:'Kaydedildi ✓',wl_edit_hint:'Boş bırakırsan = kayıt yok. Saatler 24-saat formatında.'
   }
@@ -925,6 +941,7 @@ function switchTab(name){
   if(name==='worklog')loadWorklog();
   if(name==='kitchen')loadMutfak();
   if(name==='users')loadUsers();
+  if(name==='daily')loadDaily();
 }
 
 // ── İSTATİSTİK / DASHBOARD ──
@@ -1785,19 +1802,15 @@ async function saveStaff(){
   const contact_email=document.getElementById('newStaffEmail').value.trim()||null;
   const password=document.getElementById('newStaffPass').value;
   if(!name){alert(t('err')+'Naam vereist');return}
-  if(!password){alert(t('err')+'Şifre vereist');return}
+  if(!password){alert(t('pw_req'));return}
+  if(await passwordTaken(password,null)){alert(t('pw_dupe'));return}
   const btn=document.querySelector('#addStaffModal .btn:not(.ghost)');
   btn.disabled=true;
-  const res=await fetch(`${SUPABASE_URL}/functions/v1/create-staff`,{
-    method:'POST',
-    headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_ANON},
-    body:JSON.stringify({name,password,color,department,contact_email})
-  });
-  const json=await res.json();
+  // Doğrudan profiles'a ekle (create-staff edge'in 6-hane Auth sınırını aşmak için; staff login zaten profiles.password ile)
+  const newId=(crypto&&crypto.randomUUID)?crypto.randomUUID():String(Date.now())+Math.random().toString(16).slice(2);
+  const{error:insErr}=await sb.from('profiles').insert({id:newId,name,password,color,department,contact_email,role:'staff'});
   btn.disabled=false;
-  if(!res.ok){alert(t('err')+(json.error||'Onbekende fout'));return}
-  // contact_email'i profiles'a kaydet
-  if(contact_email&&json.id) await sb.from('profiles').update({contact_email}).eq('id',json.id);
+  if(insErr){alert(t('err')+insErr.message);return}
   // Welcome email gönder
   if(contact_email){
     const welcomeBody=`Hallo ${name},\n\nJe bent toegevoegd aan MasalShift, het personeelsportaal van Masal Restaurant.\n\n🔐 Jouw wachtwoord: ${password}\n🌐 Inloggen: masalrestaurant.vercel.app/staff.html\n\n──────────────────\nWat kun je doen?\n\n📅 Mijn Rooster — Bekijk je diensten voor de week\nRooster — Bekijk het volledige teamrooster\n✅ Beschikbaarheid — Geef per dag aan wanneer je beschikbaar bent\nMeldingen — Vraag een dienstruil aan via de ⇄ knop\n──────────────────\n\nMet vriendelijke groet,\nMasal Restaurant`;
@@ -2382,7 +2395,7 @@ function wlPad(n){return String(n).padStart(2,'0')}
 function wlLocalHM(iso){const d=new Date(iso);return wlPad(d.getHours())+':'+wlPad(d.getMinutes());}
 function wlTimeToISO(dayDate,hhmm){const p=String(hhmm).split(':');const d=new Date(dayDate.getFullYear(),dayDate.getMonth(),dayDate.getDate(),parseInt(p[0])||0,parseInt(p[1])||0,0,0);return d.toISOString();}
 function wleClearDay(date){document.querySelectorAll('#wlEditCard .wle-day[data-date="'+date+'"] input').forEach(inp=>{inp.value='';});}
-function wlReloadActive(){const a=document.querySelector('.section.active');if(a&&a.id==='sec-mutfak')loadMutfak();else loadWorklog();}
+function wlReloadActive(){const a=document.querySelector('.section.active');if(a&&a.id==='sec-mutfak')loadMutfak();else if(a&&a.id==='sec-daily')loadDaily();else loadWorklog();}
 function closeWlEdit(){document.getElementById('wlEditModal').classList.remove('open');wlEditState=null;}
 async function wlEdit(staffId){
   // AYLIK düzenleme — gösterilen haftanın ayı, kompakt tablo
@@ -2646,10 +2659,19 @@ async function loadUsers(){
       +'<th style="padding:.6rem;font-weight:700">'+t('u_role')+'</th><th style="padding:.6rem;font-weight:700"></th>'
     +'</tr></thead><tbody>'+rows+'</tbody></table></div>';
 }
+// Şifre başkasında var mı? (excludeId hariç) — min uzunluk YOK, 1 karakter bile olur
+async function passwordTaken(pw,excludeId){
+  if(!pw)return false;
+  const{data=[]}=await sb.from('profiles').select('id').eq('password',pw);
+  return (data||[]).some(r=>r.id!==excludeId);
+}
 async function saveUser(id){
   const tr=document.querySelector('#usersContent tr[data-id="'+id+'"]'); if(!tr)return;
   const g=f=>{const el=tr.querySelector('[data-f="'+f+'"]');return el?el.value:'';};
-  const payload={name:g('name').trim()||null,department:g('department').trim()||null,contact_email:g('contact_email').trim()||null,password:g('password'),role:g('role'),color:g('color')};
+  const password=g('password');
+  if(!password){alert(t('pw_req'));return;}
+  if(await passwordTaken(password,id)){alert(t('pw_dupe'));return;}
+  const payload={name:g('name').trim()||null,department:g('department').trim()||null,contact_email:g('contact_email').trim()||null,password:password,role:g('role'),color:g('color')};
   const{error}=await sb.from('profiles').update(payload).eq('id',id);
   if(error){alert(error.message);return;}
   const btn=tr.querySelector('button'); if(btn){const o=btn.textContent;btn.textContent=t('u_saved');btn.disabled=true;setTimeout(()=>{btn.textContent=o;btn.disabled=false;},1500);}
@@ -2659,6 +2681,68 @@ async function deleteUser(id){
   try{await fetch(`${SUPABASE_URL}/functions/v1/delete-staff`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_ANON},body:JSON.stringify({userId:id})});}catch(e){}
   await sb.from('profiles').delete().eq('id',id);
   loadUsers();
+}
+
+// ════════════════════════════════════════════════════════════════════════
+//  GÜNLÜK ÇALIŞANLAR (seçili günde çalışanlar)
+// ════════════════════════════════════════════════════════════════════════
+let dlOffset=0;
+function dlDay(delta){dlOffset+=delta;loadDaily();}
+async function loadDaily(){
+  const box=document.getElementById('dlContent');
+  box.innerHTML='<div style="padding:2rem;text-align:center;color:#999">…</div>';
+  const day=new Date(); day.setHours(0,0,0,0); day.setDate(day.getDate()+dlOffset);
+  const dayEnd=addDays(day,1);
+  const dS=fmtDate(day), todayS=fmtDate(new Date()), isToday=(dS===todayS);
+  document.getElementById('dlDayLabel').textContent=day.toLocaleDateString(attLocale(),{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const[{data:staff=[]},{data:evs=[]},{data:wages=[]}]=await Promise.all([
+    sb.from('profiles').select('id,name,color,role').eq('role','staff').order('name'),
+    sb.from('attendance_events').select('profile_id,type,at').gte('at',day.toISOString()).lt('at',dayEnd.toISOString()).order('at',{ascending:true}),
+    sb.from('staff_wages').select('profile_id,hourly_wage')
+  ]);
+  const W={}; wages.forEach(w=>W[w.profile_id]=Number(w.hourly_wage)||0);
+  const nameById={}; staff.forEach(s=>nameById[s.id]=s);
+  const byStaff={}; evs.forEach(e=>{(byStaff[e.profile_id]=byStaff[e.profile_id]||[]).push(e);});
+  const ids=Object.keys(byStaff).sort((a,b)=>((nameById[a]&&nameById[a].name||'').localeCompare(nameById[b]&&nameById[b].name||'')));
+  if(!ids.length){box.innerHTML='<div style="padding:2rem;text-align:center;color:#999">'+t('dl_none')+'</div>';return;}
+  let rows='',grandMin=0,grandPay=0;
+  ids.forEach(id=>{
+    const s=nameById[id]||{name:'—',color:'#bbb'};
+    const de=byStaff[id];
+    const c=computeDay(de,null,isToday);
+    const ins=de.filter(e=>e.type==='clock_in'), outs=de.filter(e=>e.type==='clock_out');
+    const inT=ins.length?fmtTime(ins[0].at):'—';
+    const outT=outs.length?fmtTime(outs[outs.length-1].at):(c.ongoing?'<span style="color:#1b8a4b;font-weight:700">'+t('wl_ongoing')+'</span>':(c.incomplete?'<span style="color:#b23b3b;font-weight:700">'+t('wl_incomplete')+'</span>':'—'));
+    const wage=W[id]||0, pay=(c.worked/60)*wage;
+    grandMin+=c.worked; grandPay+=pay;
+    rows+='<tr style="border-top:1px solid #ece3cf">'
+      +'<td style="padding:.6rem .7rem"><span style="display:flex;align-items:center;gap:.5rem"><span style="width:11px;height:11px;border-radius:50%;background:'+(s.color||'#bbb')+'"></span><span style="font-weight:700;color:#2a2a2a">'+esc(s.name)+'</span>'
+        +'<button onclick="openStaffReport(\''+id+'\')" title="Rapor" style="background:none;border:none;cursor:pointer;color:#8a6d2f;font-size:.82rem">📄</button>'
+        +'<button onclick="wlEdit(\''+id+'\')" title="'+esc(t('wl_edit_tip'))+'" style="background:none;border:none;cursor:pointer;color:#9c7e3e;font-size:.88rem">✏️</button></span></td>'
+      +'<td style="padding:.6rem .7rem;text-align:center;font-variant-numeric:tabular-nums">'+inT+'</td>'
+      +'<td style="padding:.6rem .7rem;text-align:center;font-variant-numeric:tabular-nums">'+outT+'</td>'
+      +'<td style="padding:.6rem .7rem;text-align:center;color:#c67c15">'+(c.brk>0?hm(c.brk):'—')+'</td>'
+      +'<td style="padding:.6rem .7rem;text-align:right;font-weight:700;font-variant-numeric:tabular-nums">'+hm(c.worked)+'</td>'
+      +'<td style="padding:.6rem .7rem;text-align:center"><div style="display:inline-flex;align-items:center;gap:.25rem">€<input type="number" step="0.5" min="0" value="'+(wage||'')+'" onchange="saveWage(\''+id+'\',this.value)" style="width:64px;padding:.3rem .4rem;border:1px solid #d8cba6;border-radius:6px;text-align:right;font:inherit"></div></td>'
+      +'<td style="padding:.6rem .7rem;text-align:right;font-weight:800;color:#1b8a4b;font-variant-numeric:tabular-nums">'+(wage?('€ '+pay.toFixed(2)):'—')+'</td>'
+    +'</tr>';
+  });
+  box.innerHTML='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;min-width:620px">'
+    +'<thead><tr style="background:#f4ecd6;color:#5a4a1f;text-align:left">'
+      +'<th style="padding:.65rem .7rem;font-weight:700">'+t('wl_col_staff')+'</th>'
+      +'<th style="padding:.65rem .7rem;text-align:center;font-weight:700">'+t('wl_in')+'</th>'
+      +'<th style="padding:.65rem .7rem;text-align:center;font-weight:700">'+t('wl_out')+'</th>'
+      +'<th style="padding:.65rem .7rem;text-align:center;font-weight:700">'+t('wl_break')+'</th>'
+      +'<th style="padding:.65rem .7rem;text-align:right;font-weight:700">'+t('wl_hours')+'</th>'
+      +'<th style="padding:.65rem .7rem;text-align:center;font-weight:700">'+t('wl_wage')+'</th>'
+      +'<th style="padding:.65rem .7rem;text-align:right;font-weight:700">'+t('wl_total_pay')+'</th>'
+    +'</tr></thead><tbody>'+rows+'</tbody>'
+    +'<tfoot><tr style="background:#f4ecd6;border-top:2px solid #d8cba6;font-weight:800">'
+      +'<td style="padding:.65rem .7rem" colspan="4">'+t('dl_day_total')+'</td>'
+      +'<td style="padding:.65rem .7rem;text-align:right;font-variant-numeric:tabular-nums">'+hm(grandMin)+'</td>'
+      +'<td></td>'
+      +'<td style="padding:.65rem .7rem;text-align:right;color:#1b8a4b;font-variant-numeric:tabular-nums">€ '+grandPay.toFixed(2)+'</td>'
+    +'</tr></tfoot></table></div>';
 }
 
 // ════════════════════════════════════════════════════════════════════════
