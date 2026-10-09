@@ -154,11 +154,11 @@ tr.cancelled-row td{color:#b3ada0!important;text-decoration:line-through;backgro
 .staff-row:hover{background:var(--cream-soft)}
 .staff-row input{width:auto}
 /* Mutfak personel seçici — .modal label (uppercase/block) ezmesini geçersiz kıl */
-#kitchenPickerCard .staff-row{display:flex;align-items:center;gap:.7rem;margin:0;padding:.55rem .6rem;text-transform:none;letter-spacing:normal;font-weight:500;color:#2a2a2a}
-#kitchenPickerCard .staff-row input[type=checkbox]{width:18px;height:18px;flex:none;accent-color:var(--gold-dark)}
-#kitchenPickerCard .staff-row .dot{width:11px;height:11px;border-radius:50%;flex:none}
-#kitchenPickerCard .staff-row .nm{text-transform:capitalize}
-#kitchenPickerCard .staff-row .dept{margin-left:auto;font-size:.7rem;color:#8a8478;text-transform:lowercase;background:#f4ecd6;padding:.1rem .5rem;border-radius:999px;white-space:nowrap}
+#kitchenPickerCard .staff-row,#shiftVisCard .staff-row{display:flex;align-items:center;gap:.7rem;margin:0;padding:.55rem .6rem;text-transform:none;letter-spacing:normal;font-weight:500;color:#2a2a2a}
+#kitchenPickerCard .staff-row,#shiftVisCard .staff-row input[type=checkbox]{width:18px;height:18px;flex:none;accent-color:var(--gold-dark)}
+#kitchenPickerCard .staff-row,#shiftVisCard .staff-row .dot{width:11px;height:11px;border-radius:50%;flex:none}
+#kitchenPickerCard .staff-row,#shiftVisCard .staff-row .nm{text-transform:capitalize}
+#kitchenPickerCard .staff-row,#shiftVisCard .staff-row .dept{margin-left:auto;font-size:.7rem;color:#8a8478;text-transform:lowercase;background:#f4ecd6;padding:.1rem .5rem;border-radius:999px;white-space:nowrap}
 /* Çalışma saatleri düzenleme — AYLIK kompakt tablo */
 .wle-list{max-height:66vh;overflow-y:auto;margin:0 -.2rem;padding:0 .3rem}
 .wle-head{display:grid;grid-template-columns:76px repeat(4,1fr) 24px;gap:.3rem;align-items:center;padding:0 .4rem .3rem;position:sticky;top:0;background:#fff;z-index:2}
@@ -480,6 +480,7 @@ tr.cancelled-row td{color:#b3ada0!important;text-decoration:line-through;backgro
           <button class="btn ghost small" onclick="nextWeek()">→</button>
           <input type="date" id="weekPicker" class="input" onchange="onWeekChange()" style="width:138px">
           <button class="btn ghost small" onclick="openAddStaff()" data-i18n="add_staff">+ Medewerker</button>
+          <button class="btn ghost small" onclick="openShiftVisibility()" data-i18n="sh_vis_btn">👁 Zichtbaarheid</button>
           <button class="btn ghost small" onclick="copyPrevWeek()" data-i18n="copy_prev_week">⧉ Vorige week kopiëren</button>
           <button class="btn ghost small" onclick="loadShifts()" data-i18n-title="refresh" title="Vernieuwen">↻</button>
           <button class="btn small" onclick="notifyShifts()" id="notifyBtn" data-i18n="notify_btn" style="background:#27ae60;border-color:#27ae60">📧 Haber Ver</button>
@@ -713,6 +714,10 @@ tr.cancelled-row td{color:#b3ada0!important;text-decoration:line-through;backgro
   <div class="modal" id="kitchenPickerCard" style="max-width:420px"></div>
 </div>
 
+<div class="modal-bg" id="shiftVisModal">
+  <div class="modal" id="shiftVisCard" style="max-width:420px"></div>
+</div>
+
 <script>
 const SUPABASE_URL='https://mytqxxdzfrropqcrhipv.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15dHF4eGR6ZnJyb3BxY3JoaXB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MjgwMTUsImV4cCI6MjA5MTAwNDAxNX0.eKAts80PGm6TTYSllnYq79UaG0_ERJi7FBLnh2GgG4I';
@@ -736,6 +741,7 @@ const I18N={
     cap_invalid:'Vul een geldige datum, tijden en max. personen in.',cap_confirm_delete:'Limiet verwijderen?',
     tab_feedback:'Feedback',fb_empty:'Nog geen feedback ontvangen',fb_rating:'Beoordeling',fb_cats:'Categorieën',fb_message:'Bericht',fb_confirm_delete:'Feedback verwijderen?',
     shift_colors:'Dienstkleuren:',shift_colors_save:'💾 Opslaan',shift_colors_saved:'Kleuren opgeslagen ✓',move_to_staff:'Verplaats naar andere medewerker',
+    sh_vis_btn:'👁 Zichtbaarheid',sh_vis_title:'Zichtbaarheid in rooster',sh_vis_hint:'Aangevinkte medewerkers verschijnen in het rooster. Keukenpersoneel is al automatisch verborgen.',sh_hide_tip:'Verberg in rooster',
     haccp_drag:'Versleep om te ordenen',haccp_max_val:'Max. waarde (°C)',haccp_min_val:'Min. waarde (°C)',haccp_name_required:'Naam (NL) is verplicht',haccp_confirm_delete:'Verwijderen?',
     edit:'Bewerken',haccp_edit_title:'Locatie bewerken',haccp_clear_all:'🗑 Waarden wissen',haccp_clear_confirm:'Alle ingevoerde waarden van deze week wissen?',
     filter_all:'Alle',status_new:'Nieuw',status_confirmed:'Bevestigd',status_cancelled:'Geannuleerd',status_arrived:'Aangekomen',
@@ -785,6 +791,7 @@ const I18N={
     cap_invalid:'Geçerli tarih, saat ve maks. kişi girin.',cap_confirm_delete:'Limit silinsin mi?',
     tab_feedback:'Geri Bildirimler',fb_empty:'Henüz geri bildirim yok',fb_rating:'Puan',fb_cats:'Kategoriler',fb_message:'Mesaj',fb_confirm_delete:'Geri bildirim silinsin mi?',
     shift_colors:'Vardiya renkleri:',shift_colors_save:'💾 Kaydet',shift_colors_saved:'Renkler kaydedildi ✓',move_to_staff:'Başka personele taşı',
+    sh_vis_btn:'👁 Görünürlük',sh_vis_title:'Vardiyada görünürlük',sh_vis_hint:'İşaretli personel vardiya tablosunda görünür. Mutfak personeli zaten otomatik gizli.',sh_hide_tip:'Vardiyada gizle',
     haccp_drag:'Sıralamak için sürükle',haccp_max_val:'Maks. değer (°C)',haccp_min_val:'Min. değer (°C)',haccp_name_required:'Ad (NL) zorunlu',haccp_confirm_delete:'Silinsin mi?',
     edit:'Düzenle',haccp_edit_title:'Satır düzenle',haccp_clear_all:'🗑 Değerleri temizle',haccp_clear_confirm:'Bu haftanın tüm girilen değerleri silinsin mi?',
     filter_all:'Tümü',status_new:'Yeni',status_confirmed:'Onaylandı',status_cancelled:'İptal',status_arrived:'Geldi',
@@ -1377,15 +1384,18 @@ function hexTint(hex,a){if(!hex||!hex.startsWith('#'))return '';const r=parseInt
 
 // Vardiya renkleri (zaman aralığına göre) — app_settings tablosundan
 let shiftColors={morning:'#d8f5d3',evening:'',full:'#cfe3f5'};
+let hiddenShiftIds=new Set(); // vardiya tablosunda elle gizlenen personel id'leri
 async function loadAppSettings(){
   // localStorage yedeği (migration çalışmasa da kalıcı)
   try{const ls=JSON.parse(localStorage.getItem('shiftColors')||'null');if(ls)Object.assign(shiftColors,ls);}catch(e){}
+  try{const lh=JSON.parse(localStorage.getItem('shiftsHidden')||'null');if(Array.isArray(lh))hiddenShiftIds=new Set(lh);}catch(e){}
   // DB varsa üzerine yazar (cihazlar arası ortak)
   const{data}=await sb.from('app_settings').select('*');
   (data||[]).forEach(r=>{
     if(r.key==='shift_color_morning'&&r.value)shiftColors.morning=r.value;
     if(r.key==='shift_color_evening')shiftColors.evening=r.value||'';
     if(r.key==='shift_color_full'&&r.value)shiftColors.full=r.value;
+    if(r.key==='shifts_hidden'&&r.value){try{hiddenShiftIds=new Set(JSON.parse(r.value));}catch(e){}}
   });
   const cm=document.getElementById('colorMorning');if(cm)cm.value=shiftColors.morning||'#d8f5d3';
   const ce=document.getElementById('colorEvening');if(ce)ce.value=shiftColors.evening||'#c6a55c';
@@ -1411,6 +1421,33 @@ async function saveAllShiftColors(){
   }
   alert(t('shift_colors_saved'));
 }
+// ── Vardiya tablosunda personel görünürlüğü (göz / açma-kapatma) ──
+async function saveShiftHidden(){
+  localStorage.setItem('shiftsHidden',JSON.stringify([...hiddenShiftIds]));
+  const{error}=await sb.from('app_settings').upsert([{key:'shifts_hidden',value:JSON.stringify([...hiddenShiftIds])}],{onConflict:'key'});
+  if(error)console.warn('shifts_hidden kaydedilemedi',error.message);
+}
+async function toggleShiftVisibility(id,e){
+  if(e){e.stopPropagation();}
+  if(hiddenShiftIds.has(id))hiddenShiftIds.delete(id);else hiddenShiftIds.add(id);
+  await saveShiftHidden();
+  loadShifts();
+}
+function openShiftVisibility(){
+  // Mutfak personeli zaten otomatik gizli → listede göstermiyoruz
+  const staff=(profiles||[]).filter(p=>p.role!=='admin'&&!isKitchen(p.department)).sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+  let items='';
+  staff.forEach(s=>{
+    const visible=!hiddenShiftIds.has(s.id);
+    items+='<label class="staff-row"><input type="checkbox" '+(visible?'checked':'')+' onchange="toggleShiftVisibility(\''+s.id+'\')"><span class="dot" style="background:'+(s.color||'#bbb')+'"></span><span class="nm">'+esc(s.name||'')+'</span>'+(s.department?'<span class="dept">'+esc(s.department)+'</span>':'')+'</label>';
+  });
+  document.getElementById('shiftVisCard').innerHTML='<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem"><h3 style="flex:1;margin:0">👁 '+t('sh_vis_title')+'</h3><button onclick="closeShiftVisibility()" aria-label="Kapat" style="background:none;border:none;font-size:1.4rem;line-height:1;color:#8a8478;cursor:pointer;padding:.1rem .4rem">✕</button></div>'
+    +'<p style="color:#a49c8c;font-size:.74rem;margin-bottom:.5rem">'+t('sh_vis_hint')+'</p>'
+    +'<div class="staff-list" style="max-height:52vh">'+(items||'<p style="padding:1rem;color:#999;text-align:center">—</p>')+'</div>'
+    +'<div class="modal-actions"><button class="btn" onclick="closeShiftVisibility()">'+t('k_done')+'</button></div>';
+  document.getElementById('shiftVisModal').classList.add('open');
+}
+function closeShiftVisibility(){document.getElementById('shiftVisModal').classList.remove('open');}
 function resetEveningColor(){
   shiftColors.evening='';
   localStorage.setItem('shiftColors',JSON.stringify(shiftColors));
@@ -1466,8 +1503,13 @@ async function loadShifts(){
     return`<th class="sched-th${isWknd?' wknd':''}">${d}<br><small style="font-weight:400;font-size:.68rem">${dt.getDate()} ${MO[dt.getMonth()]}</small></th>`;
   }).join('');
 
-  // Rows
-  const staff=profiles.filter(p=>p.role!=='admin'||profiles.length===1);
+  // Rows — admin, mutfak personeli ve elle gizlenenler vardiya tablosunda GÖSTERİLMEZ
+  const staff=profiles.filter(p=>{
+    if(p.role==='admin'&&profiles.length>1)return false;
+    if(isKitchen(p.department))return false;
+    if(hiddenShiftIds.has(p.id))return false;
+    return true;
+  });
   let grandTotal=0;
   const rows=staff.length?staff.map(p=>{
     let weekTotal=0;
@@ -1517,6 +1559,7 @@ async function loadShifts(){
           <div class="staff-name" data-fullname="${esc(p.name||'?')}" onclick="showNamePop(event,this)"><span class="staff-dot" style="background:${p.color||'#aaa'}"></span>${esc(displayName)}</div>
           <div class="staff-meta">
             ${p.department?`<span class="staff-dept">${esc(p.department)}</span>`:''}
+            <button class="del-staff-btn" onclick="toggleShiftVisibility('${p.id}',event)" title="${t('sh_hide_tip')}" style="color:#8a6d2f">👁</button>
             <button class="del-staff-btn" onclick="openEditStaff('${p.id}',event)" title="${t('edit')}" style="color:#888">✎</button>
             <button class="del-staff-btn" onclick="deleteStaff('${p.id}',event)" title="${t('confirm_delete_staff')}">✕</button>
           </div>
