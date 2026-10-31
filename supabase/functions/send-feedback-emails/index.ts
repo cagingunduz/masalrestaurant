@@ -32,6 +32,7 @@ const tpl: Record<string, {
   welcome: string
   team: string
   header: string
+  unsub: string
 }> = {
   nl: {
     subject: 'Hoe was uw bezoek bij Masal?',
@@ -46,6 +47,7 @@ const tpl: Record<string, {
     welcome: 'Hopelijk mogen we u snel weer verwelkomen bij Restaurant Masal.',
     team: 'Team Restaurant Masal',
     header: 'Hoe was uw bezoek?',
+    unsub: 'Liever geen vervolgmail meer ontvangen? Laat het ons weten via info@masalrestaurant.nl.',
   },
   en: {
     subject: 'How was your visit to Masal?',
@@ -60,6 +62,7 @@ const tpl: Record<string, {
     welcome: 'We hope to welcome you back at Restaurant Masal soon.',
     team: 'Team Restaurant Masal',
     header: 'How was your visit?',
+    unsub: 'Prefer not to receive these follow-ups? Let us know at info@masalrestaurant.nl.',
   },
   tr: {
     subject: "Masal'daki ziyaretiniz nasıldı?",
@@ -74,6 +77,7 @@ const tpl: Record<string, {
     welcome: 'En kısa zamanda Restaurant Masal\'da tekrar görüşmek üzere.',
     team: 'Restaurant Masal Ekibi',
     header: 'Ziyaretiniz nasıldı?',
+    unsub: 'Bu e-postaları almak istemiyor musunuz? info@masalrestaurant.nl adresine yazabilirsiniz.',
   },
 }
 
@@ -113,6 +117,7 @@ function buildHtml(name: string, lang: string, resId: string, visitDate: string)
         <p style="margin:0 0 .6rem">${t.thanks}</p>
         <p style="margin:0 0 .8rem">${t.welcome}</p>
         <p style="margin:0;font-weight:600;color:#333">${t.team}</p>
+        <p style="margin:.9rem 0 0;color:#999;font-size:.76rem;line-height:1.5">${t.unsub}</p>
       </div>
     </div>
     <p style="text-align:center;color:#aaa;font-size:.72rem;margin-top:1rem">Masal Restaurant &middot; <a href="https://masalrestaurant.nl" style="color:#aaa">masalrestaurant.nl</a></p>
@@ -128,17 +133,23 @@ Deno.serve(async (req) => {
   const ANON_KEY     = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15dHF4eGR6ZnJyb3BxY3JoaXB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MjgwMTUsImV4cCI6MjA5MTAwNDAxNX0.eKAts80PGm6TTYSllnYq79UaG0_ERJi7FBLnh2GgG4I'
   const supa = createClient(SUPABASE_URL, SERVICE_ROLE, { auth: { autoRefreshToken: false, persistSession: false } })
 
-  // Cutoff: bugünden 1 gün önce (rezervasyon tarihi <= cutoff olanlar)
+  // Üst sınır: bugünden 1 gün önce (ziyaret >= dün)
   const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000)
   const cutoffStr = cutoff.toISOString().slice(0, 10)
+  // Alt sınır: son 3 gün — SADECE yakın tarihli ziyaretlere yollanır.
+  // (consent filtresi kaldırıldığı için bu sınır olmadan eski tüm rezervasyonlara
+  //  toplu mail giderdi; bu onu engeller.)
+  const lower = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)
+  const lowerStr = lower.toISOString().slice(0, 10)
 
-  // İptal edilmemiş + consent_marketing=true (GDPR — sadece izin verenler) + henüz mail gitmemiş
+  // İptal edilmemiş + e-postası olan + henüz mail gitmemiş + son 3 günün ziyareti
+  // (Not: artık consent_marketing filtresi YOK — tüm misafirlere yorum daveti gider.)
   const { data: rows, error } = await supa
     .from('reservations')
     .select('id,name,email,date,status,lang')
     .lte('date', cutoffStr)
+    .gte('date', lowerStr)
     .or('status.is.null,status.neq.cancelled')
-    .eq('consent_marketing', true)
     .not('email', 'is', null)
     .neq('email', '')
     .is('feedback_email_sent_at', null)
