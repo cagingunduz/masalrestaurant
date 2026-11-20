@@ -1879,12 +1879,19 @@ async function deleteStaff(id,e){
   e.stopPropagation();
   if(!confirm(t('confirm_delete_staff')))return;
   await sb.from('shift_assignments').delete().eq('staff_id',id);
-  const res=await fetch(`${SUPABASE_URL}/functions/v1/delete-staff`,{
-    method:'POST',
-    headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_ANON},
-    body:JSON.stringify({userId:id})
-  });
-  if(!res.ok){const j=await res.json();alert(t('err')+(j.error||'Onbekende fout'));return}
+  let res;
+  try{
+    res=await fetch(`${SUPABASE_URL}/functions/v1/delete-staff`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_ANON,'apikey':SUPABASE_ANON},
+      body:JSON.stringify({userId:id})
+    });
+  }catch(err){alert(t('err')+err.message);return}
+  if(!res.ok){
+    const txt=await res.text().catch(()=>'');
+    let msg=txt;try{const j=JSON.parse(txt);msg=j.error||j.message||txt}catch(_){}
+    alert(t('err')+(msg||('HTTP '+res.status)));return;
+  }
   profiles=profiles.filter(p=>p.id!==id);
   loadShifts();
 }

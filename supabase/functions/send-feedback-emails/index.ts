@@ -10,7 +10,10 @@ const cors = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const GOOGLE_REVIEW_URL = "https://www.google.com/maps/place/Masal+Restaurant/@51.5605993,5.0737737,546m/data=!3m2!1e3!4b1!4m6!3m5!1s0x47c6be3a619a7935:0x8d002d7c7ca90684!8m2!3d51.5605993!4d5.0763486!16s%2Fg%2F11dfj04mz7?entry=ttu"
+// Doğrudan "yorum yaz" penceresini açar (lrd=<FID>,3). Eski link Maps'i uydu görünümünde
+// açıyordu ve misafir yorum butonunu kendisi aramak zorunda kalıyordu.
+// Google İşletme Profili'ndeki "Yorum iste" linki (g.page/r/.../review) alınırsa onunla değiştir.
+const GOOGLE_REVIEW_URL = "https://www.google.com/search?q=Masal+Restaurant+Tilburg#lrd=0x47c6be3a619a7935:0x8d002d7c7ca90684,3,,,"
 const FEEDBACK_FORM_BASE = "https://masalrestaurant.nl/feedback.html"
 
 function fmtDateEU(s: string): string {
