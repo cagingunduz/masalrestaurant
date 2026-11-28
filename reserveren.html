@@ -835,8 +835,12 @@ function updateSummary(){
 }
 
 /* ── SUBMIT PARTY ── */
+// Çift gönderim kilidi: kayıt bitene kadar ikinci tıklama/Enter yok sayılır
+let resSubmitting=false, partySubmitting=false;
+
 async function submitParty(e){
   e.preventDefault();
+  if(partySubmitting)return;
   const name=document.getElementById('pName').value.trim();
   const phone=document.getElementById('pPhone').value.trim();
   const email=document.getElementById('pEmail').value.trim();
@@ -846,6 +850,7 @@ async function submitParty(e){
   const wishes=document.getElementById('pWishes').value.trim();
   if(!name||!phone||!email||!event_type){alert(t('err_fields'));return}
   const btn=document.getElementById('partySubmitBtn');
+  partySubmitting=true;
   btn.disabled=true;
   // Tarih ve saati önceki adımlardan al (Step 1 + Step 2'de seçildi)
   const consent=document.getElementById('pConsentMail')?.checked || false;
@@ -855,8 +860,7 @@ async function submitParty(e){
     p_event_type:event_type,p_decoration:decoration,
     p_cake:cake,p_wishes:wishes,p_lang:lang, p_consent_marketing:consent
   });
-  btn.disabled=false;
-  if(error){alert(t('err')+error.message);return}
+  if(error){partySubmitting=false;btn.disabled=false;alert(t('err')+error.message);return}
 
   // ── SEND PARTY REQUEST EMAIL ─────────────────────────────────────────────
   const partyEmail={
@@ -925,11 +929,11 @@ async function submitParty(e){
     <p style="text-align:center;color:#aaa;font-size:.72rem;margin-top:1rem">Masal Restaurant &amp; Café · <a href="https://masalrestaurant.nl" style="color:#aaa">masalrestaurant.nl</a></p>
   </div></body></html>`;
   try{
-    await fetch(`${SUPABASE_URL}/functions/v1/send-email`,{
-      method:'POST',
+    fetch(`${SUPABASE_URL}/functions/v1/send-email`,{
+      method:'POST',keepalive:true,
       headers:{'Content-Type':'application/json','Authorization':`Bearer ${SUPABASE_ANON}`},
       body:JSON.stringify({to:email,subject:pc.subject,body:'',htmlBody})
-    });
+    }).catch(e=>console.error('Party email exception:',e));
   }catch(e){console.error('Party email exception:',e)}
 
   document.body.innerHTML=`
@@ -952,29 +956,31 @@ async function submitParty(e){
 /* ── SUBMIT ── */
 async function submitForm(e){
   e.preventDefault();
+  if(resSubmitting)return;
   const name=document.getElementById('resName').value.trim();
   const phone=document.getElementById('resPhone').value.trim();
   const email=document.getElementById('resEmail').value.trim();
   const notes=document.getElementById('resNotes').value.trim();
   if(!name||!phone||!email){alert(t('err_fields'));return}
   if(!selectedTime){alert(t('err_time'));return}
+  const btn=document.getElementById('submitBtn');
+  resSubmitting=true;
+  btn.disabled=true;
   // Kapasite son kontrol — güncel veriyle
   if(selectedDate){
     const {data:caps}=await sb.rpc('public_get_day_availability',{p_date:selectedDate});
     capData=caps||[];
   }
-  if(personCount>capRemaining(selectedTime)){alert(t('err_capacity'));return}
+  if(personCount>capRemaining(selectedTime)){resSubmitting=false;btn.disabled=false;alert(t('err_capacity'));return}
   const occ=selectedOccasion?'\n['+selectedOccasion+']':'';
-  const btn=document.getElementById('submitBtn');
-  btn.disabled=true;
   const consent=document.getElementById('consentMail')?.checked || false;
   const{data:rid,error}=await sb.rpc('public_create_reservation',{
     p_name:name,p_phone:phone,p_email:email,p_date:selectedDate,
     p_time:selectedTime,p_persons:String(personCount),p_notes:(notes+occ).trim(),
     p_lang:lang, p_consent_marketing:consent
   });
-  btn.disabled=false;
-  if(error){alert(t('err')+error.message);return}
+  if(error){resSubmitting=false;btn.disabled=false;alert(t('err')+error.message);return}
+  // Başarılı: buton kapalı kalır, sayfa onay ekranına geçer (tekrar basılamaz)
   const base=window.location.origin+window.location.pathname.replace(/\/[^/]*$/,'/');
 
   // ── SEND CONFIRMATION EMAIL ──────────────────────────────────────────────
@@ -1050,15 +1056,15 @@ async function submitForm(e){
   </div>
 </body></html>`;
 
-  // Send to customer
+  // Send to customer — BEKLEMEDEN (keepalive). Eskiden onay ekranı mail gidene kadar
+  // gelmiyordu; mail sunucusu yavaşken misafir tekrar basıyor ve çift rezervasyon oluşuyordu.
   try{
-    const r1=await fetch(`${SUPABASE_URL}/functions/v1/send-email`,{
-      method:'POST',
+    fetch(`${SUPABASE_URL}/functions/v1/send-email`,{
+      method:'POST',keepalive:true,
       headers:{'Content-Type':'application/json','Authorization':`Bearer ${SUPABASE_ANON}`},
       body:JSON.stringify({to:email,subject:ec.subject,body:'',htmlBody})
-    });
-    const j1=await r1.json();
-    if(!r1.ok)console.error('Customer email error:',j1);
+    }).then(r=>{if(!r.ok)r.text().then(x=>console.error('Customer email error:',x))})
+      .catch(e=>console.error('Customer email exception:',e));
   }catch(e){console.error('Customer email exception:',e)}
 
   document.body.innerHTML=`
