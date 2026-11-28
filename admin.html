@@ -754,7 +754,7 @@ const I18N={
     sh_vis_btn:'👁 Zichtbaarheid',sh_vis_title:'Zichtbaarheid in rooster',sh_vis_hint:'Aangevinkte medewerkers verschijnen in het rooster. Keukenpersoneel is al automatisch verborgen.',sh_hide_tip:'Verberg in rooster',
     haccp_drag:'Versleep om te ordenen',haccp_max_val:'Max. waarde (°C)',haccp_min_val:'Min. waarde (°C)',haccp_name_required:'Naam (NL) is verplicht',haccp_confirm_delete:'Verwijderen?',
     edit:'Bewerken',haccp_edit_title:'Locatie bewerken',haccp_clear_all:'🗑 Waarden wissen',haccp_clear_confirm:'Alle ingevoerde waarden van deze week wissen?',
-    filter_all:'Alle',status_new:'Nieuw',status_confirmed:'Bevestigd',status_cancelled:'Geannuleerd',status_arrived:'Aangekomen',
+    filter_all:'Alle',status_new:'Nieuw',status_confirmed:'Bevestigd',status_cancelled:'Geannuleerd',status_arrived:'Aangekomen',review_mail_sent:'Reviewmail verstuurd',review_mail_not_sent:'Reviewmail niet verstuurd',
     refresh:'Vernieuwen',prev:'← Vorige',next:'Volgende →',
     new_shift:'Nieuwe shift',edit_shift:'Shift bewerken',
     date:'Datum',start_time:'Begintijd',end_time:'Eindtijd',assign_staff:'Personeel toewijzen',
@@ -804,7 +804,7 @@ const I18N={
     sh_vis_btn:'👁 Görünürlük',sh_vis_title:'Vardiyada görünürlük',sh_vis_hint:'İşaretli personel vardiya tablosunda görünür. Mutfak personeli zaten otomatik gizli.',sh_hide_tip:'Vardiyada gizle',
     haccp_drag:'Sıralamak için sürükle',haccp_max_val:'Maks. değer (°C)',haccp_min_val:'Min. değer (°C)',haccp_name_required:'Ad (NL) zorunlu',haccp_confirm_delete:'Silinsin mi?',
     edit:'Düzenle',haccp_edit_title:'Satır düzenle',haccp_clear_all:'🗑 Değerleri temizle',haccp_clear_confirm:'Bu haftanın tüm girilen değerleri silinsin mi?',
-    filter_all:'Tümü',status_new:'Yeni',status_confirmed:'Onaylandı',status_cancelled:'İptal',status_arrived:'Geldi',
+    filter_all:'Tümü',status_new:'Yeni',status_confirmed:'Onaylandı',status_cancelled:'İptal',status_arrived:'Geldi',review_mail_sent:'Yorum maili gitti',review_mail_not_sent:'Yorum maili gitmedi',
     refresh:'Yenile',prev:'← Önceki',next:'Sonraki →',
     date:'Tarih',start_time:'Başlangıç',end_time:'Bitiş',
     delete:'Sil',cancel:'İptal',save:'Kaydet',
@@ -1196,7 +1196,7 @@ async function loadReservations(){
         <td data-label="${t('col_time')}">${r.time||''}</td>
         <td data-label="${t('col_name')}">${esc(r.name)}</td>
         <td data-label="${t('col_phone')}"><a href="tel:${esc(r.phone)}">${esc(r.phone)}</a></td>
-        <td data-label="${t('col_email')}"><a href="mailto:${esc(r.email||'')}">${esc(r.email||'')}</a></td>
+        <td data-label="${t('col_email')}"><a href="mailto:${esc(r.email||'')}">${esc(r.email||'')}</a>${reviewMailBadge(r,today)}</td>
         <td data-label="${t('col_persons')}">${esc(String(r.persons||''))}</td>
         <td data-label="${t('col_notes')}">${esc(r.notes||'')}</td>
         <td data-label="${t('col_status')}"><span class="badge ${r.status||'new'}">${t('status_'+(r.status||'new'))}</span></td>
@@ -1206,6 +1206,18 @@ async function loadReservations(){
           <button class="btn small danger" onclick="deleteRes('${r.id}')">×</button>
         </td>
       </tr>`).join('')}</tbody></table>`;
+}
+// Yorum (review) maili durumu: ✓ gönderildi / ✗ ziyaret geçti ama gitmedi / boş = henüz zamanı gelmedi
+function reviewMailBadge(r,today){
+  if(r.feedback_email_sent_at){
+    const d=new Date(r.feedback_email_sent_at);
+    const ds=d.toLocaleDateString('nl-NL',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'});
+    return `<div style="font-size:.7rem;color:#4CAF50;margin-top:.2rem;white-space:nowrap">⭐ ✓ ${t('review_mail_sent')} · ${ds}</div>`;
+  }
+  if(r.status!=='cancelled'&&r.email&&r.date&&r.date<today){
+    return `<div style="font-size:.7rem;color:#e57373;margin-top:.2rem;white-space:nowrap">⭐ ✗ ${t('review_mail_not_sent')}</div>`;
+  }
+  return '';
 }
 async function updateRes(id,status){
   if(!status)return;
