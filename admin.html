@@ -446,7 +446,22 @@ tr.cancelled-row td{color:#b3ada0!important;text-decoration:line-through;backgro
       <div class="toolbar">
         <h2 data-i18n="tab_reservations">Reserveringen</h2>
         <div class="actions">
-          <select class="select" id="resFilter" onchange="loadReservations()">
+          <input type="search" class="input" id="resSearch" data-i18n-ph="res_search_ph" placeholder="Zoek naam / tel / e-mail" oninput="renderReservations()" style="min-width:190px">
+          <select class="select" id="resPeriod" onchange="saveResPrefs();renderReservations()">
+            <option value="all" data-i18n="res_period_all">Alle data</option>
+            <option value="today" data-i18n="res_period_today">Vandaag</option>
+            <option value="tomorrow" data-i18n="res_period_tomorrow">Morgen</option>
+            <option value="upcoming" data-i18n="res_period_upcoming">Vandaag + komend</option>
+            <option value="week" data-i18n="res_period_week">Komende 7 dagen</option>
+            <option value="past" data-i18n="res_period_past">Verleden</option>
+          </select>
+          <select class="select" id="resSort" onchange="saveResPrefs();renderReservations()">
+            <option value="created_desc" data-i18n="res_sort_created">Nieuwste reservering eerst</option>
+            <option value="date_smart" data-i18n="res_sort_smart">Datum: vandaag → komend</option>
+            <option value="date_asc" data-i18n="res_sort_date_asc">Datum: oud → nieuw</option>
+            <option value="date_desc" data-i18n="res_sort_date_desc">Datum: nieuw → oud</option>
+          </select>
+          <select class="select" id="resFilter" onchange="saveResPrefs();renderReservations()">
             <option value="all" data-i18n="filter_all">Alle</option>
             <option value="new" data-i18n="status_new">Nieuw</option>
             <option value="confirmed" data-i18n="status_confirmed">Bevestigd</option>
@@ -754,7 +769,7 @@ const I18N={
     sh_vis_btn:'👁 Zichtbaarheid',sh_vis_title:'Zichtbaarheid in rooster',sh_vis_hint:'Aangevinkte medewerkers verschijnen in het rooster. Keukenpersoneel is al automatisch verborgen.',sh_hide_tip:'Verberg in rooster',
     haccp_drag:'Versleep om te ordenen',haccp_max_val:'Max. waarde (°C)',haccp_min_val:'Min. waarde (°C)',haccp_name_required:'Naam (NL) is verplicht',haccp_confirm_delete:'Verwijderen?',
     edit:'Bewerken',haccp_edit_title:'Locatie bewerken',haccp_clear_all:'🗑 Waarden wissen',haccp_clear_confirm:'Alle ingevoerde waarden van deze week wissen?',
-    filter_all:'Alle',status_new:'Nieuw',status_confirmed:'Bevestigd',status_cancelled:'Geannuleerd',status_arrived:'Aangekomen',review_mail_sent:'Reviewmail verstuurd',review_mail_not_sent:'Reviewmail niet verstuurd',
+    filter_all:'Alle',status_new:'Nieuw',status_confirmed:'Bevestigd',status_cancelled:'Geannuleerd',status_arrived:'Aangekomen',res_search_ph:'Zoek naam / tel / e-mail',res_period_all:'Alle data',res_period_today:'Vandaag',res_period_tomorrow:'Morgen',res_period_upcoming:'Vandaag + komend',res_period_week:'Komende 7 dagen',res_period_past:'Verleden',res_sort_created:'Nieuwste reservering eerst',res_sort_smart:'Datum: vandaag → komend',res_sort_date_asc:'Datum: oud → nieuw',res_sort_date_desc:'Datum: nieuw → oud',res_count:'reserveringen',res_persons_total:'personen (excl. geannuleerd)',res_created:'gemaakt',review_mail_sent:'Reviewmail verstuurd',review_mail_not_sent:'Reviewmail niet verstuurd',
     refresh:'Vernieuwen',prev:'← Vorige',next:'Volgende →',
     new_shift:'Nieuwe shift',edit_shift:'Shift bewerken',
     date:'Datum',start_time:'Begintijd',end_time:'Eindtijd',assign_staff:'Personeel toewijzen',
@@ -804,7 +819,7 @@ const I18N={
     sh_vis_btn:'👁 Görünürlük',sh_vis_title:'Vardiyada görünürlük',sh_vis_hint:'İşaretli personel vardiya tablosunda görünür. Mutfak personeli zaten otomatik gizli.',sh_hide_tip:'Vardiyada gizle',
     haccp_drag:'Sıralamak için sürükle',haccp_max_val:'Maks. değer (°C)',haccp_min_val:'Min. değer (°C)',haccp_name_required:'Ad (NL) zorunlu',haccp_confirm_delete:'Silinsin mi?',
     edit:'Düzenle',haccp_edit_title:'Satır düzenle',haccp_clear_all:'🗑 Değerleri temizle',haccp_clear_confirm:'Bu haftanın tüm girilen değerleri silinsin mi?',
-    filter_all:'Tümü',status_new:'Yeni',status_confirmed:'Onaylandı',status_cancelled:'İptal',status_arrived:'Geldi',review_mail_sent:'Yorum maili gitti',review_mail_not_sent:'Yorum maili gitmedi',
+    filter_all:'Tümü',status_new:'Yeni',status_confirmed:'Onaylandı',status_cancelled:'İptal',status_arrived:'Geldi',res_search_ph:'Ad / tel / e-posta ara',res_period_all:'Tüm tarihler',res_period_today:'Bugün',res_period_tomorrow:'Yarın',res_period_upcoming:'Bugün + gelecek',res_period_week:'Önümüzdeki 7 gün',res_period_past:'Geçmiş',res_sort_created:'En yeni rezervasyon önce',res_sort_smart:'Tarih: bugün → gelecek',res_sort_date_asc:'Tarih: eski → yeni',res_sort_date_desc:'Tarih: yeni → eski',res_count:'rezervasyon',res_persons_total:'kişi (iptaller hariç)',res_created:'yapıldı',review_mail_sent:'Yorum maili gitti',review_mail_not_sent:'Yorum maili gitmedi',
     refresh:'Yenile',prev:'← Önceki',next:'Sonraki →',
     date:'Tarih',start_time:'Başlangıç',end_time:'Bitiş',
     delete:'Sil',cancel:'İptal',save:'Kaydet',
@@ -1171,28 +1186,88 @@ async function sendEmail(to,subject,body){
 }
 
 // === RESERVATIONS ===
+// Rezervasyonlar: hepsi sayfalanarak çekilir (Supabase tek seferde max 1000 satır verir;
+// eskiden sırasız çekildiği için 1000'i geçince rastgele bir dilim geliyordu → yeni kayıtlar kayboluyordu).
+// Sıralama / dönem / durum / arama tarayıcıda yapılır, seçimler hatırlanır.
+let resAll=[];
+function saveResPrefs(){
+  try{localStorage.setItem('masalResPrefs',JSON.stringify({
+    sort:document.getElementById('resSort').value,
+    period:document.getElementById('resPeriod').value,
+    status:document.getElementById('resFilter').value}))}catch(_){}
+}
+function loadResPrefs(){
+  try{const p=JSON.parse(localStorage.getItem('masalResPrefs')||'null');if(!p)return;
+    if(p.sort)document.getElementById('resSort').value=p.sort;
+    if(p.period)document.getElementById('resPeriod').value=p.period;
+    if(p.status)document.getElementById('resFilter').value=p.status;
+  }catch(_){}
+}
+let resPrefsLoaded=false;
 async function loadReservations(){
-  const filter=document.getElementById('resFilter').value;
-  let q=sb.from('reservations').select('*');
-  if(filter!=='all')q=q.eq('status',filter);
-  const {data,error}=await q;
+  if(!resPrefsLoaded){loadResPrefs();resPrefsLoaded=true}
   const c=document.getElementById('resContainer');
-  if(error){c.innerHTML=`<div class="empty">${t('err')}${error.message}</div>`;return}
-  if(!data||!data.length){c.innerHTML=`<div class="empty">${t('no_reservations')}</div>`;return}
-  // Sıralama: bugün + gelecek (yakın → uzak), sonra geçmiş (yakın → uzak geri)
-  const today=fmtDate(new Date());
-  data.sort((a,b)=>{
-    const aF=(a.date||'')>=today, bF=(b.date||'')>=today;
-    if(aF&&!bF)return -1;
-    if(!aF&&bF)return 1;
-    if(aF) return (a.date||'').localeCompare(b.date||'')||(a.time||'').localeCompare(b.time||'');
-    return (b.date||'').localeCompare(a.date||'')||(b.time||'').localeCompare(a.time||'');
+  if(!resAll.length)c.innerHTML=`<div class="empty">…</div>`;
+  let rows=[],from=0;
+  for(;;){
+    const{data,error}=await sb.from('reservations').select('*')
+      .order('created_at',{ascending:false}).order('id').range(from,from+999);
+    if(error){c.innerHTML=`<div class="empty">${t('err')}${error.message}</div>`;return}
+    rows=rows.concat(data||[]);
+    if(!data||data.length<1000)break;
+    from+=1000; if(from>100000)break;
+  }
+  resAll=rows;
+  renderReservations();
+}
+function renderReservations(){
+  const c=document.getElementById('resContainer');
+  const status=document.getElementById('resFilter').value;
+  const period=document.getElementById('resPeriod').value;
+  const sort=document.getElementById('resSort').value;
+  const q=(document.getElementById('resSearch').value||'').trim().toLowerCase();
+  // Telefon araması: 0640… ile +31640… aynı numara sayılır (baştaki 0 / 31 atılır)
+  const qDigits=q.replace(/\D/g,'').replace(/^31(?=\d{9})/,'').replace(/^0+/,'');
+  const now=new Date();
+  const today=fmtDate(now);
+  const addDays=n=>{const d=new Date(now);d.setDate(d.getDate()+n);return fmtDate(d)};
+  const tomorrow=addDays(1), weekEnd=addDays(7);
+  let list=resAll.filter(r=>{
+    const st=r.status||'new';
+    if(status!=='all'&&st!==status)return false;
+    const d=r.date||'';
+    if(period==='today'&&d!==today)return false;
+    if(period==='tomorrow'&&d!==tomorrow)return false;
+    if(period==='upcoming'&&d<today)return false;
+    if(period==='week'&&(d<today||d>weekEnd))return false;
+    if(period==='past'&&d>=today)return false;
+    if(q){
+      const hay=[r.name,r.email,r.phone,r.notes].join(' ').toLowerCase();
+      const phoneDigits=String(r.phone||'').replace(/\D/g,'');
+      if(!hay.includes(q)&&!(qDigits.length>=3&&phoneDigits.includes(qDigits)))return false;
+    }
+    return true;
   });
-  c.innerHTML=`<table>
+  const byDate=(a,b)=>(a.date||'').localeCompare(b.date||'')||(a.time||'').localeCompare(b.time||'');
+  const byCreated=(a,b)=>String(b.created_at||'').localeCompare(String(a.created_at||''));
+  if(sort==='created_desc')list.sort(byCreated);
+  else if(sort==='date_asc')list.sort(byDate);
+  else if(sort==='date_desc')list.sort((a,b)=>byDate(b,a));
+  else list.sort((a,b)=>{
+    const aF=(a.date||'')>=today, bF=(b.date||'')>=today;
+    if(aF!==bF)return aF?-1:1;
+    return aF?byDate(a,b):byDate(b,a);
+  });
+  const active=list.filter(r=>r.status!=='cancelled');
+  const persons=active.reduce((n,r)=>n+(parseInt(r.persons)||0),0);
+  const summary=`<div style="font-size:.8rem;color:var(--muted,#888);margin:0 0 .7rem">${list.length} ${t('res_count')} · ${persons} ${t('res_persons_total')}</div>`;
+  if(!list.length){c.innerHTML=summary+`<div class="empty">${t('no_reservations')}</div>`;return}
+  const fmtCreated=v=>{if(!v)return'';const d=new Date(v);return d.toLocaleDateString('nl-NL',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'})};
+  c.innerHTML=summary+`<table>
     <thead><tr><th>${t('col_date')}</th><th>${t('col_time')}</th><th>${t('col_name')}</th><th>${t('col_phone')}</th><th>${t('col_email')}</th><th>${t('col_persons')}</th><th>${t('col_notes')}</th><th>${t('col_status')}</th><th>${t('col_actions')}</th></tr></thead>
-    <tbody>${data.map(r=>`
+    <tbody>${list.map(r=>`
       <tr${r.status==='cancelled'?' class="cancelled-row"':''}>
-        <td data-label="${t('col_date')}">${fmtDateEU(r.date)}</td>
+        <td data-label="${t('col_date')}">${fmtDateEU(r.date)}${r.created_at?`<div style="font-size:.68rem;color:#999;margin-top:.15rem;white-space:nowrap" title="${t('res_created')}">${t('res_created')} ${fmtCreated(r.created_at)}</div>`:''}</td>
         <td data-label="${t('col_time')}">${r.time||''}</td>
         <td data-label="${t('col_name')}">${esc(r.name)}</td>
         <td data-label="${t('col_phone')}"><a href="tel:${esc(r.phone)}">${esc(r.phone)}</a></td>
@@ -1207,6 +1282,7 @@ async function loadReservations(){
         </td>
       </tr>`).join('')}</tbody></table>`;
 }
+
 // Yorum (review) maili durumu: ✓ gönderildi / ✗ ziyaret geçti ama gitmedi / boş = henüz zamanı gelmedi
 function reviewMailBadge(r,today){
   if(r.feedback_email_sent_at){
